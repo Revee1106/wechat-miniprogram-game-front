@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "Dwelling",
+  "usingComponents": {
+    "dwelling-bonus-panel": "/components/dwelling-bonus-panel/index"
+  }
+}

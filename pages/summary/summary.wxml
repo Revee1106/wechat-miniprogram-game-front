@@ -1,0 +1,17 @@
+<view class="page-shell">
+  <player-status-card player="{{character}}" />
+  <resource-bar resources="{{resources}}" />
+  <run-result-modal
+    visible="{{isDead}}"
+    title="Run Complete"
+    message="{{resultSummary}}"
+    actionText="Rebirth"
+    bind:confirm="handleRebirth"
+  />
+  <view class="panel" wx:if="{{playerProfile}}">
+    <view class="section-title">Permanent Growth</view>
+    <view>Total rebirths: {{playerProfile.total_rebirth_count}}</view>
+    <view>Permanent luck bonus: {{playerProfile.permanent_luck_bonus}}</view>
+  </view>
+  <view wx:if="{{error}}" class="danger-text">{{error}}</view>
+</view>

@@ -1,0 +1,5 @@
+<view class="panel">
+  <view class="section-title">Dwelling Bonus</view>
+  <view>Current dwelling level: {{level}}</view>
+  <view class="muted-text">Level 1 provides a stable base for future upgrades.</view>
+</view>

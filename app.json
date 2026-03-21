@@ -1,0 +1,19 @@
+{
+  "pages": [
+    "pages/home/home",
+    "pages/event/event",
+    "pages/cultivation/cultivation",
+    "pages/crafting/crafting",
+    "pages/dwelling/dwelling",
+    "pages/summary/summary"
+  ],
+  "window": {
+    "navigationBarTitleText": "Wendao Core Loop",
+    "navigationBarBackgroundColor": "#13232f",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f4efe7",
+    "backgroundTextStyle": "light"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

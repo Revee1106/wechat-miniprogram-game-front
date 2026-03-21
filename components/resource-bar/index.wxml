@@ -1,0 +1,9 @@
+<view class="panel">
+  <view class="section-title">Resources</view>
+  <block wx:if="{{resources}}">
+    <view>Spirit Stones: {{resources.spirit_stone}}</view>
+    <view>Herbs: {{resources.herbs}}</view>
+    <view>Iron Essence: {{resources.iron_essence}}</view>
+  </block>
+  <view wx:else class="muted-text">No resource snapshot yet.</view>
+</view>

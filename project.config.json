@@ -1,0 +1,17 @@
+{
+  "description": "Wendao core loop mini program shell",
+  "packOptions": {
+    "ignore": []
+  },
+  "setting": {
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": false
+  },
+  "compileType": "miniprogram",
+  "libVersion": "3.6.1",
+  "appid": "touristappid",
+  "projectname": "wendao-core-loop",
+  "simulatorType": "wechat"
+}

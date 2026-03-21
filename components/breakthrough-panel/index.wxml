@@ -1,0 +1,15 @@
+<view class="panel">
+  <view class="section-title">Breakthrough</view>
+  <block wx:if="{{player}}">
+    <view>Realm: {{player.realm}}</view>
+    <view>EXP: {{player.cultivation_exp}}</view>
+    <view>Spirit Stones: {{resources.spirit_stone}}</view>
+    <button
+      class="primary-button"
+      bindtap="submitBreakthrough"
+      disabled="{{!canBreakthrough}}"
+    >
+      Attempt Breakthrough
+    </button>
+  </block>
+</view>
