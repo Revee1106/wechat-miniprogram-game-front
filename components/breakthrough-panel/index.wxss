@@ -1,3 +1,3 @@
-view {
+.panel-row {
   margin-bottom: 8rpx;
 }
