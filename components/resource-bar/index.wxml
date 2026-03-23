@@ -1,9 +1,9 @@
 <view class="panel">
-  <view class="section-title">Resources</view>
+  <view class="section-title">资源</view>
   <block wx:if="{{resources}}">
-    <view class="resource-row">Spirit Stones: {{resources.spirit_stone}}</view>
-    <view class="resource-row">Herbs: {{resources.herbs}}</view>
-    <view class="resource-row">Iron Essence: {{resources.iron_essence}}</view>
+    <view class="resource-row">灵石：{{resources.spirit_stone}}</view>
+    <view class="resource-row">药草：{{resources.herbs}}</view>
+    <view class="resource-row">玄铁精华：{{resources.iron_essence}}</view>
   </block>
-  <view wx:else class="muted-text">No resource snapshot yet.</view>
+  <view wx:else class="muted-text">当前还没有资源快照。</view>
 </view>

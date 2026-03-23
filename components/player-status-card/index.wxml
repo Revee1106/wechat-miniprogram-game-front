@@ -1,11 +1,11 @@
 <view class="panel">
-  <view class="section-title">Player Status</view>
+  <view class="section-title">角色状态</view>
   <block wx:if="{{player}}">
-    <view class="row">Realm: {{player.realm}}</view>
-    <view class="row">Cultivation EXP: {{player.cultivation_exp}}</view>
-    <view class="row">Lifespan: {{player.lifespan_current}} / {{player.lifespan_max}}</view>
-    <view class="row">Luck: {{player.luck}}</view>
-    <view wx:if="{{player.is_dead}}" class="danger-text">This character has fallen.</view>
+    <view class="row">境界：{{player.realm}}</view>
+    <view class="row">修为：{{player.cultivation_exp}}</view>
+    <view class="row">寿元：{{lifespanText}}</view>
+    <view class="row">气运：{{player.luck}}</view>
+    <view wx:if="{{player.is_dead}}" class="danger-text">此角色已陨落。</view>
   </block>
-  <view wx:else class="muted-text">No active character yet.</view>
+  <view wx:else class="muted-text">当前还没有活跃角色。</view>
 </view>

@@ -1,5 +1,5 @@
 <view class="panel">
-  <view class="section-title">Dwelling Bonus</view>
-  <view class="panel-row">Current dwelling level: {{level}}</view>
-  <view class="muted-text panel-row">Level 1 provides a stable base for future upgrades.</view>
+  <view class="section-title">洞府加成</view>
+  <view class="panel-row">当前洞府等级：{{level}}</view>
+  <view class="muted-text panel-row">1 级洞府提供稳定基础，后续可继续扩展升级收益。</view>
 </view>

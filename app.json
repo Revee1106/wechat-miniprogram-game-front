@@ -8,7 +8,7 @@
     "pages/summary/summary"
   ],
   "window": {
-    "navigationBarTitleText": "Wendao Core Loop",
+    "navigationBarTitleText": "问道核心循环",
     "navigationBarBackgroundColor": "#13232f",
     "navigationBarTextStyle": "white",
     "backgroundColor": "#f4efe7",

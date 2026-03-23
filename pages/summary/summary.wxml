@@ -3,15 +3,15 @@
   <resource-bar resources="{{resources}}" />
   <run-result-modal
     visible="{{isDead}}"
-    title="Run Complete"
+    title="本局结束"
     message="{{resultSummary}}"
-    actionText="Rebirth"
+    actionText="转生"
     bind:confirm="handleRebirth"
   />
   <view class="panel" wx:if="{{playerProfile}}">
-    <view class="section-title">Permanent Growth</view>
-    <view>Total rebirths: {{playerProfile.total_rebirth_count}}</view>
-    <view>Permanent luck bonus: {{playerProfile.permanent_luck_bonus}}</view>
+    <view class="section-title">永久成长</view>
+    <view>累计转生：{{playerProfile.total_rebirth_count}}</view>
+    <view>永久气运加成：{{playerProfile.permanent_luck_bonus}}</view>
   </view>
   <view wx:if="{{error}}" class="danger-text">{{error}}</view>
 </view>

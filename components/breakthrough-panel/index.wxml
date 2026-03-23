@@ -1,15 +1,15 @@
 <view class="panel">
-  <view class="section-title">Breakthrough</view>
+  <view class="section-title">突破</view>
   <block wx:if="{{player}}">
-    <view class="panel-row">Realm: {{player.realm}}</view>
-    <view class="panel-row">EXP: {{player.cultivation_exp}}</view>
-    <view class="panel-row">Spirit Stones: {{resources.spirit_stone}}</view>
+    <view class="panel-row">境界：{{player.realm}}</view>
+    <view class="panel-row">修为：{{player.cultivation_exp}}</view>
+    <view class="panel-row">灵石：{{resources.spirit_stone}}</view>
     <button
       class="primary-button"
       bindtap="submitBreakthrough"
       disabled="{{!canBreakthrough}}"
     >
-      Attempt Breakthrough
+      尝试突破
     </button>
   </block>
 </view>

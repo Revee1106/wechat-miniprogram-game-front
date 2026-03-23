@@ -1,5 +1,5 @@
 {
-  "navigationBarTitleText": "Dwelling",
+  "navigationBarTitleText": "洞府",
   "usingComponents": {
     "dwelling-bonus-panel": "/components/dwelling-bonus-panel/index"
   }

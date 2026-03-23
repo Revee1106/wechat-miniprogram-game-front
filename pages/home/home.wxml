@@ -3,18 +3,18 @@
   <resource-bar resources="{{resources}}" />
 
   <view class="panel">
-    <view class="section-title">Core Loop</view>
+    <view class="section-title">核心循环</view>
     <button class="primary-button" bindtap="createRun" loading="{{loading}}">
-      Start Run
+      开始一局
     </button>
     <button class="primary-button" bindtap="advanceTime" loading="{{loading}}">
-      Advance Time
+      推进时间
     </button>
-    <button class="secondary-button" bindtap="openCultivation">Cultivation</button>
-    <button class="secondary-button" bindtap="openCrafting">Crafting</button>
-    <button class="secondary-button" bindtap="openDwelling">Dwelling</button>
-    <button class="secondary-button" bindtap="openSummary">Run Summary</button>
-    <view wx:if="{{run}}" class="muted-text">Round: {{roundIndex}}</view>
+    <button class="secondary-button" bindtap="openCultivation">修炼</button>
+    <button class="secondary-button" bindtap="openCrafting">炼制</button>
+    <button class="secondary-button" bindtap="openDwelling">洞府</button>
+    <button class="secondary-button" bindtap="openSummary">本局总结</button>
+    <view wx:if="{{run}}" class="muted-text">已过月数：{{roundIndex}}</view>
     <view wx:if="{{resultSummary}}" class="muted-text">
       {{resultSummary}}
     </view>

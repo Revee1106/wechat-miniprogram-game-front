@@ -14,7 +14,7 @@ Component({
     },
     actionText: {
       type: String,
-      value: "Confirm",
+      value: "确认",
     },
   },
   methods: {

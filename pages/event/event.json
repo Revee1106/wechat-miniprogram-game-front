@@ -1,5 +1,5 @@
 {
-  "navigationBarTitleText": "Event",
+  "navigationBarTitleText": "事件",
   "usingComponents": {
     "event-card": "/components/event-card/index",
     "choice-button-list": "/components/choice-button-list/index"

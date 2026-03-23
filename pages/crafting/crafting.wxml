@@ -1,12 +1,12 @@
 <view class="page-shell">
   <view class="panel">
-    <view class="section-title">Crafting</view>
-    <view>Mini game crafting is deferred in this slice.</view>
+    <view class="section-title">炼制</view>
+    <view>当前版本暂未开放炼制小游戏。</view>
     <view class="muted-text">
-      Current mode uses simple recipe settlement and leaves room for future expansion.
+      现阶段采用简化的配方结算，为后续扩展预留空间。
     </view>
     <view wx:if="{{run}}" class="muted-text">
-      Current spirit stones: {{run.resources.spirit_stone}}
+      当前灵石：{{run.resources.spirit_stone}}
     </view>
   </view>
 </view>

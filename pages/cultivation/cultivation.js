@@ -39,7 +39,7 @@ Page({
       const result = await store.breakthrough();
       this.syncState();
       wx.showToast({
-        title: result.breakthrough.success ? "Breakthrough success" : "Breakthrough failed",
+        title: result.breakthrough.success ? "突破成功" : "突破失败",
         icon: "none",
       });
     } catch (error) {
