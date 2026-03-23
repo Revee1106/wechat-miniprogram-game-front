@@ -1,0 +1,5 @@
+<view wx:if="{{visible}}" class="panel">
+  <view class="section-title">{{title}}</view>
+  <view class="panel-row">{{message}}</view>
+  <button class="primary-button" bindtap="handleConfirm">{{actionText}}</button>
+</view>

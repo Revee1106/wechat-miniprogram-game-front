@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "Home",
+  "usingComponents": {
+    "player-status-card": "/components/player-status-card/index",
+    "resource-bar": "/components/resource-bar/index"
+  }
+}

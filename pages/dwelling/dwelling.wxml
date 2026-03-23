@@ -1,0 +1,3 @@
+<view class="page-shell">
+  <dwelling-bonus-panel level="{{dwellingLevel}}" />
+</view>

@@ -1,0 +1,12 @@
+<view class="page-shell">
+  <player-status-card player="{{character}}" />
+  <resource-bar resources="{{resources}}" />
+  <breakthrough-panel
+    player="{{character}}"
+    resources="{{resources}}"
+    canBreakthrough="{{canBreakthrough}}"
+    bind:breakthrough="attemptBreakthrough"
+  />
+  <view wx:if="{{resultSummary}}" class="panel">{{resultSummary}}</view>
+  <view wx:if="{{error}}" class="danger-text">{{error}}</view>
+</view>

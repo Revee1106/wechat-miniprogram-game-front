@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "Run Summary",
+  "usingComponents": {
+    "run-result-modal": "/components/run-result-modal/index",
+    "player-status-card": "/components/player-status-card/index",
+    "resource-bar": "/components/resource-bar/index"
+  }
+}

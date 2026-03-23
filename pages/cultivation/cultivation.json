@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "Cultivation",
+  "usingComponents": {
+    "player-status-card": "/components/player-status-card/index",
+    "resource-bar": "/components/resource-bar/index",
+    "breakthrough-panel": "/components/breakthrough-panel/index"
+  }
+}

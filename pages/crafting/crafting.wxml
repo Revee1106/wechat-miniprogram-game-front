@@ -1,0 +1,12 @@
+<view class="page-shell">
+  <view class="panel">
+    <view class="section-title">Crafting</view>
+    <view>Mini game crafting is deferred in this slice.</view>
+    <view class="muted-text">
+      Current mode uses simple recipe settlement and leaves room for future expansion.
+    </view>
+    <view wx:if="{{run}}" class="muted-text">
+      Current spirit stones: {{run.resources.spirit_stone}}
+    </view>
+  </view>
+</view>

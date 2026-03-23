@@ -1,0 +1,16 @@
+<view class="panel">
+  <view class="section-title">Choices</view>
+  <block wx:if="{{choices.length}}">
+    <block wx:for="{{choices}}" wx:key="key">
+      <button
+        class="secondary-button"
+        data-choice-key="{{item.key}}"
+        bindtap="handleTap"
+      >
+        {{item.display_name}}
+      </button>
+      <view class="muted-text">{{item.description}}</view>
+    </block>
+  </block>
+  <view wx:else class="muted-text">No available choices.</view>
+</view>

@@ -1,0 +1,9 @@
+<view class="panel">
+  <view class="section-title">Current Event</view>
+  <block wx:if="{{event}}">
+    <view class="panel-row">{{event.template_name}}</view>
+    <view class="muted-text panel-row">{{event.description}}</view>
+    <view class="panel-row">Status: {{event.status}}</view>
+  </block>
+  <view wx:else class="muted-text">No pending event.</view>
+</view>

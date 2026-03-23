@@ -1,0 +1,23 @@
+<view class="page-shell">
+  <player-status-card player="{{character}}" />
+  <resource-bar resources="{{resources}}" />
+
+  <view class="panel">
+    <view class="section-title">Core Loop</view>
+    <button class="primary-button" bindtap="createRun" loading="{{loading}}">
+      Start Run
+    </button>
+    <button class="primary-button" bindtap="advanceTime" loading="{{loading}}">
+      Advance Time
+    </button>
+    <button class="secondary-button" bindtap="openCultivation">Cultivation</button>
+    <button class="secondary-button" bindtap="openCrafting">Crafting</button>
+    <button class="secondary-button" bindtap="openDwelling">Dwelling</button>
+    <button class="secondary-button" bindtap="openSummary">Run Summary</button>
+    <view wx:if="{{run}}" class="muted-text">Round: {{roundIndex}}</view>
+    <view wx:if="{{resultSummary}}" class="muted-text">
+      {{resultSummary}}
+    </view>
+    <view wx:if="{{error}}" class="danger-text">{{error}}</view>
+  </view>
+</view>
