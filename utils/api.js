@@ -39,8 +39,8 @@ function advanceTime(runId) {
   return post("/api/run/advance", { run_id: runId });
 }
 
-function resolveEvent(runId, choiceKey) {
-  return post("/api/run/resolve", { run_id: runId, choice_key: choiceKey });
+function resolveEvent(runId, optionId) {
+  return post("/api/run/resolve", { run_id: runId, option_id: optionId });
 }
 
 function breakthrough(runId) {

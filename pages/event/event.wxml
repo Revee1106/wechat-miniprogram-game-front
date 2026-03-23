@@ -1,5 +1,5 @@
 <view class="page-shell">
   <event-card event="{{currentEvent}}" />
-  <choice-button-list choices="{{choices}}" bind:choose="handleChoice" />
+  <choice-button-list choices="{{currentEvent.options || []}}" loading="{{loading}}" bind:choose="handleChoice" />
   <view wx:if="{{error}}" class="danger-text">{{error}}</view>
 </view>

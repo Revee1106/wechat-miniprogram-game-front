@@ -1,8 +1,12 @@
 <view class="panel">
   <view class="section-title">当前事件</view>
   <block wx:if="{{event}}">
-    <view class="panel-row">{{event.template_name}}</view>
-    <view class="muted-text panel-row">{{event.description}}</view>
+    <view class="panel-row">{{event.title_text || event.event_name}}</view>
+    <view class="muted-text panel-row">{{event.body_text}}</view>
+    <view class="panel-row">事件类型：{{event.event_type}}</view>
+    <view class="panel-row">结果类型：{{event.outcome_type}}</view>
+    <view class="panel-row">风险等级：{{event.risk_level}}</view>
+    <view class="panel-row">触发来源：{{triggerSourcesText}}</view>
     <view class="panel-row">状态：{{event.status}}</view>
   </block>
   <view wx:else class="muted-text">当前没有待处理事件。</view>

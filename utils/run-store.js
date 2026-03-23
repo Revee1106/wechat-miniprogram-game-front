@@ -40,10 +40,10 @@ async function advanceTime() {
   return getState();
 }
 
-async function resolveEvent(choiceKey) {
+async function resolveEvent(optionId) {
   ensureRun();
   state.error = "";
-  state.run = await api.resolveEvent(state.run.run_id, choiceKey);
+  state.run = await api.resolveEvent(state.run.run_id, optionId);
   return getState();
 }
 
