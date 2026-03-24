@@ -1,87 +1,81 @@
-# Shanhai Scroll Redesign Implementation Plan
+# Shanhai Linear Flow Redesign Implementation Plan
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Rebuild the mini program UI into a coherent “Shanhai scroll” experience without changing the existing gameplay APIs.
+**Goal:** Convert the mini program into a non-scrolling, single-focus flow with a cover page, a travel page, an event page, a death summary page, and an on-demand info sheet.
 
-**Architecture:** Keep the current page routing, store, and API calls intact while restructuring page WXML, shared component markup, and the global style system. Concentrate logic changes in page/component view models only where the redesign needs derived labels or state explanations.
+**Architecture:** Keep the existing store and API contract, but simplify page responsibilities so the main flow only presents one action or one decision area per screen. Move character, inventory, cultivation, and dwelling details behind a unified front-end info sheet component that can be opened on demand.
 
 **Tech Stack:** WeChat Mini Program (`wxml`, `wxss`, `js`), Node-based frontend tests, git
 
 ---
 
-### Task 1: Lock the new global visual system
+### Task 1: Update manifest and tests for the linear flow
 
 **Files:**
-- Modify: `app.json`
-- Modify: `app.wxss`
-- Test: `tests/frontend/app_manifest.test.mjs`
+- Modify: `tests/frontend/app_manifest.test.mjs`
+- Modify: `tests/frontend/core_loop_pages.test.mjs`
+- Modify: `app.json` if route order or titles need adjustment
 
 **Step 1: Write the failing test**
 
-Add assertions in `tests/frontend/app_manifest.test.mjs` for the corrected app title text and any navigation/window values that should change with the redesign.
+Adjust the frontend tests so they assert the new UX direction:
+
+- `home` is a cover page with a single primary action
+- the persistent summary entry is gone
+- the main flow has a lightweight inspection entry instead of dense overview cards
+- summary still exists as a route, but only as the death ending page
 
 **Step 2: Run test to verify it fails**
 
-Run: `node tests/frontend/app_manifest.test.mjs`
-Expected: FAIL because the new title or manifest values are not present yet.
+Run: `node tests/frontend/core_loop_pages.test.mjs`
+Expected: FAIL because the current page markup still reflects the denser redesign.
 
 **Step 3: Write minimal implementation**
 
-- Fix the navigation bar title text encoding in `app.json`
-- Expand `app.wxss` into a reusable theme layer with:
-  - color variables via WXSS custom properties
-  - shared shell, panel, pill, ribbon, ink, and status classes
-  - reusable button styles for primary, secondary, ghost, and disabled states
+- Update any route title or manifest text needed by the simplified flow
+- Keep tests focused on structural behavior, not full prose copy
 
 **Step 4: Run test to verify it passes**
 
-Run: `node tests/frontend/app_manifest.test.mjs`
+Run: `node tests/frontend/core_loop_pages.test.mjs`
 Expected: PASS
 
 **Step 5: Commit**
 
 ```bash
-git add app.json app.wxss tests/frontend/app_manifest.test.mjs
-git commit -m "feat: add shanhai global theme"
+git add app.json tests/frontend/app_manifest.test.mjs tests/frontend/core_loop_pages.test.mjs
+git commit -m "test: lock linear flow structure"
 ```
 
-### Task 2: Redesign the home page as the main scroll
+### Task 2: Collapse the home page into a cover screen
 
 **Files:**
+- Modify: `pages/home/home.js`
 - Modify: `pages/home/home.wxml`
 - Modify: `pages/home/home.wxss`
-- Modify: `pages/home/home.js`
-- Modify: `components/player-status-card/index.wxml`
-- Modify: `components/player-status-card/index.wxss`
-- Modify: `components/resource-bar/index.wxml`
-- Modify: `components/resource-bar/index.wxss`
-- Test: `tests/frontend/core_loop_pages.test.mjs`
 
 **Step 1: Write the failing test**
 
-Update `tests/frontend/core_loop_pages.test.mjs` to assert:
-- the home page still renders `player-status-card` and `resource-bar`
-- the home page still binds `createRun`, `advanceTime`, `openCultivation`, `openCrafting`, `openDwelling`
-- the old `openSummary` entry is removed from the home page markup
-- new structural classes or labels required by the redesign are present
+Extend `tests/frontend/core_loop_pages.test.mjs` to assert that:
+
+- `home` still binds `createRun`
+- `home` no longer renders `player-status-card` or `resource-bar`
+- `home` contains one cover-style primary action
+- the page no longer renders multiple sub-page cards
 
 **Step 2: Run test to verify it fails**
 
 Run: `node tests/frontend/core_loop_pages.test.mjs`
-Expected: FAIL because the old home structure still exists.
+Expected: FAIL because the current home page still contains overview content.
 
 **Step 3: Write minimal implementation**
 
-- Rebuild home page markup into:
-  - hero scroll header
-  - player status area
-  - horizontal resource strip
-  - core action block
-  - three sub-scroll entry cards
-- Remove the summary page entry from the living-state home page
-- Add any derived copy in `pages/home/home.js` that supports the new layout without changing gameplay behavior
-- Upgrade `player-status-card` and `resource-bar` styles to match the new theme
+- Rebuild `home` as a cover page with:
+  - title
+  - one short intro line
+  - one primary button
+- If a run already exists, make the primary action continue the run instead of reopening dense overview content
 
 **Step 4: Run test to verify it passes**
 
@@ -91,41 +85,124 @@ Expected: PASS
 **Step 5: Commit**
 
 ```bash
-git add pages/home/home.* components/player-status-card/* components/resource-bar/* tests/frontend/core_loop_pages.test.mjs
-git commit -m "feat: redesign home scroll"
+git add pages/home/home.* tests/frontend/core_loop_pages.test.mjs
+git commit -m "feat: simplify home into cover screen"
 ```
 
-### Task 3: Rebuild the event experience around the story card
+### Task 3: Build the inspection sheet for auxiliary information
 
 **Files:**
-- Modify: `pages/event/event.wxml`
-- Modify: `pages/event/event.wxss`
+- Create: `components/inspection-sheet/index.js`
+- Create: `components/inspection-sheet/index.json`
+- Create: `components/inspection-sheet/index.wxml`
+- Create: `components/inspection-sheet/index.wxss`
+- Modify: any page that should open the sheet, likely `pages/event/event.wxml`, `pages/event/event.js`, and possibly the active flow page JS/WXML
+- Test: `tests/frontend/core_loop_pages.test.mjs`
+
+**Step 1: Write the failing test**
+
+Add assertions that the active flow page includes:
+
+- one inspection entry
+- the new inspection sheet component
+- bindings needed to open, close, and switch sections
+
+**Step 2: Run test to verify it fails**
+
+Run: `node tests/frontend/core_loop_pages.test.mjs`
+Expected: FAIL because the inspection sheet does not exist yet.
+
+**Step 3: Write minimal implementation**
+
+- Implement a bottom-sheet style component with tabs for:
+  - `命牌`
+  - `行囊`
+  - `修炼`
+  - `洞府`
+- Render only one section at a time
+- Accept existing player/resource/run props and derive simple display copy
+- Do not move business logic into the component
+
+**Step 4: Run test to verify it passes**
+
+Run: `node tests/frontend/core_loop_pages.test.mjs`
+Expected: PASS
+
+**Step 5: Commit**
+
+```bash
+git add components/inspection-sheet/* pages/event/* tests/frontend/core_loop_pages.test.mjs
+git commit -m "feat: add inspection sheet"
+```
+
+### Task 4: Turn the active flow page into a single-action travel screen
+
+**Files:**
+- Modify: `pages/event/event.js` or the chosen active flow page JS
+- Modify: `pages/event/event.wxml` or the chosen active flow page WXML
+- Modify: `pages/event/event.wxss` or the chosen active flow page WXSS
+- Reuse or trim existing components only if still needed
+
+**Step 1: Write the failing test**
+
+Add assertions that the active flow page:
+
+- shows one primary `推进时间` action when no unresolved event exists
+- shows a small current-state summary
+- does not render dense character/resource cards inline
+- includes the inspection entry and sheet component
+
+**Step 2: Run test to verify it fails**
+
+Run: `node tests/frontend/core_loop_pages.test.mjs`
+Expected: FAIL because the page still renders the heavier scroll layout.
+
+**Step 3: Write minimal implementation**
+
+- Reframe the active flow page around:
+  - current month or phase
+  - one-line journey summary
+  - one primary action
+- Keep navigation to the dedicated event decision state when an event appears
+- Ensure the page fits within one screen on typical mobile viewport assumptions
+
+**Step 4: Run test to verify it passes**
+
+Run: `node tests/frontend/core_loop_pages.test.mjs`
+Expected: PASS
+
+**Step 5: Commit**
+
+```bash
+git add pages/event/* tests/frontend/core_loop_pages.test.mjs
+git commit -m "feat: simplify active travel screen"
+```
+
+### Task 5: Slim the event page into a decision-only screen
+
+**Files:**
 - Modify: `components/event-card/index.wxml`
 - Modify: `components/event-card/index.wxss`
-- Modify: `components/event-card/index.js`
+- Modify: `components/event-card/index.js` if needed
 - Modify: `components/choice-button-list/index.wxml`
 - Modify: `components/choice-button-list/index.wxss`
-- Modify: `components/choice-button-list/index.js`
+- Modify: `components/choice-button-list/index.js` if needed
 - Test: `tests/frontend/core_loop_pages.test.mjs`
 
 **Step 1: Write the failing test**
 
-Extend `tests/frontend/core_loop_pages.test.mjs` to assert the event page still includes `event-card`, `choice-button-list`, option binding, and loading semantics while also checking for redesigned structural markers.
+Adjust assertions so the decision page still preserves option wiring while dropping dense metadata presentation from the main body.
 
 **Step 2: Run test to verify it fails**
 
 Run: `node tests/frontend/core_loop_pages.test.mjs`
-Expected: FAIL because the new event structure is not implemented yet.
+Expected: FAIL because event content is still too descriptive or too dense.
 
 **Step 3: Write minimal implementation**
 
-- Convert `event-card` to a primary scroll layout with title, body, tags, and source summary
-- Convert `choice-button-list` to annotated choice blocks that show:
-  - option text
-  - default choice note
-  - resource cost note
-  - unavailable reason
-- Keep `option_id`, `loading`, and `handleChoice` behavior unchanged
+- Keep title, body, and options as the main surface
+- Demote risk/source/status into a lighter hint area or a secondary note
+- Keep option availability, default marker, and disabled reasons intact
 
 **Step 4: Run test to verify it passes**
 
@@ -135,46 +212,39 @@ Expected: PASS
 **Step 5: Commit**
 
 ```bash
-git add pages/event/* components/event-card/* components/choice-button-list/* tests/frontend/core_loop_pages.test.mjs
-git commit -m "feat: redesign event scroll"
+git add components/event-card/* components/choice-button-list/* tests/frontend/core_loop_pages.test.mjs
+git commit -m "feat: focus event screen on decisions"
 ```
 
-### Task 4: Refresh the support pages and death summary
+### Task 6: Rework summary into the only ending screen
 
 **Files:**
-- Modify: `pages/cultivation/cultivation.wxml`
-- Modify: `pages/cultivation/cultivation.wxss`
-- Modify: `pages/cultivation/cultivation.js`
-- Modify: `pages/crafting/crafting.wxml`
-- Modify: `pages/crafting/crafting.wxss`
-- Modify: `pages/dwelling/dwelling.wxml`
-- Modify: `pages/dwelling/dwelling.wxss`
 - Modify: `pages/summary/summary.wxml`
 - Modify: `pages/summary/summary.wxss`
-- Modify: `components/breakthrough-panel/index.wxml`
-- Modify: `components/breakthrough-panel/index.wxss`
-- Modify: `components/dwelling-bonus-panel/index.wxml`
-- Modify: `components/dwelling-bonus-panel/index.wxss`
-- Modify: `components/run-result-modal/index.wxml`
-- Modify: `components/run-result-modal/index.wxss`
+- Modify: `pages/summary/summary.js` if needed
+- Modify: `components/run-result-modal/*` if the summary presentation should be simplified
 - Test: `tests/frontend/core_loop_pages.test.mjs`
 
 **Step 1: Write the failing test**
 
-Update `tests/frontend/core_loop_pages.test.mjs` to keep existing summary component assertions and add checks for new structure or copy on cultivation, crafting, dwelling, and summary pages where appropriate.
+Assert that summary:
+
+- renders the death-ending layout
+- keeps `bind:confirm="handleRebirth"`
+- avoids presenting itself like a general-purpose overview page
 
 **Step 2: Run test to verify it fails**
 
 Run: `node tests/frontend/core_loop_pages.test.mjs`
-Expected: FAIL until the redesigned support pages land.
+Expected: FAIL if summary still mirrors the dense information model.
 
 **Step 3: Write minimal implementation**
 
-- Redesign cultivation as a “breakthrough ritual” page
-- Add a derived explanation string in `pages/cultivation/cultivation.js` for disabled breakthrough states
-- Redesign crafting as an intentional preview page, not a blank placeholder
-- Redesign dwelling as a “cave record” page
-- Redesign summary into a death-only “final scroll” feel while preserving `run-result-modal` and rebirth binding
+- Keep only:
+  - result summary
+  - permanent progression
+  - rebirth action
+- Remove any unnecessary surviving-state presentation
 
 **Step 4: Run test to verify it passes**
 
@@ -184,32 +254,32 @@ Expected: PASS
 **Step 5: Commit**
 
 ```bash
-git add pages/cultivation/* pages/crafting/* pages/dwelling/* pages/summary/* components/breakthrough-panel/* components/dwelling-bonus-panel/* components/run-result-modal/* tests/frontend/core_loop_pages.test.mjs
-git commit -m "feat: redesign support scrolls"
+git add pages/summary/* components/run-result-modal/* tests/frontend/core_loop_pages.test.mjs
+git commit -m "feat: simplify ending summary"
 ```
 
-### Task 5: Verify text cleanup and regressions
+### Task 7: Verify copy cleanup and regression coverage
 
 **Files:**
-- Modify: any remaining touched WXML/WXSS/JS files with garbled Chinese copy
+- Modify: any touched WXML/WXSS/JS files with garbled or obsolete copy
 - Test: `tests/frontend/app_manifest.test.mjs`
 - Test: `tests/frontend/core_loop_pages.test.mjs`
 - Test: `tests/frontend/dev_config.test.mjs`
 
 **Step 1: Write the failing test**
 
-Add or refine test assertions for corrected human-readable labels where the redesign depends on visible copy, without over-coupling tests to every sentence.
+Refine tests to keep only durable assertions for the simplified flow and the corrected visible labels that matter.
 
 **Step 2: Run test to verify it fails**
 
-Run: `node tests/frontend/app_manifest.test.mjs`
-Expected: FAIL if any required updated text is still missing.
+Run: `node tests/frontend/core_loop_pages.test.mjs`
+Expected: FAIL if outdated structure or labels remain.
 
 **Step 3: Write minimal implementation**
 
-- Sweep touched files for garbled Chinese strings
-- Keep only meaningful textual assertions in tests
-- Avoid adding new business logic or data dependencies
+- Sweep remaining touched files for outdated dense-layout wording
+- Keep copy concise and consistent with the single-focus flow
+- Ensure no legacy summary entry remains on living-state screens
 
 **Step 4: Run test to verify it passes**
 
@@ -224,5 +294,5 @@ Expected: PASS for all three commands
 
 ```bash
 git add app.json app.wxss pages components tests/frontend
-git commit -m "fix: finalize shanhai redesign copy"
+git commit -m "fix: finalize linear flow redesign"
 ```
