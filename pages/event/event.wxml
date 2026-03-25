@@ -24,7 +24,7 @@
           <view class="journey-result-label">事件结果</view>
           <view
             wx:for="{{eventHistory}}"
-            wx:key="summary"
+            wx:key="historyKey"
             class="journey-result-item"
             style="opacity: {{index === 0 ? 1 : index === 1 ? 0.68 : 0.4}};"
           >
@@ -32,7 +32,8 @@
             <view
               wx:for="{{item.impactLines}}"
               wx:for-item="line"
-              wx:key="*this"
+              wx:for-index="lineIndex"
+              wx:key="lineIndex"
               class="journey-result-impact"
             >
               {{line}}

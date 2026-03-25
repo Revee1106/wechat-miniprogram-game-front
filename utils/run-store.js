@@ -7,6 +7,8 @@ const state = {
   error: "",
 };
 
+let eventHistorySequence = 0;
+
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
 }
@@ -24,6 +26,7 @@ function ensureRun() {
 async function createRun(playerId = "demo-player") {
   state.error = "";
   state.eventHistory = [];
+  eventHistorySequence = 0;
   state.run = await api.createRun(playerId);
   return getState();
 }
@@ -71,6 +74,7 @@ async function rebirth() {
   state.playerProfile = result.player_profile;
   state.run = result.new_run;
   state.eventHistory = [];
+  eventHistorySequence = 0;
   return getState();
 }
 
@@ -82,6 +86,7 @@ function pushEventHistory(beforeRun, afterRun) {
   const impactLines = buildImpactLines(beforeRun, afterRun);
   state.eventHistory = [
     {
+      historyKey: `history-${beforeRun.round_index || 0}-${eventHistorySequence++}`,
       eventName: beforeRun.current_event.event_name,
       summary: afterRun.result_summary || `${beforeRun.current_event.event_name} 已结算`,
       impactLines,

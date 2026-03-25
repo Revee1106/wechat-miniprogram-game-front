@@ -39,6 +39,8 @@ assert.match(eventWxml, /已行 {{elapsedText}}/);
 assert.match(eventWxml, /剩余寿元 {{lifespanText}}/);
 assert.match(eventWxml, /事件结果/);
 assert.match(eventWxml, /eventHistory/);
+assert.match(eventWxml, /wx:key="historyKey"/);
+assert.doesNotMatch(eventWxml, /wx:key="summary"/);
 assert.doesNotMatch(eventWxml, /bindtap="openInspection"/);
 assert.doesNotMatch(eventWxml, /player-status-card/);
 assert.doesNotMatch(eventWxml, /resource-bar/);
@@ -99,6 +101,7 @@ assert.match(inspectionSheetWxml, /洞府/);
 assert.match(inspectionSheetWxml, /player\.cultivation_exp \+ " \/ " \+ breakthroughTargetExp/);
 assert.match(runStoreSource, /eventHistory/);
 assert.match(runStoreSource, /pushEventHistory/);
+assert.match(runStoreSource, /historyKey/);
 assert.match(runStoreSource, /buildImpactLines/);
 assert.match(runResultModalWxml, /actionText/);
 
