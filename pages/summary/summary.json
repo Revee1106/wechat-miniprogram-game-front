@@ -1,8 +1,6 @@
 {
-  "navigationBarTitleText": "本局总结",
+  "navigationBarTitleText": "终卷",
   "usingComponents": {
-    "run-result-modal": "/components/run-result-modal/index",
-    "player-status-card": "/components/player-status-card/index",
-    "resource-bar": "/components/resource-bar/index"
+    "run-result-modal": "/components/run-result-modal/index"
   }
 }

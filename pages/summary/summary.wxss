@@ -1,1 +1,64 @@
 @import "../../app.wxss";
+
+.ending-page {
+  min-height: 100vh;
+  padding: 30rpx 24rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.ending-panel {
+  margin-bottom: 22rpx;
+  padding: 38rpx 32rpx;
+  border-radius: 36rpx;
+  border: 2rpx solid rgba(68, 53, 36, 0.16);
+  background: linear-gradient(180deg, rgba(253, 246, 231, 0.98) 0%, rgba(237, 223, 192, 0.98) 100%);
+  box-shadow: 0 22rpx 48rpx rgba(48, 33, 18, 0.14);
+}
+
+.ending-mark {
+  margin-bottom: 16rpx;
+  color: var(--clay-main);
+  font-size: 24rpx;
+  letter-spacing: 4rpx;
+}
+
+.ending-title {
+  margin-bottom: 14rpx;
+  color: var(--ink-main);
+  font-size: 50rpx;
+  font-weight: 700;
+}
+
+.ending-copy {
+  color: var(--ink-soft);
+  font-size: 28rpx;
+  line-height: 1.8;
+}
+
+.ending-meta {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 20rpx;
+}
+
+.ending-stat {
+  flex: 1;
+  padding: 20rpx;
+  border-radius: 24rpx;
+  background: rgba(255, 249, 237, 0.92);
+  border: 2rpx solid rgba(89, 66, 43, 0.12);
+}
+
+.ending-stat-label {
+  margin-bottom: 8rpx;
+  color: var(--ink-faint);
+  font-size: 22rpx;
+}
+
+.ending-stat-value {
+  color: var(--ink-main);
+  font-size: 32rpx;
+  font-weight: 700;
+}

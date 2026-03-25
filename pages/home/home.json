@@ -1,7 +1,3 @@
 {
-  "navigationBarTitleText": "主页",
-  "usingComponents": {
-    "player-status-card": "/components/player-status-card/index",
-    "resource-bar": "/components/resource-bar/index"
-  }
+  "navigationBarTitleText": "封面"
 }

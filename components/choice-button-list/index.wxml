@@ -1,23 +1,22 @@
-<view class="panel">
-  <view class="section-title">可选行动</view>
+<view class="choice-panel">
+  <view class="choice-title">此刻可选</view>
   <block wx:if="{{displayChoices.length}}">
     <block wx:for="{{displayChoices}}" wx:key="option_id">
-      <button
-        class="secondary-button"
-        data-option-id="{{item.option_id}}"
-        bindtap="handleTap"
-        disabled="{{loading || !item.is_available}}"
-      >
-        {{item.option_text}}
-      </button>
-      <view wx:if="{{item.is_default}}" class="muted-text">默认选项</view>
-      <view wx:if="{{item.hasResourceRequirements}}" class="muted-text">
-        需要资源：{{item.resourceText}}
-      </view>
-      <view wx:if="{{!item.is_available && item.disabled_reason}}" class="danger-text">
-        {{item.disabled_reason}}
+      <view class="choice-entry">
+        <button
+          class="{{item.is_available ? 'secondary-button' : 'ghost-button'}}"
+          data-option-id="{{item.option_id}}"
+          bindtap="handleTap"
+          disabled="{{loading || !item.is_available}}"
+        >
+          {{item.option_text}}
+        </button>
+        <view wx:if="{{item.hasResourceRequirements}}" class="choice-note muted-text">条件：{{item.resourceText}}</view>
+        <view wx:if="{{!item.is_available && item.disabled_reason}}" class="choice-note danger-text">
+          {{item.disabled_reason}}
+        </view>
       </view>
     </block>
   </block>
-  <view wx:else class="muted-text">当前没有可选项。</view>
+  <view wx:else class="status-note">当前没有可执行的选项。</view>
 </view>

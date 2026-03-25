@@ -1,11 +1,26 @@
 <view class="panel">
-  <view class="section-title">角色状态</view>
+  <view class="scroll-kicker">命牌</view>
+  <view class="section-title">今世身相</view>
   <block wx:if="{{player}}">
-    <view class="row">境界：{{player.realm}}</view>
-    <view class="row">修为：{{player.cultivation_exp}}</view>
-    <view class="row">寿元：{{lifespanText}}</view>
-    <view class="row">气运：{{player.luck}}</view>
-    <view wx:if="{{player.is_dead}}" class="danger-text">此角色已陨落。</view>
+    <view class="detail-grid">
+      <view class="detail-cell">
+        <text class="detail-label">境界</text>
+        <text class="detail-value">{{player.realm}}</text>
+      </view>
+      <view class="detail-cell">
+        <text class="detail-label">修为</text>
+        <text class="detail-value">{{player.cultivation_exp}}</text>
+      </view>
+      <view class="detail-cell">
+        <text class="detail-label">寿元</text>
+        <text class="detail-value">{{lifespanText}}</text>
+      </view>
+      <view class="detail-cell">
+        <text class="detail-label">气运</text>
+        <text class="detail-value">{{player.luck}}</text>
+      </view>
+    </view>
+    <view wx:if="{{player.is_dead}}" class="status-note danger death-note">此身寿尽，卷末已至。</view>
   </block>
-  <view wx:else class="muted-text">当前还没有活跃角色。</view>
+  <view wx:else class="status-note">命牌未立，尚无今世可观。</view>
 </view>

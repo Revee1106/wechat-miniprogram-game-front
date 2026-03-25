@@ -1,23 +1,12 @@
-<view class="page-shell">
-  <player-status-card player="{{character}}" />
-  <resource-bar resources="{{resources}}" />
-
-  <view class="panel">
-    <view class="section-title">核心循环</view>
-    <button class="primary-button" bindtap="createRun" loading="{{loading}}">
-      开始一局
+<view class="cover-page">
+  <view class="cover-panel">
+    <view class="cover-mark">山海异志</view>
+    <view class="cover-title">此卷待启</view>
+    <view class="cover-copy">只取一念，只行一步。先启程，再看此世会把你引向何处。</view>
+    <button class="primary-button cover-action" bindtap="createRun" loading="{{loading}}">
+      启程
     </button>
-    <button class="primary-button" bindtap="advanceTime" loading="{{loading}}">
-      推进时间
-    </button>
-    <button class="secondary-button" bindtap="openCultivation">修炼</button>
-    <button class="secondary-button" bindtap="openCrafting">炼制</button>
-    <button class="secondary-button" bindtap="openDwelling">洞府</button>
-    <button class="secondary-button" bindtap="openSummary">本局总结</button>
-    <view wx:if="{{run}}" class="muted-text">已过月数：{{roundIndex}}</view>
-    <view wx:if="{{resultSummary}}" class="muted-text">
-      {{resultSummary}}
-    </view>
-    <view wx:if="{{error}}" class="danger-text">{{error}}</view>
   </view>
+
+  <view wx:if="{{error}}" class="status-note danger cover-error">{{error}}</view>
 </view>

@@ -1,5 +1,67 @@
-<view class="page-shell">
-  <event-card event="{{currentEvent}}" />
-  <choice-button-list choices="{{currentEvent.options || []}}" loading="{{loading}}" bind:choose="handleChoice" />
-  <view wx:if="{{error}}" class="danger-text">{{error}}</view>
+<view class="flow-page">
+  <block wx:if="{{currentEvent}}">
+    <view class="flow-topbar">
+      <view class="flow-mark">异闻页</view>
+    </view>
+    <scroll-view class="decision-stage" scroll-y="{{true}}" show-scrollbar="{{false}}">
+      <event-card event="{{currentEvent}}" />
+      <choice-button-list
+        choices="{{currentEvent.options || []}}"
+        loading="{{loading}}"
+        bind:choose="handleChoice"
+      />
+    </scroll-view>
+  </block>
+
+  <block wx:else>
+    <view class="journey-stage">
+      <view class="journey-upper">
+        <view class="journey-kicker">当前行程</view>
+        <view class="journey-title">已行 {{elapsedText}}</view>
+        <view class="journey-meta">剩余寿元 {{lifespanText}}</view>
+        <view class="journey-copy">{{journeySummary}}</view>
+        <view wx:if="{{eventHistory.length}}" class="journey-result">
+          <view class="journey-result-label">事件结果</view>
+          <view
+            wx:for="{{eventHistory}}"
+            wx:key="summary"
+            class="journey-result-item"
+            style="opacity: {{index === 0 ? 1 : index === 1 ? 0.68 : 0.4}};"
+          >
+            <view class="journey-result-summary">{{item.summary}}</view>
+            <view
+              wx:for="{{item.impactLines}}"
+              wx:for-item="line"
+              wx:key="*this"
+              class="journey-result-impact"
+            >
+              {{line}}
+            </view>
+          </view>
+        </view>
+        <button class="primary-button journey-action" bindtap="advanceTime" loading="{{loading}}">
+          推进时间
+        </button>
+      </view>
+
+      <view class="journey-lower">
+        <view class="lower-header">
+          <view class="lower-kicker">查阅</view>
+          <view class="lower-copy">点击下列分区，查看当前这一世的关键信息。</view>
+        </view>
+        <inspection-sheet
+          activeSection="{{activeSection}}"
+          player="{{player}}"
+          resources="{{resources}}"
+          dwellingLevel="{{dwellingLevel}}"
+          canBreakthrough="{{canBreakthrough}}"
+          breakthroughHint="{{breakthroughHint}}"
+          breakthroughTargetExp="{{breakthroughTargetExp}}"
+          bind:change="handleSectionChange"
+        />
+      </view>
+    </view>
+  </block>
+
+  <view wx:if="{{error}}" class="status-note danger flow-error">{{error}}</view>
 </view>

@@ -1,0 +1,100 @@
+<view class="inspection-shell">
+  <view class="inspection-tabs">
+    <view
+      class="inspection-tab {{activeSection === 'player' ? 'active' : ''}}"
+      data-section="player"
+      bindtap="handleSectionTap"
+    >
+      命牌
+    </view>
+    <view
+      class="inspection-tab {{activeSection === 'resources' ? 'active' : ''}}"
+      data-section="resources"
+      bindtap="handleSectionTap"
+    >
+      行囊
+    </view>
+    <view
+      class="inspection-tab {{activeSection === 'cultivation' ? 'active' : ''}}"
+      data-section="cultivation"
+      bindtap="handleSectionTap"
+    >
+      修炼
+    </view>
+    <view
+      class="inspection-tab {{activeSection === 'dwelling' ? 'active' : ''}}"
+      data-section="dwelling"
+      bindtap="handleSectionTap"
+    >
+      洞府
+    </view>
+  </view>
+
+  <view class="inspection-body">
+    <block wx:if="{{activeSection === 'player'}}">
+      <view class="info-grid">
+        <view class="info-card">
+          <view class="info-label">境界</view>
+          <view class="info-value">{{player ? player.realm : "未立命牌"}}</view>
+        </view>
+        <view class="info-card">
+          <view class="info-label">修为</view>
+          <view class="info-value">
+            {{player ? player.cultivation_exp + " / " + breakthroughTargetExp : "--"}}
+          </view>
+        </view>
+        <view class="info-card">
+          <view class="info-label">寿元</view>
+          <view class="info-value">{{player ? player.lifespan_current + " / " + player.lifespan_max : "--"}}</view>
+        </view>
+        <view class="info-card">
+          <view class="info-label">气运</view>
+          <view class="info-value">{{player ? player.luck : "--"}}</view>
+        </view>
+      </view>
+    </block>
+
+    <block wx:elif="{{activeSection === 'resources'}}">
+      <view class="info-grid">
+        <view class="info-card">
+          <view class="info-label">灵石</view>
+          <view class="info-value">{{resources ? resources.spirit_stone : 0}}</view>
+        </view>
+        <view class="info-card">
+          <view class="info-label">药草</view>
+          <view class="info-value">{{resources ? resources.herbs : 0}}</view>
+        </view>
+        <view class="info-card full">
+          <view class="info-label">玄铁精华</view>
+          <view class="info-value">{{resources ? resources.iron_essence : 0}}</view>
+        </view>
+      </view>
+    </block>
+
+    <block wx:elif="{{activeSection === 'cultivation'}}">
+      <view class="info-grid">
+        <view class="info-card full">
+          <view class="info-label">当前状态</view>
+          <view class="info-value">{{canBreakthrough ? "可以破境" : "尚未破境"}}</view>
+        </view>
+        <view class="info-card full">
+          <view class="info-label">提示</view>
+          <view class="info-copy">{{breakthroughHint}}</view>
+        </view>
+      </view>
+    </block>
+
+    <block wx:else>
+      <view class="info-grid">
+        <view class="info-card">
+          <view class="info-label">洞府等级</view>
+          <view class="info-value">{{dwellingLevel}}</view>
+        </view>
+        <view class="info-card full">
+          <view class="info-label">静修评语</view>
+          <view class="info-copy">洞府安稳，可作此世修行的静修根基。</view>
+        </view>
+      </view>
+    </block>
+  </view>
+</view>

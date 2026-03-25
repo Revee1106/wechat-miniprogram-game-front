@@ -1,9 +1,21 @@
 <view class="panel">
-  <view class="section-title">资源</view>
+  <view class="scroll-kicker">行囊</view>
+  <view class="section-title">沿途余资</view>
   <block wx:if="{{resources}}">
-    <view class="resource-row">灵石：{{resources.spirit_stone}}</view>
-    <view class="resource-row">药草：{{resources.herbs}}</view>
-    <view class="resource-row">玄铁精华：{{resources.iron_essence}}</view>
+    <view class="resource-strip">
+      <view class="resource-chip">
+        <text class="detail-label">灵石</text>
+        <text class="detail-value">{{resources.spirit_stone}}</text>
+      </view>
+      <view class="resource-chip">
+        <text class="detail-label">药草</text>
+        <text class="detail-value">{{resources.herbs}}</text>
+      </view>
+      <view class="resource-chip">
+        <text class="detail-label">玄铁精华</text>
+        <text class="detail-value">{{resources.iron_essence}}</text>
+      </view>
+    </view>
   </block>
-  <view wx:else class="muted-text">当前还没有资源快照。</view>
+  <view wx:else class="status-note">行囊未开，暂未记下此世余资。</view>
 </view>

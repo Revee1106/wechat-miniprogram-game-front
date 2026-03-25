@@ -1,3 +1,30 @@
-.panel-row {
-  margin-bottom: 8rpx;
+.ending-action-card {
+  padding: 30rpx 28rpx;
+  border-radius: 30rpx;
+  background: rgba(255, 249, 237, 0.94);
+  border: 2rpx solid rgba(89, 66, 43, 0.12);
+}
+
+.ending-action-kicker {
+  margin-bottom: 12rpx;
+  color: var(--clay-main);
+  font-size: 22rpx;
+  letter-spacing: 4rpx;
+}
+
+.ending-action-title {
+  margin-bottom: 12rpx;
+  color: var(--ink-main);
+  font-size: 38rpx;
+  font-weight: 700;
+}
+
+.ending-action-copy {
+  color: var(--ink-soft);
+  font-size: 26rpx;
+  line-height: 1.7;
+}
+
+.ending-action-button {
+  margin-top: 24rpx;
 }

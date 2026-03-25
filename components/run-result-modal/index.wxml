@@ -1,5 +1,6 @@
-<view wx:if="{{visible}}" class="panel">
-  <view class="section-title">{{title}}</view>
-  <view class="panel-row">{{message}}</view>
-  <button class="primary-button" bindtap="handleConfirm">{{actionText}}</button>
+<view wx:if="{{visible}}" class="ending-action-card final-scroll">
+  <view class="ending-action-kicker">终卷</view>
+  <view class="ending-action-title">{{title}}</view>
+  <view class="ending-action-copy">{{message}}</view>
+  <button class="primary-button ending-action-button" bindtap="handleConfirm">{{actionText}}</button>
 </view>

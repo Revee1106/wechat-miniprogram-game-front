@@ -1,3 +1,9 @@
-<view class="page-shell">
+<view class="scroll-page">
+  <view class="scroll-hero">
+    <view class="scroll-kicker">洞府图录</view>
+    <view class="scroll-title">静修根基</view>
+    <view class="scroll-subtitle">洞府并不喧哗，却决定了此世修行可立多深的根。</view>
+  </view>
+
   <dwelling-bonus-panel level="{{dwellingLevel}}" />
 </view>

@@ -8,10 +8,10 @@
     "pages/summary/summary"
   ],
   "window": {
-    "navigationBarTitleText": "问道核心循环",
-    "navigationBarBackgroundColor": "#13232f",
+    "navigationBarTitleText": "山海异志",
+    "navigationBarBackgroundColor": "#203f3a",
     "navigationBarTextStyle": "white",
-    "backgroundColor": "#f4efe7",
+    "backgroundColor": "#efe4c8",
     "backgroundTextStyle": "light"
   },
   "style": "v2",

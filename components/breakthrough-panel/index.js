@@ -12,6 +12,10 @@ Component({
       type: Boolean,
       value: false,
     },
+    hint: {
+      type: String,
+      value: "",
+    },
   },
   methods: {
     submitBreakthrough() {

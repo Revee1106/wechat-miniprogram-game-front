@@ -1,5 +1,15 @@
 <view class="panel">
-  <view class="section-title">洞府加成</view>
-  <view class="panel-row">当前洞府等级：{{level}}</view>
-  <view class="muted-text panel-row">1 级洞府提供稳定基础，后续可继续扩展升级收益。</view>
+  <view class="scroll-kicker">洞府图录</view>
+  <view class="section-title">当前洞府</view>
+  <view class="detail-grid">
+    <view class="detail-cell">
+      <text class="detail-label">洞府等级</text>
+      <text class="detail-value">{{level}}</text>
+    </view>
+    <view class="detail-cell">
+      <text class="detail-label">静修评语</text>
+      <text class="detail-value">根基安稳</text>
+    </view>
+  </view>
+  <view class="status-note">一级洞府已可遮风避扰，后续仍可扩展更高阶的静修收益。</view>
 </view>

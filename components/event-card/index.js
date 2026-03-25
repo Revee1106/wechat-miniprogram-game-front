@@ -19,7 +19,7 @@ Component({
 
 function formatTriggerSources(event) {
   if (!event || !Array.isArray(event.trigger_sources) || event.trigger_sources.length === 0) {
-    return "";
+    return "无记载";
   }
 
   return event.trigger_sources.join(" / ");

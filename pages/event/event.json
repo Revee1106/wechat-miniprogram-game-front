@@ -1,7 +1,8 @@
 {
-  "navigationBarTitleText": "事件",
+  "navigationBarTitleText": "行程",
   "usingComponents": {
     "event-card": "/components/event-card/index",
-    "choice-button-list": "/components/choice-button-list/index"
+    "choice-button-list": "/components/choice-button-list/index",
+    "inspection-sheet": "/components/inspection-sheet/index"
   }
 }

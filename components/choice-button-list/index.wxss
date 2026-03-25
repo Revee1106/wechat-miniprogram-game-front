@@ -1,3 +1,23 @@
-.muted-text {
-  margin: 0 0 16rpx;
+.choice-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.choice-title {
+  color: var(--clay-main);
+  font-size: 22rpx;
+  letter-spacing: 4rpx;
+}
+
+.choice-entry {
+  padding: 18rpx;
+  border-radius: 24rpx;
+  background: rgba(255, 249, 237, 0.92);
+  border: 2rpx solid rgba(89, 66, 43, 0.12);
+}
+
+.choice-note {
+  display: block;
+  margin-top: 8rpx;
 }

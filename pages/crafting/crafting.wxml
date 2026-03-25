@@ -1,12 +1,24 @@
-<view class="page-shell">
+<view class="scroll-page">
+  <view class="scroll-hero">
+    <view class="scroll-kicker">炼制案台</view>
+    <view class="scroll-title">火候未定</view>
+    <view class="scroll-subtitle">此处分卷暂记材料与炉火脉络，后续将承载真正的炼制法门。</view>
+  </view>
+
   <view class="panel">
-    <view class="section-title">炼制</view>
-    <view>当前版本暂未开放炼制小游戏。</view>
-    <view class="muted-text">
-      现阶段采用简化的配方结算，为后续扩展预留空间。
+    <view class="section-title">案前记述</view>
+    <view class="status-note">
+      当前版本尚未开放完整炼制流程，但会以此页承接未来的配方、材料与成器结果。
     </view>
-    <view wx:if="{{run}}" class="muted-text">
-      当前灵石：{{run.resources.spirit_stone}}
+    <view wx:if="{{run}}" class="detail-grid">
+      <view class="detail-cell">
+        <text class="detail-label">现存灵石</text>
+        <text class="detail-value">{{run.resources.spirit_stone}}</text>
+      </view>
+      <view class="detail-cell">
+        <text class="detail-label">待用药草</text>
+        <text class="detail-value">{{run.resources.herbs}}</text>
+      </view>
     </view>
   </view>
 </view>

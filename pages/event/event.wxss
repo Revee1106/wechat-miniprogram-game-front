@@ -1,1 +1,130 @@
 @import "../../app.wxss";
+
+.flow-page {
+  height: 100vh;
+  padding: 24rpx;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.flow-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
+}
+
+.flow-mark {
+  color: var(--clay-main);
+  font-size: 24rpx;
+  letter-spacing: 4rpx;
+}
+
+.decision-stage {
+  flex: 1;
+  min-height: 0;
+}
+
+.journey-stage {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: 1fr 1.08fr;
+  gap: 18rpx;
+}
+
+.journey-upper,
+.journey-lower {
+  padding: 28rpx 24rpx;
+  border-radius: 32rpx;
+  border: 2rpx solid rgba(68, 53, 36, 0.14);
+  background: linear-gradient(180deg, rgba(253, 246, 231, 0.98) 0%, rgba(237, 223, 192, 0.98) 100%);
+  box-shadow: 0 16rpx 34rpx rgba(48, 33, 18, 0.1);
+  box-sizing: border-box;
+}
+
+.journey-upper {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.journey-kicker,
+.lower-kicker {
+  margin-bottom: 10rpx;
+  color: var(--clay-main);
+  font-size: 22rpx;
+  letter-spacing: 4rpx;
+}
+
+.journey-title {
+  margin-bottom: 10rpx;
+  color: var(--ink-main);
+  font-size: 46rpx;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.journey-meta {
+  margin-bottom: 12rpx;
+  color: var(--ink-soft);
+  font-size: 28rpx;
+  line-height: 1.5;
+}
+
+.journey-copy,
+.lower-copy {
+  color: var(--ink-soft);
+  font-size: 24rpx;
+  line-height: 1.6;
+}
+
+.journey-result {
+  margin-top: 14rpx;
+  min-height: 0;
+  max-height: 210rpx;
+  overflow: hidden;
+}
+
+.journey-result-label {
+  margin-bottom: 8rpx;
+  color: var(--clay-main);
+  font-size: 22rpx;
+  letter-spacing: 3rpx;
+}
+
+.journey-result-item {
+  margin-bottom: 10rpx;
+}
+
+.journey-result-summary {
+  color: var(--ink-main);
+  font-size: 23rpx;
+  line-height: 1.5;
+}
+
+.journey-result-impact {
+  color: var(--ink-soft);
+  font-size: 21rpx;
+  line-height: 1.45;
+}
+
+.journey-action {
+  margin-top: auto;
+}
+
+.journey-lower {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.lower-header {
+  margin-bottom: 14rpx;
+}
+
+.flow-error {
+  margin-top: 12rpx;
+}

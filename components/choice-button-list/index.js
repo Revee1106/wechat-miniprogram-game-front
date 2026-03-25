@@ -43,8 +43,18 @@ function normalizeChoices(choices) {
       ...choice,
       hasResourceRequirements: resourceEntries.length > 0,
       resourceText: resourceEntries
-        .map(([name, amount]) => `${name}:${amount}`)
-        .join(", "),
+        .map(([name, amount]) => `${formatResourceName(name)} ${amount}`)
+        .join("、"),
     };
   });
+}
+
+function formatResourceName(name) {
+  const map = {
+    spirit_stone: "灵石",
+    herbs: "药草",
+    iron_essence: "玄铁精华",
+  };
+
+  return map[name] || name;
 }

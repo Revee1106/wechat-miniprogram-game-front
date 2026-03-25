@@ -1,15 +1,29 @@
 <view class="panel">
-  <view class="section-title">突破</view>
+  <view class="scroll-kicker">破境仪轨</view>
+  <view class="section-title">冲关所需</view>
   <block wx:if="{{player}}">
-    <view class="panel-row">境界：{{player.realm}}</view>
-    <view class="panel-row">修为：{{player.cultivation_exp}}</view>
-    <view class="panel-row">灵石：{{resources.spirit_stone}}</view>
-    <button
-      class="primary-button"
-      bindtap="submitBreakthrough"
-      disabled="{{!canBreakthrough}}"
-    >
-      尝试突破
+    <view class="detail-grid">
+      <view class="detail-cell">
+        <text class="detail-label">当前境界</text>
+        <text class="detail-value">{{player.realm}}</text>
+      </view>
+      <view class="detail-cell">
+        <text class="detail-label">现有修为</text>
+        <text class="detail-value">{{player.cultivation_exp}}</text>
+      </view>
+      <view class="detail-cell">
+        <text class="detail-label">灵石储备</text>
+        <text class="detail-value">{{resources.spirit_stone}}</text>
+      </view>
+      <view class="detail-cell">
+        <text class="detail-label">破境门槛</text>
+        <text class="detail-value">修为 100 / 灵石 50</text>
+      </view>
+    </view>
+    <view class="status-note">{{hint}}</view>
+    <button class="primary-button" bindtap="submitBreakthrough" disabled="{{!canBreakthrough}}">
+      尝试破境
     </button>
   </block>
+  <view wx:else class="status-note">暂无可供冲关之身。</view>
 </view>

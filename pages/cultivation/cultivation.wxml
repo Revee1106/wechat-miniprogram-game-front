@@ -1,12 +1,19 @@
-<view class="page-shell">
+<view class="scroll-page">
+  <view class="scroll-hero">
+    <view class="scroll-kicker">修炼札记</view>
+    <view class="scroll-title">破境前夜</view>
+    <view class="scroll-subtitle">在此观修为深浅，审今世是否已到破关之时。</view>
+  </view>
+
   <player-status-card player="{{character}}" />
   <resource-bar resources="{{resources}}" />
   <breakthrough-panel
     player="{{character}}"
     resources="{{resources}}"
     canBreakthrough="{{canBreakthrough}}"
+    hint="{{breakthroughHint}}"
     bind:breakthrough="attemptBreakthrough"
   />
-  <view wx:if="{{resultSummary}}" class="panel">{{resultSummary}}</view>
-  <view wx:if="{{error}}" class="danger-text">{{error}}</view>
+  <view wx:if="{{resultSummary}}" class="status-note">{{resultSummary}}</view>
+  <view wx:if="{{error}}" class="status-note danger">{{error}}</view>
 </view>

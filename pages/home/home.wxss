@@ -1,1 +1,47 @@
 @import "../../app.wxss";
+
+.cover-page {
+  min-height: 100vh;
+  padding: 32rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.cover-panel {
+  position: relative;
+  padding: 44rpx 36rpx;
+  border-radius: 40rpx;
+  border: 2rpx solid rgba(68, 53, 36, 0.16);
+  background: linear-gradient(180deg, rgba(253, 246, 231, 0.98) 0%, rgba(237, 223, 192, 0.98) 100%);
+  box-shadow: 0 22rpx 48rpx rgba(48, 33, 18, 0.14);
+}
+
+.cover-mark {
+  margin-bottom: 18rpx;
+  color: var(--clay-main);
+  font-size: 24rpx;
+  letter-spacing: 6rpx;
+}
+
+.cover-title {
+  margin-bottom: 18rpx;
+  color: var(--ink-main);
+  font-size: 54rpx;
+  font-weight: 700;
+  letter-spacing: 4rpx;
+}
+
+.cover-copy {
+  color: var(--ink-soft);
+  font-size: 28rpx;
+  line-height: 1.8;
+}
+
+.cover-action {
+  margin-top: 52rpx;
+}
+
+.cover-error {
+  margin-top: 24rpx;
+}

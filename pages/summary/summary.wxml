@@ -1,17 +1,27 @@
-<view class="page-shell">
-  <player-status-card player="{{character}}" />
-  <resource-bar resources="{{resources}}" />
+<view class="ending-page">
+  <view class="ending-panel">
+    <view class="ending-mark">此世终卷</view>
+    <view class="ending-title">卷尾已定</view>
+    <view class="ending-copy">{{resultSummary || "这一世的因果已写定，留待下一次转生改写。"}}</view>
+  </view>
+
   <run-result-modal
     visible="{{isDead}}"
-    title="本局结束"
+    title="此世终卷"
     message="{{resultSummary}}"
-    actionText="转生"
+    actionText="转生再启"
     bind:confirm="handleRebirth"
   />
-  <view class="panel" wx:if="{{playerProfile}}">
-    <view class="section-title">永久成长</view>
-    <view>累计转生：{{playerProfile.total_rebirth_count}}</view>
-    <view>永久气运加成：{{playerProfile.permanent_luck_bonus}}</view>
+
+  <view wx:if="{{playerProfile}}" class="ending-meta">
+    <view class="ending-stat">
+      <view class="ending-stat-label">累计转生</view>
+      <view class="ending-stat-value">{{playerProfile.total_rebirth_count}}</view>
+    </view>
+    <view class="ending-stat">
+      <view class="ending-stat-label">永久气运</view>
+      <view class="ending-stat-value">{{playerProfile.permanent_luck_bonus}}</view>
+    </view>
   </view>
-  <view wx:if="{{error}}" class="danger-text">{{error}}</view>
+  <view wx:if="{{error}}" class="status-note danger">{{error}}</view>
 </view>
