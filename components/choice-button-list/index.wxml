@@ -9,7 +9,7 @@
           bindtap="handleTap"
           disabled="{{loading || !item.is_available}}"
         >
-          {{item.option_text}}
+          {{item.displayText}}
         </button>
         <view wx:if="{{item.hasResourceRequirements}}" class="choice-note muted-text">条件：{{item.resourceText}}</view>
         <view wx:if="{{!item.is_available && item.disabled_reason}}" class="choice-note danger-text">

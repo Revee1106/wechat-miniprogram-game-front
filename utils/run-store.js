@@ -17,6 +17,13 @@ function getState() {
   return clone(state);
 }
 
+function clearRun() {
+  state.run = null;
+  state.error = "";
+  state.eventHistory = [];
+  eventHistorySequence = 0;
+}
+
 function ensureRun() {
   if (!state.run) {
     throw new Error("No active run. Create one first.");
@@ -151,6 +158,7 @@ function formatSignedMonths(delta) {
 
 module.exports = {
   getState,
+  clearRun,
   createRun,
   refreshRun,
   advanceTime,

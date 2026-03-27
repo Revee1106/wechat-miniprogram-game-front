@@ -21,7 +21,21 @@ Page({
     loading: false,
   },
 
-  onShow() {
+  async onShow() {
+    const snapshot = store.getState();
+    if (snapshot.run) {
+      try {
+        await store.refreshRun();
+      } catch (error) {
+        if (isMissingRunError(error)) {
+          store.clearRun();
+          this.syncState();
+          wx.reLaunch({ url: "/pages/home/home" });
+          return;
+        }
+        this.setData({ error: error.message });
+      }
+    }
     this.syncState();
   },
 
@@ -75,6 +89,12 @@ Page({
         wx.reLaunch({ url: "/pages/summary/summary" });
       }
     } catch (error) {
+      if (isMissingRunError(error)) {
+        store.clearRun();
+        this.syncState();
+        wx.reLaunch({ url: "/pages/home/home" });
+        return;
+      }
       this.setData({ error: error.message });
     } finally {
       this.setData({ loading: false });
@@ -92,6 +112,12 @@ Page({
         wx.reLaunch({ url: "/pages/summary/summary" });
       }
     } catch (error) {
+      if (isMissingRunError(error)) {
+        store.clearRun();
+        this.syncState();
+        wx.reLaunch({ url: "/pages/home/home" });
+        return;
+      }
       this.setData({ error: error.message });
     } finally {
       this.setData({ loading: false });
@@ -148,4 +174,9 @@ function formatMonths(totalMonths) {
   const years = Math.floor(safeMonths / 12);
   const months = safeMonths % 12;
   return `${years}年${months}个月`;
+}
+
+function isMissingRunError(error) {
+  const message = String((error && error.message) || "");
+  return /run .* not found/i.test(message) || /No active run/i.test(message);
 }

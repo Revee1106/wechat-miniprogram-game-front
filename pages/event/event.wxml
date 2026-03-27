@@ -7,6 +7,7 @@
       <event-card event="{{currentEvent}}" />
       <choice-button-list
         choices="{{currentEvent.options || []}}"
+        choicePattern="{{currentEvent.choice_pattern}}"
         loading="{{loading}}"
         bind:choose="handleChoice"
       />

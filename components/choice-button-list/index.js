@@ -4,6 +4,10 @@ Component({
       type: Array,
       value: [],
     },
+    choicePattern: {
+      type: String,
+      value: "",
+    },
     loading: {
       type: Boolean,
       value: false,
@@ -13,9 +17,9 @@ Component({
     displayChoices: [],
   },
   observers: {
-    choices(choices) {
+    "choices, choicePattern"(choices, choicePattern) {
       this.setData({
-        displayChoices: normalizeChoices(choices),
+        displayChoices: normalizeChoices(choices, choicePattern),
       });
     },
   },
@@ -32,7 +36,7 @@ Component({
   },
 });
 
-function normalizeChoices(choices) {
+function normalizeChoices(choices, choicePattern) {
   if (!Array.isArray(choices)) {
     return [];
   }
@@ -41,6 +45,7 @@ function normalizeChoices(choices) {
     const resourceEntries = Object.entries(choice.requires_resources || {});
     return {
       ...choice,
+      displayText: choicePattern === "single_outcome" ? "完成事件" : choice.option_text,
       hasResourceRequirements: resourceEntries.length > 0,
       resourceText: resourceEntries
         .map(([name, amount]) => `${formatResourceName(name)} ${amount}`)
