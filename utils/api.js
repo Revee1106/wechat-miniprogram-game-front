@@ -55,6 +55,30 @@ function upgradeDwellingFacility(runId, facilityId) {
   return post("/api/run/dwelling/upgrade", { run_id: runId, facility_id: facilityId });
 }
 
+function sellResource(runId, resourceKey, amount) {
+  return post("/api/run/resource/sell", {
+    run_id: runId,
+    resource_key: resourceKey,
+    amount,
+  });
+}
+
+function startAlchemy(runId, recipeId, useSpiritSpring = false) {
+  return post("/api/run/alchemy/start", {
+    run_id: runId,
+    recipe_id: recipeId,
+    use_spirit_spring: useSpiritSpring,
+  });
+}
+
+function consumeAlchemyItem(runId, itemId, quality) {
+  return post("/api/run/alchemy/consume", {
+    run_id: runId,
+    item_id: itemId,
+    quality,
+  });
+}
+
 function rebirth(runId) {
   return post("/api/run/rebirth", { run_id: runId });
 }
@@ -68,5 +92,8 @@ module.exports = {
   breakthrough,
   buildDwellingFacility,
   upgradeDwellingFacility,
+  sellResource,
+  startAlchemy,
+  consumeAlchemyItem,
   rebirth,
 };

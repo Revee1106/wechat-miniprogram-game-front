@@ -34,7 +34,7 @@ Page({
         this.syncState();
       }
 
-      wx.navigateTo({ url: "/pages/event/event" });
+      wx.reLaunch({ url: "/pages/event/event" });
     } catch (error) {
       this.setData({ error: error.message });
     } finally {

@@ -89,6 +89,27 @@ async function upgradeDwellingFacility(facilityId) {
   return getState();
 }
 
+async function sellResource(resourceKey, amount) {
+  ensureRun();
+  state.error = "";
+  state.run = await api.sellResource(state.run.run_id, resourceKey, amount);
+  return getState();
+}
+
+async function startAlchemy(recipeId, useSpiritSpring = false) {
+  ensureRun();
+  state.error = "";
+  state.run = await api.startAlchemy(state.run.run_id, recipeId, useSpiritSpring);
+  return getState();
+}
+
+async function consumeAlchemyItem(itemId, quality) {
+  ensureRun();
+  state.error = "";
+  state.run = await api.consumeAlchemyItem(state.run.run_id, itemId, quality);
+  return getState();
+}
+
 async function rebirth() {
   ensureRun();
   state.error = "";
@@ -181,5 +202,8 @@ module.exports = {
   breakthrough,
   buildDwellingFacility,
   upgradeDwellingFacility,
+  sellResource,
+  startAlchemy,
+  consumeAlchemyItem,
   rebirth,
 };

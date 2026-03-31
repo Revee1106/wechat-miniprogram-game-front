@@ -1,1 +1,155 @@
 @import "../../app.wxss";
+
+.compact-page {
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
+}
+
+.compact-hero {
+  margin-bottom: 0;
+}
+
+.compact-hero-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16rpx;
+}
+
+.hero-return-button {
+  width: auto;
+  min-width: 220rpx;
+}
+
+.hero-metrics {
+  margin-top: 18rpx;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14rpx;
+}
+
+.hero-chip {
+  padding: 18rpx 20rpx;
+  border-radius: 22rpx;
+  background: rgba(255, 249, 237, 0.86);
+  border: 2rpx solid rgba(89, 66, 43, 0.12);
+}
+
+.hero-chip-label {
+  margin-bottom: 6rpx;
+  color: var(--ink-faint);
+  font-size: 22rpx;
+}
+
+.hero-chip-value {
+  color: var(--ink-main);
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.compact-tabs {
+  display: flex;
+  gap: 12rpx;
+}
+
+.compact-tab {
+  flex: 1;
+  padding: 18rpx 0;
+  border-radius: 999rpx;
+  text-align: center;
+  font-size: 24rpx;
+  color: var(--ink-soft);
+  background: rgba(255, 248, 235, 0.82);
+  border: 2rpx solid rgba(89, 66, 43, 0.12);
+}
+
+.compact-tab.is-active {
+  color: #fff7ea;
+  background: linear-gradient(135deg, var(--jade-main) 0%, var(--jade-soft) 100%);
+  box-shadow: 0 10rpx 24rpx rgba(32, 63, 58, 0.18);
+}
+
+.compact-swiper {
+  flex: 1;
+  min-height: 0;
+}
+
+.compact-panel {
+  height: 100%;
+  padding: 24rpx;
+  border-radius: 28rpx;
+  border: 2rpx solid rgba(68, 53, 36, 0.14);
+  background: linear-gradient(180deg, rgba(253, 246, 231, 0.98) 0%, rgba(237, 223, 192, 0.98) 100%);
+  box-shadow: 0 16rpx 34rpx rgba(48, 33, 18, 0.1);
+  box-sizing: border-box;
+}
+
+.panel-heading {
+  margin-bottom: 16rpx;
+}
+
+.card-rail {
+  height: calc(100% - 92rpx);
+  white-space: nowrap;
+}
+
+.rail-track {
+  display: flex;
+  gap: 18rpx;
+  height: 100%;
+}
+
+.recipe-card,
+.inventory-card {
+  width: 500rpx;
+  padding: 22rpx;
+  border-radius: 24rpx;
+  background: rgba(255, 250, 242, 0.92);
+  border: 2rpx solid rgba(89, 66, 43, 0.12);
+  box-sizing: border-box;
+}
+
+.recipe-title {
+  margin-bottom: 8rpx;
+  color: var(--ink-main);
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.recipe-copy {
+  color: var(--ink-soft);
+  font-size: 24rpx;
+  line-height: 1.6;
+}
+
+.recipe-actions {
+  margin-top: 16rpx;
+  display: flex;
+  gap: 12rpx;
+}
+
+.recipe-button {
+  flex: 1;
+}
+
+.compact-action {
+  margin-top: 16rpx;
+}
+
+.job-grid {
+  margin-top: 18rpx;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14rpx;
+}
+
+.overview-note {
+  margin-top: 18rpx;
+}
+
+.compact-error {
+  margin-top: 0;
+}

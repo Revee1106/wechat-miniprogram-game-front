@@ -1,24 +1,149 @@
-<view class="scroll-page">
-  <view class="scroll-hero">
-    <view class="scroll-kicker">炼制案台</view>
-    <view class="scroll-title">火候未定</view>
-    <view class="scroll-subtitle">此处分卷暂记材料与炉火脉络，后续将承载真正的炼制法门。</view>
+<view class="scroll-page compact-page">
+  <view class="compact-hero panel">
+    <view class="compact-hero-main">
+      <view>
+        <view class="scroll-kicker">丹房火候</view>
+        <view class="scroll-title">开炉炼丹</view>
+        <view class="scroll-subtitle">把丹方、炉次和库存拆进横向面板里处理，减少整页下拉。</view>
+      </view>
+      <button class="ghost-button hero-return-button" bindtap="returnToJourney">返回行程</button>
+    </view>
+
+    <view class="hero-metrics">
+      <view class="hero-chip">
+        <view class="hero-chip-label">炼丹术</view>
+        <view class="hero-chip-value">{{alchemy_state ? alchemy_state.mastery_title : "未入门"}}</view>
+      </view>
+      <view class="hero-chip">
+        <view class="hero-chip-label">药草</view>
+        <view class="hero-chip-value">{{run ? run.resources.herbs : 0}}</view>
+      </view>
+      <view class="hero-chip">
+        <view class="hero-chip-label">灵泉水</view>
+        <view class="hero-chip-value">{{spiritSpringWaterAmount}}</view>
+      </view>
+    </view>
   </view>
 
-  <view class="panel">
-    <view class="section-title">案前记述</view>
-    <view class="status-note">
-      当前版本尚未开放完整炼制流程，但会以此页承接未来的配方、材料与成器结果。
-    </view>
-    <view wx:if="{{run}}" class="detail-grid">
-      <view class="detail-cell">
-        <text class="detail-label">现存灵石</text>
-        <text class="detail-value">{{run.resources.spirit_stone}}</text>
-      </view>
-      <view class="detail-cell">
-        <text class="detail-label">待用药草</text>
-        <text class="detail-value">{{run.resources.herbs}}</text>
-      </view>
+  <view class="compact-tabs">
+    <view
+      wx:for="{{panelTabs}}"
+      wx:key="id"
+      class="compact-tab {{item.active ? 'is-active' : ''}}"
+      data-panel="{{item.id}}"
+      bindtap="switchPanel"
+    >
+      {{item.label}}
     </view>
   </view>
+
+  <swiper class="compact-swiper" current="{{currentPanelIndex}}" bindchange="handlePanelSwipe">
+    <swiper-item>
+      <view class="compact-panel">
+        <view class="panel-heading">
+          <view class="section-title">丹方列表</view>
+          <view class="muted-text">左右滑动切换丹方卡，直接在卡片内开炉。</view>
+        </view>
+        <scroll-view
+          class="card-rail"
+          scroll-x="{{true}}"
+          enable-flex="{{true}}"
+          show-scrollbar="{{false}}"
+        >
+          <view class="rail-track">
+            <view wx:for="{{recipeCards}}" wx:key="recipe_id" class="recipe-card">
+              <view class="recipe-title">{{item.display_name}}</view>
+              <view class="recipe-copy">{{item.description}}</view>
+              <view class="recipe-copy">
+                耗时 {{item.duration_months}} 月 / 基础成功率 {{item.base_success_rate}}
+              </view>
+              <view class="recipe-copy">主材：{{item.ingredientsText}}</view>
+              <view wx:if="{{item.disabled_reason}}" class="status-note">{{item.disabled_reason}}</view>
+              <view class="recipe-actions">
+                <button
+                  class="primary-button recipe-button"
+                  data-recipe-id="{{item.recipe_id}}"
+                  bindtap="startAlchemy"
+                  loading="{{loadingRecipeId === item.recipe_id}}"
+                  disabled="{{!item.can_start}}"
+                >
+                  开炉
+                </button>
+                <button
+                  class="secondary-button recipe-button"
+                  data-recipe-id="{{item.recipe_id}}"
+                  bindtap="startAlchemyWithSpring"
+                  loading="{{loadingRecipeId === item.recipe_id}}"
+                  disabled="{{!item.can_start}}"
+                >
+                  借灵泉
+                </button>
+              </view>
+            </view>
+          </view>
+        </scroll-view>
+      </view>
+    </swiper-item>
+
+    <swiper-item>
+      <view class="compact-panel">
+        <view class="section-title">当前炉次</view>
+        <view wx:if="{{alchemy_state && alchemy_state.active_job}}" class="status-note overview-note">
+          {{alchemy_state.active_job.recipe_name}} 仍需 {{alchemy_state.active_job.remaining_months}} 月完成。
+        </view>
+        <view wx:else class="status-note overview-note">当前没有在炼丹方，可先前往丹方页签起炉。</view>
+
+        <view class="job-grid">
+          <view class="detail-cell">
+            <text class="detail-label">熟练度</text>
+            <text class="detail-value">{{alchemy_state ? alchemy_state.mastery_exp : 0}}</text>
+          </view>
+          <view class="detail-cell">
+            <text class="detail-label">灵石</text>
+            <text class="detail-value">{{run ? run.resources.spirit_stone : 0}}</text>
+          </view>
+        </view>
+
+        <view wx:if="{{alchemy_state && alchemy_state.last_result}}" class="status-note overview-note">
+          最近结果：{{alchemy_state.last_result.summary}}
+        </view>
+      </view>
+    </swiper-item>
+
+    <swiper-item>
+      <view class="compact-panel">
+        <view class="panel-heading">
+          <view class="section-title">成丹库存</view>
+          <view class="muted-text">左右滑动查看成丹卡，直接服用。</view>
+        </view>
+        <scroll-view
+          wx:if="{{inventoryCards.length}}"
+          class="card-rail"
+          scroll-x="{{true}}"
+          enable-flex="{{true}}"
+          show-scrollbar="{{false}}"
+        >
+          <view class="rail-track">
+            <view wx:for="{{inventoryCards}}" wx:key="inventoryKey" class="inventory-card">
+              <view class="recipe-title">{{item.display_name}} · {{item.quality}}</view>
+              <view class="recipe-copy">数量 {{item.amount}}</view>
+              <view class="recipe-copy">{{item.effect_summary}}</view>
+              <button
+                class="primary-button compact-action"
+                data-item-id="{{item.item_id}}"
+                data-quality="{{item.quality}}"
+                bindtap="consumeItem"
+                loading="{{loadingInventoryKey === item.inventoryKey}}"
+              >
+                服用
+              </button>
+            </view>
+          </view>
+        </scroll-view>
+        <view wx:else class="status-note overview-note">丹室暂无成丹，先起一炉吧。</view>
+      </view>
+    </swiper-item>
+  </swiper>
+
+  <view wx:if="{{error}}" class="status-note danger compact-error">{{error}}</view>
 </view>
