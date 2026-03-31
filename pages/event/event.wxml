@@ -15,60 +15,206 @@
   </block>
 
   <block wx:else>
-    <view class="journey-stage">
-      <view class="journey-upper">
-        <block wx:if="{{activeSection === 'cultivation'}}">
-          <view class="journey-kicker">当前修炼</view>
-          <view class="journey-title">突破关口</view>
-          <view class="journey-meta">修为足够后，可以在此直接尝试破境</view>
-          <view class="journey-copy cultivation-copy">{{breakthroughHint}}</view>
-          <breakthrough-panel
-            player="{{player}}"
-            resources="{{resources}}"
-            canBreakthrough="{{canBreakthrough}}"
-            hint="{{breakthroughHint}}"
-            breakthroughTargetExp="{{breakthroughTargetExp}}"
-            breakthroughTargetSpiritStone="{{breakthroughTargetSpiritStone}}"
-            bind:breakthrough="attemptBreakthrough"
-          />
+    <view class="journey-stage journey-stage-rest">
+      <view class="journey-overview">
+        <view class="journey-overview-head">
+          <view>
+            <view class="journey-kicker">当前行程</view>
+            <view class="journey-title">已行 {{elapsedText}}</view>
+            <view class="journey-meta">剩余寿元 {{lifespanText}}</view>
+          </view>
+          <view class="overview-pill">{{player ? player.realm_display_name || player.realm : "未立命牌"}}</view>
+        </view>
+        <view class="journey-copy">{{journeySummary}}</view>
+        <view wx:if="{{eventHistory.length}}" class="journey-result">
+          <view class="journey-result-label">事件结果</view>
+          <view
+            wx:for="{{eventHistory}}"
+            wx:key="historyKey"
+            class="journey-result-item"
+            style="opacity: {{index === 0 ? 1 : index === 1 ? 0.68 : 0.4}};"
+          >
+            <view class="journey-result-summary">{{item.summary}}</view>
+            <view
+              wx:for="{{item.impactLines}}"
+              wx:for-item="line"
+              wx:for-index="lineIndex"
+              wx:key="lineIndex"
+              class="journey-result-impact"
+            >
+              {{line}}
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="journey-main-stage">
+        <block wx:if="{{activeSection === 'player'}}">
+          <view class="section-card">
+            <view class="section-head">
+              <view class="section-title">命牌</view>
+              <view class="section-copy">保留最关键的人物信息，不重复顶部已展示的寿元。</view>
+            </view>
+            <view class="section-grid">
+              <view class="section-metric">
+                <view class="metric-label">境界</view>
+                <view class="metric-value">{{player ? player.realm_display_name || player.realm : "未立命牌"}}</view>
+              </view>
+              <view class="section-metric">
+                <view class="metric-label">修为</view>
+                <view class="metric-value">
+                  {{player ? player.cultivation_exp + " / " + breakthroughTargetExp : "--"}}
+                </view>
+              </view>
+              <view class="section-metric full">
+                <view class="metric-label">气运</view>
+                <view class="metric-value">{{player ? player.luck : "--"}}</view>
+              </view>
+            </view>
+            <button class="primary-button stage-action" bindtap="advanceTime" loading="{{loading}}">
+              推进时间
+            </button>
+          </view>
+        </block>
+
+        <block wx:elif="{{activeSection === 'resources'}}">
+          <view class="section-card">
+            <view class="section-head">
+              <view class="section-title">行囊</view>
+              <view class="section-copy">查看当前修行资源，并把暂时不用的基础产物手动卖成灵石。</view>
+            </view>
+            <view class="section-grid">
+              <view class="section-metric">
+                <view class="metric-label">灵石</view>
+                <view class="metric-value">{{resources ? resources.spirit_stone : 0}}</view>
+              </view>
+              <view class="section-metric">
+                <view class="metric-label">药草</view>
+                <view class="metric-value">{{resources ? resources.herbs : 0}}</view>
+              </view>
+              <view class="section-metric full">
+                <view class="metric-label">玄铁精华</view>
+                <view class="metric-value">{{resources ? resources.iron_essence : 0}}</view>
+              </view>
+            </view>
+            <view class="inventory-sale-panel">
+              <view class="inventory-sale-head">
+                <view class="section-title inventory-sale-title">可出售资源</view>
+                <view class="section-copy inventory-sale-copy">洞府产出的灵植、灵矿、灵泉会先入囊，再由你决定何时变现。</view>
+              </view>
+              <view wx:if="{{inventorySaleCards.length}}" class="section-grid inventory-sale-grid">
+                <view
+                  wx:for="{{inventorySaleCards}}"
+                  wx:key="resourceKey"
+                  class="section-metric inventory-sale-card"
+                  data-resource-key="{{item.resourceKey}}"
+                  bindtap="openSaleSheet"
+                >
+                  <view class="metric-label">{{item.displayName}}</view>
+                  <view class="metric-value">{{item.amount}}</view>
+                  <view class="inventory-sale-meta">单价 {{item.unitPrice}} 灵石</view>
+                </view>
+              </view>
+              <view wx:else class="status-banner inventory-empty-note">
+                眼下行囊里还没有可出售的基础产物，先推进时间或经营洞府。
+              </view>
+
+              <view wx:if="{{saleSheetVisible && selectedSaleResource}}" class="sale-sheet-mask" bindtap="closeSaleSheet">
+                <view class="sale-sheet sale-sheet-panel" catchtap="noop">
+                  <view class="sale-sheet-head">
+                    <view>
+                      <view class="sale-sheet-title">{{selectedSaleResource.displayName}}</view>
+                      <view class="sale-sheet-copy">
+                        库存 {{selectedSaleResource.amount}} · 单价 {{selectedSaleResource.unitPrice}} 灵石
+                      </view>
+                    </view>
+                    <button class="ghost-button sale-sheet-close" bindtap="closeSaleSheet">收起</button>
+                  </view>
+                  <view class="sale-sheet-quantity">
+                    <button class="ghost-button sale-step-button" bindtap="decreaseSaleQuantity">-1</button>
+                    <view class="sale-quantity-value">{{saleQuantity}}</view>
+                    <button class="ghost-button sale-step-button" bindtap="increaseSaleQuantity">+1</button>
+                  </view>
+                  <view class="sale-sheet-shortcuts">
+                    <button class="ghost-button sale-shortcut-button" data-mode="half" bindtap="fillSaleQuantity">半数</button>
+                    <button class="ghost-button sale-shortcut-button" data-mode="all" bindtap="fillSaleQuantity">全部</button>
+                  </view>
+                  <view class="sale-sheet-total">
+                    可得 {{selectedSaleResource.unitPrice * saleQuantity}} 灵石
+                  </view>
+                  <button
+                    class="primary-button sale-confirm-button"
+                    bindtap="confirmSaleQuantity"
+                    loading="{{saleLoadingKey === selectedSaleResource.resourceKey && loading}}"
+                  >
+                    确认出售
+                  </button>
+                </view>
+              </view>
+            </view>
+            <button class="primary-button stage-action" bindtap="advanceTime" loading="{{loading}}">
+              推进时间
+            </button>
+          </view>
+        </block>
+
+        <block wx:elif="{{activeSection === 'cultivation'}}">
+          <view class="section-card">
+            <view class="section-head">
+              <view class="section-title">修炼</view>
+              <view class="section-copy">修为足够后，可以在此直接尝试破境。</view>
+            </view>
+            <view class="status-banner">{{breakthroughHint}}</view>
+            <breakthrough-panel
+              player="{{player}}"
+              resources="{{resources}}"
+              canBreakthrough="{{canBreakthrough}}"
+              hint="{{breakthroughHint}}"
+              breakthroughTargetExp="{{breakthroughTargetExp}}"
+              breakthroughTargetSpiritStone="{{breakthroughTargetSpiritStone}}"
+              bind:breakthrough="attemptBreakthrough"
+            />
+          </view>
         </block>
 
         <block wx:else>
-          <view class="journey-kicker">当前行程</view>
-          <view class="journey-title">已行 {{elapsedText}}</view>
-          <view class="journey-meta">剩余寿元 {{lifespanText}}</view>
-          <view class="journey-copy">{{journeySummary}}</view>
-          <view wx:if="{{eventHistory.length}}" class="journey-result">
-            <view class="journey-result-label">事件结果</view>
-            <view
-              wx:for="{{eventHistory}}"
-              wx:key="historyKey"
-              class="journey-result-item"
-              style="opacity: {{index === 0 ? 1 : index === 1 ? 0.68 : 0.4}};"
-            >
-              <view class="journey-result-summary">{{item.summary}}</view>
-              <view
-                wx:for="{{item.impactLines}}"
-                wx:for-item="line"
-                wx:for-index="lineIndex"
-                wx:key="lineIndex"
-                class="journey-result-impact"
-              >
-                {{line}}
+          <view class="section-card">
+            <view class="section-head">
+              <view class="section-title">洞府</view>
+              <view class="section-copy">保留必要概览，具体营建与炼丹转入独立页面处理。</view>
+            </view>
+
+            <view class="dwelling-summary-card">
+              <view class="dwelling-summary-top">
+                <view>
+                  <view class="dwelling-summary-label">洞府总览</view>
+                  <view class="dwelling-summary-title">当前洞府等级 {{dwellingLevel}}</view>
+                </view>
+                <view class="dwelling-summary-pill">已建 {{builtFacilityCount}} 项</view>
+              </view>
+              <view class="dwelling-summary-copy">{{dwellingSummaryLine}}</view>
+              <view wx:if="{{dwellingLastSettlement}}" class="dwelling-summary-note">
+                最近结算已入账，可前往洞府页查看每项设施的详细收支。
+              </view>
+            </view>
+
+            <view class="dwelling-entry-grid">
+              <view class="entry-card dwelling-entry-card" bindtap="openDwellingPage">
+                <view class="entry-card-title">洞府营建</view>
+                <view class="entry-card-copy">查看设施详情，执行建造、升级和月度运转检查。</view>
+              </view>
+              <view class="entry-card dwelling-entry-card" bindtap="openCraftingPage">
+                <view class="entry-card-title">炼丹房</view>
+                <view class="entry-card-copy">
+                  {{alchemyFacilityLevel > 0 ? "丹房已可运转，前往开炉炼丹。" : "先查看丹方与材料，再逐步铺开丹道。"}}
+                </view>
               </view>
             </view>
           </view>
-          <button class="primary-button journey-action" bindtap="advanceTime" loading="{{loading}}">
-            推进时间
-          </button>
         </block>
       </view>
 
-      <view class="journey-lower">
-        <view class="lower-header">
-          <view class="lower-kicker">查阅</view>
-          <view class="lower-copy">点击下列分区，查看当前这一世的关键信息。</view>
-        </view>
+      <view class="journey-dock">
         <inspection-sheet
           activeSection="{{activeSection}}"
           player="{{player}}"

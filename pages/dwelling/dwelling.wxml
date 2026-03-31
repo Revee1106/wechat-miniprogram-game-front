@@ -1,61 +1,164 @@
-<view class="scroll-page">
-  <view class="scroll-hero">
-    <view class="scroll-kicker">洞府图录</view>
-    <view class="scroll-title">静修根基</view>
-    <view class="scroll-subtitle">先稳住后勤，再谈下一次搏命破境。</view>
-  </view>
-
-  <view class="dwelling-overview">
-    <view class="overview-kicker">洞府总览</view>
-    <view class="overview-title">当前洞府等级 {{dwellingLevel}}</view>
-    <view class="overview-copy">已建设施 {{builtFacilityCount}} / {{facilities.length}}</view>
-  </view>
-
-  <view wx:if="{{dwelling_last_settlement}}" class="settlement-card">
-    <view class="overview-kicker">最近月结算</view>
-    <view class="settlement-line">
-      维护支出：{{dwelling_last_settlement.total_maintenance_paid.spirit_stone || 0}} 灵石
-    </view>
-    <view class="settlement-line">
-      本月产出：灵植 {{dwelling_last_settlement.total_resource_gains.herb || 0}} / 灵矿
-      {{dwelling_last_settlement.total_resource_gains.ore || 0}} / 修为
-      {{dwelling_last_settlement.total_cultivation_exp_gain || 0}}
-    </view>
-    <view
-      wx:for="{{dwelling_last_settlement.summary_lines}}"
-      wx:key="index"
-      class="settlement-detail"
-    >
-      {{item}}
-    </view>
-  </view>
-
-  <view class="facility-list">
-    <view wx:for="{{facilities}}" wx:key="facility_id" class="facility-item">
-      <dwelling-bonus-panel facility="{{item}}" />
-      <view class="facility-actions">
-        <button
-          wx:if="{{item.level === 0}}"
-          class="primary-button facility-button"
-          data-facility-id="{{item.facility_id}}"
-          bindtap="buildFacility"
-          loading="{{loadingFacilityId === item.facility_id}}"
-        >
-          建造
-        </button>
-        <button
-          wx:elif="{{item.next_upgrade_cost && item.next_upgrade_cost.spirit_stone}}"
-          class="primary-button facility-button"
-          data-facility-id="{{item.facility_id}}"
-          bindtap="upgradeFacility"
-          loading="{{loadingFacilityId === item.facility_id}}"
-        >
-          升级
-        </button>
-        <view wx:else class="status-note">已达当前版本最高等级</view>
+<view class="scroll-page compact-page">
+  <view class="compact-hero panel">
+    <view class="compact-hero-main">
+      <view>
+        <view class="scroll-kicker">洞府图录</view>
+        <view class="scroll-title">静修根基</view>
+        <view class="scroll-subtitle">先定营建节奏，再按月稳住灵植、灵泉与灵石产出。</view>
       </view>
+      <button class="ghost-button hero-return-button" bindtap="returnToJourney">返回行程</button>
     </view>
   </view>
 
-  <view wx:if="{{error}}" class="status-note danger">{{error}}</view>
+  <view class="compact-tabs">
+    <view
+      wx:for="{{panelTabs}}"
+      wx:key="id"
+      class="compact-tab {{item.active ? 'is-active' : ''}}"
+      data-panel="{{item.id}}"
+      bindtap="switchPanel"
+    >
+      {{item.label}}
+    </view>
+  </view>
+
+  <swiper class="compact-swiper" current="{{currentPanelIndex}}" bindchange="handlePanelSwipe">
+    <swiper-item>
+      <view class="compact-panel">
+        <view class="panel-heading">
+          <view class="section-title">设施操作</view>
+          <view class="muted-text">先选设施，再在底部详情里查看产出、消耗并完成营建。</view>
+        </view>
+        <view class="facility-tag-grid">
+          <view
+            wx:for="{{facilityCards}}"
+            wx:key="facility_id"
+            class="facility-tag {{selectedFacilityId === item.facility_id ? 'is-selected' : ''}}"
+            data-facility-id="{{item.facility_id}}"
+            bindtap="openFacilitySheet"
+          >
+            <view class="facility-tag-top">
+              <view class="facility-tag-title">{{item.display_name}}</view>
+              <view class="facility-tag-level">Lv.{{item.level}} / {{item.max_level}}</view>
+            </view>
+            <view class="facility-tag-status">{{item.statusText}}</view>
+          </view>
+        </view>
+      </view>
+    </swiper-item>
+
+    <swiper-item>
+      <view class="compact-panel">
+        <view class="section-title">洞府总览</view>
+        <view class="detail-grid">
+          <view class="detail-cell">
+            <text class="detail-label">当前层次</text>
+            <text class="detail-value">{{dwellingLevel}}</text>
+          </view>
+          <view class="detail-cell">
+            <text class="detail-label">在运设施</text>
+            <text class="detail-value">{{builtFacilityCount}}</text>
+          </view>
+          <view class="detail-cell">
+            <text class="detail-label">待扩建</text>
+            <text class="detail-value">{{facilities.length - builtFacilityCount}}</text>
+          </view>
+          <view class="detail-cell">
+            <text class="detail-label">调度建议</text>
+            <text class="detail-value">先稳产再扩建</text>
+          </view>
+        </view>
+        <view class="status-note overview-note">{{settlementSummary}}</view>
+      </view>
+    </swiper-item>
+
+    <swiper-item>
+      <view class="compact-panel">
+        <view class="section-title">最近月结</view>
+        <view class="status-note overview-note">{{settlementSummary}}</view>
+        <view wx:if="{{settlementLines.length}}" class="settlement-stack">
+          <view wx:for="{{settlementLines}}" wx:key="index" class="settlement-pill">{{item}}</view>
+        </view>
+        <view wx:else class="status-note">尚未形成完整月结，先完成首轮设施营建。</view>
+      </view>
+    </swiper-item>
+  </swiper>
+
+  <view
+    wx:if="{{facilitySheetVisible}}"
+    class="facility-sheet-mask"
+    bindtap="closeFacilitySheet"
+  ></view>
+  <view wx:if="{{facilitySheetVisible && selectedFacilityCard}}" class="facility-sheet-panel">
+    <view class="facility-sheet-handle"></view>
+    <view class="facility-sheet-header">
+      <view>
+        <view class="scroll-kicker">设施详情</view>
+        <view class="sheet-title">{{selectedFacilityCard.display_name}}</view>
+      </view>
+      <button class="sheet-close-button" bindtap="closeFacilitySheet">收起</button>
+    </view>
+
+    <scroll-view class="facility-sheet-content" scroll-y="{{true}}">
+      <view class="facility-sheet-summary">
+        <view class="sheet-chip">
+          <view class="sheet-chip-label">当前等级</view>
+          <view class="sheet-chip-value">
+            Lv.{{selectedFacilityCard.level}} / {{selectedFacilityCard.max_level}}
+          </view>
+        </view>
+        <view class="sheet-chip">
+          <view class="sheet-chip-label">当前状态</view>
+          <view class="sheet-chip-value">{{selectedFacilityCard.statusText}}</view>
+        </view>
+      </view>
+
+      <view class="sheet-block">
+        <view class="sheet-block-label">本月产出</view>
+        <view class="sheet-block-value">{{selectedFacilityCard.yieldText}}</view>
+      </view>
+
+      <view class="sheet-block">
+        <view class="sheet-block-label">维护消耗</view>
+        <view class="sheet-block-value">{{selectedFacilityCard.maintenanceText}}</view>
+      </view>
+
+      <view class="sheet-block">
+        <view class="sheet-block-label">下次升级</view>
+        <view class="sheet-block-value">{{selectedFacilityCard.nextUpgradeText}}</view>
+      </view>
+
+      <view class="sheet-block">
+        <view class="sheet-block-label">设施说明</view>
+        <view class="sheet-block-value">{{selectedFacilityCard.summary}}</view>
+      </view>
+
+      <view wx:if="{{selectedFacilityCard.is_function_unlocked}}" class="sheet-block">
+        <view class="sheet-block-label">功能解锁</view>
+        <view class="sheet-block-value">{{selectedFacilityCard.function_unlock_text}}</view>
+      </view>
+    </scroll-view>
+
+    <view class="facility-sheet-actions">
+      <button
+        wx:if="{{selectedFacilityCard.actionType === 'build'}}"
+        class="primary-button"
+        data-facility-id="{{selectedFacilityCard.facility_id}}"
+        bindtap="buildFacility"
+        loading="{{loadingFacilityId === selectedFacilityCard.facility_id}}"
+      >
+        建造
+      </button>
+      <button
+        wx:elif="{{selectedFacilityCard.actionType === 'upgrade'}}"
+        class="primary-button"
+        data-facility-id="{{selectedFacilityCard.facility_id}}"
+        bindtap="upgradeFacility"
+        loading="{{loadingFacilityId === selectedFacilityCard.facility_id}}"
+      >
+        升级
+      </button>
+      <view wx:else class="status-note sheet-static-note">已达当前版本最高等级</view>
+    </view>
+  </view>
 </view>
