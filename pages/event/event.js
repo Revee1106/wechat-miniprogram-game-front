@@ -1,6 +1,9 @@
 const store = require("../../utils/run-store");
-
-const BREAKTHROUGH_TARGET_EXP = 100;
+const {
+  buildBreakthroughHint,
+  canAttemptBreakthrough,
+  getBreakthroughRequirements,
+} = require("../../utils/breakthrough");
 
 Page({
   data: {
@@ -11,7 +14,8 @@ Page({
     dwellingLevel: 1,
     canBreakthrough: false,
     breakthroughHint: "",
-    breakthroughTargetExp: BREAKTHROUGH_TARGET_EXP,
+    breakthroughTargetExp: 0,
+    breakthroughTargetSpiritStone: 0,
     journeySummary: "",
     eventHistory: [],
     elapsedText: "",
@@ -48,12 +52,8 @@ Page({
       return;
     }
 
-    const canBreakthrough = Boolean(
-      run &&
-        !run.character.is_dead &&
-        run.character.cultivation_exp >= BREAKTHROUGH_TARGET_EXP &&
-        run.resources.spirit_stone >= 50
-    );
+    const requirements = getBreakthroughRequirements(run);
+    const canBreakthrough = canAttemptBreakthrough(run);
 
     this.setData({
       run,
@@ -63,7 +63,8 @@ Page({
       dwellingLevel: run ? run.dwelling_level || 1 : 1,
       canBreakthrough,
       breakthroughHint: buildBreakthroughHint(run, canBreakthrough),
-      breakthroughTargetExp: BREAKTHROUGH_TARGET_EXP,
+      breakthroughTargetExp: requirements.requiredCultivationExp,
+      breakthroughTargetSpiritStone: requirements.requiredSpiritStone,
       journeySummary: buildJourneySummary(run),
       eventHistory: snapshot.eventHistory || [],
       elapsedText: run ? formatMonths(run.round_index || 0) : "0年0个月",
@@ -124,6 +125,34 @@ Page({
     }
   },
 
+  async attemptBreakthrough() {
+    if (!this.data.run) {
+      wx.reLaunch({ url: "/pages/home/home" });
+      return;
+    }
+
+    this.setData({ loading: true, error: "" });
+
+    try {
+      const result = await store.breakthrough();
+      this.syncState();
+      wx.showToast({
+        title: result.breakthrough.success ? "破境成功" : "破境未成",
+        icon: "none",
+      });
+    } catch (error) {
+      if (isMissingRunError(error)) {
+        store.clearRun();
+        this.syncState();
+        wx.reLaunch({ url: "/pages/home/home" });
+        return;
+      }
+      this.setData({ error: error.message });
+    } finally {
+      this.setData({ loading: false });
+    }
+  },
+
   handleSectionChange(event) {
     this.setData({ activeSection: event.detail.section });
   },
@@ -143,30 +172,6 @@ function buildJourneySummary(run) {
   }
 
   return "此刻只需继续推进时间。";
-}
-
-function buildBreakthroughHint(run, canBreakthrough) {
-  if (!run) {
-    return "命卷未启，暂无可修之身。";
-  }
-
-  if (run.character.is_dead) {
-    return "此身已尽，无法再行破境。";
-  }
-
-  if (canBreakthrough) {
-    return "修为与灵石已备，可以尝试破境。";
-  }
-
-  if (run.character.cultivation_exp < BREAKTHROUGH_TARGET_EXP) {
-    return "修为未满，还需继续推演。";
-  }
-
-  if (run.resources.spirit_stone < 50) {
-    return "灵石不足，尚不能支撑破境。";
-  }
-
-  return "时机未至，暂且收束心神。";
 }
 
 function formatMonths(totalMonths) {

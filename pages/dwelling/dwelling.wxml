@@ -2,8 +2,60 @@
   <view class="scroll-hero">
     <view class="scroll-kicker">洞府图录</view>
     <view class="scroll-title">静修根基</view>
-    <view class="scroll-subtitle">洞府并不喧哗，却决定了此世修行可立多深的根。</view>
+    <view class="scroll-subtitle">先稳住后勤，再谈下一次搏命破境。</view>
   </view>
 
-  <dwelling-bonus-panel level="{{dwellingLevel}}" />
+  <view class="dwelling-overview">
+    <view class="overview-kicker">洞府总览</view>
+    <view class="overview-title">当前洞府等级 {{dwellingLevel}}</view>
+    <view class="overview-copy">已建设施 {{builtFacilityCount}} / {{facilities.length}}</view>
+  </view>
+
+  <view wx:if="{{dwelling_last_settlement}}" class="settlement-card">
+    <view class="overview-kicker">最近月结算</view>
+    <view class="settlement-line">
+      维护支出：{{dwelling_last_settlement.total_maintenance_paid.spirit_stone || 0}} 灵石
+    </view>
+    <view class="settlement-line">
+      本月产出：灵植 {{dwelling_last_settlement.total_resource_gains.herb || 0}} / 灵矿
+      {{dwelling_last_settlement.total_resource_gains.ore || 0}} / 修为
+      {{dwelling_last_settlement.total_cultivation_exp_gain || 0}}
+    </view>
+    <view
+      wx:for="{{dwelling_last_settlement.summary_lines}}"
+      wx:key="index"
+      class="settlement-detail"
+    >
+      {{item}}
+    </view>
+  </view>
+
+  <view class="facility-list">
+    <view wx:for="{{facilities}}" wx:key="facility_id" class="facility-item">
+      <dwelling-bonus-panel facility="{{item}}" />
+      <view class="facility-actions">
+        <button
+          wx:if="{{item.level === 0}}"
+          class="primary-button facility-button"
+          data-facility-id="{{item.facility_id}}"
+          bindtap="buildFacility"
+          loading="{{loadingFacilityId === item.facility_id}}"
+        >
+          建造
+        </button>
+        <button
+          wx:elif="{{item.next_upgrade_cost && item.next_upgrade_cost.spirit_stone}}"
+          class="primary-button facility-button"
+          data-facility-id="{{item.facility_id}}"
+          bindtap="upgradeFacility"
+          loading="{{loadingFacilityId === item.facility_id}}"
+        >
+          升级
+        </button>
+        <view wx:else class="status-note">已达当前版本最高等级</view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{error}}" class="status-note danger">{{error}}</view>
 </view>

@@ -1,15 +1,38 @@
-<view class="panel">
-  <view class="scroll-kicker">洞府图录</view>
-  <view class="section-title">当前洞府</view>
+<view class="panel" wx:if="{{facility}}">
+  <view class="scroll-kicker">{{facility.display_name}}</view>
+  <view class="section-title">设施详情</view>
   <view class="detail-grid">
     <view class="detail-cell">
-      <text class="detail-label">洞府等级</text>
-      <text class="detail-value">{{level}}</text>
+      <text class="detail-label">设施标识</text>
+      <text class="detail-value">{{facility.facility_id}}</text>
     </view>
     <view class="detail-cell">
-      <text class="detail-label">静修评语</text>
-      <text class="detail-value">根基安稳</text>
+      <text class="detail-label">当前等级</text>
+      <text class="detail-value">{{facility.level}} / {{facility.max_level}}</text>
+    </view>
+    <view class="detail-cell">
+      <text class="detail-label">运行状态</text>
+      <text class="detail-value">{{facility.status}}</text>
+    </view>
+    <view class="detail-cell">
+      <text class="detail-label">维护费用</text>
+      <text class="detail-value">{{facility.maintenance_cost.spirit_stone || 0}} 灵石</text>
+    </view>
+    <view class="detail-cell">
+      <text class="detail-label">月度产出</text>
+      <text class="detail-value">
+        灵植 {{facility.monthly_resource_yields.herb || 0}} / 灵矿
+        {{facility.monthly_resource_yields.ore || 0}} / 修为
+        {{facility.monthly_cultivation_exp_gain || 0}}
+      </text>
+    </view>
+    <view class="detail-cell">
+      <text class="detail-label">下一次升级</text>
+      <text class="detail-value">{{facility.next_upgrade_cost.spirit_stone || 0}} 灵石</text>
     </view>
   </view>
-  <view class="status-note">一级洞府已可遮风避扰，后续仍可扩展更高阶的静修收益。</view>
+  <view class="status-note">{{facility.summary}}</view>
+  <view wx:if="{{facility.is_function_unlocked}}" class="status-note">
+    {{facility.function_unlock_text}}
+  </view>
 </view>

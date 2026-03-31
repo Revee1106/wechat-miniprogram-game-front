@@ -1,4 +1,9 @@
 const store = require("../../utils/run-store");
+const {
+  buildBreakthroughHint,
+  canAttemptBreakthrough,
+  getBreakthroughRequirements,
+} = require("../../utils/breakthrough");
 
 Page({
   data: {
@@ -10,21 +15,33 @@ Page({
     error: "",
     loading: false,
     canBreakthrough: false,
+    breakthroughTargetExp: 0,
+    breakthroughTargetSpiritStone: 0,
   },
 
-  onShow() {
+  async onShow() {
+    const snapshot = store.getState();
+    if (snapshot.run) {
+      try {
+        await store.refreshRun();
+      } catch (error) {
+        if (isMissingRunError(error)) {
+          store.clearRun();
+          this.syncState();
+          wx.reLaunch({ url: "/pages/home/home" });
+          return;
+        }
+        this.setData({ error: error.message });
+      }
+    }
     this.syncState();
   },
 
   syncState() {
     const snapshot = store.getState();
     const run = snapshot.run;
-    const canBreakthrough = Boolean(
-      run &&
-        !run.character.is_dead &&
-        run.character.cultivation_exp >= 100 &&
-        run.resources.spirit_stone >= 50
-    );
+    const requirements = getBreakthroughRequirements(run);
+    const canBreakthrough = canAttemptBreakthrough(run);
 
     this.setData({
       run,
@@ -34,6 +51,8 @@ Page({
       breakthroughHint: buildBreakthroughHint(run, canBreakthrough),
       error: snapshot.error,
       canBreakthrough,
+      breakthroughTargetExp: requirements.requiredCultivationExp,
+      breakthroughTargetSpiritStone: requirements.requiredSpiritStone,
     });
   },
 
@@ -47,6 +66,12 @@ Page({
         icon: "none",
       });
     } catch (error) {
+      if (isMissingRunError(error)) {
+        store.clearRun();
+        this.syncState();
+        wx.reLaunch({ url: "/pages/home/home" });
+        return;
+      }
       this.setData({ error: error.message });
     } finally {
       this.setData({ loading: false });
@@ -54,26 +79,7 @@ Page({
   },
 });
 
-function buildBreakthroughHint(run, canBreakthrough) {
-  if (!run) {
-    return "命卷未启，暂无可修之身。";
-  }
-
-  if (run.character.is_dead) {
-    return "此身已尽，无法再行破境。";
-  }
-
-  if (canBreakthrough) {
-    return "修为与灵石已备，可以尝试冲关。";
-  }
-
-  if (run.character.cultivation_exp < 100) {
-    return "修为未满，仍需继续推演与积累。";
-  }
-
-  if (run.resources.spirit_stone < 50) {
-    return "灵石不足，尚不能支撑破境消耗。";
-  }
-
-  return "时机未至，暂且收束心神。";
+function isMissingRunError(error) {
+  const message = String((error && error.message) || "");
+  return /run .* not found/i.test(message) || /No active run/i.test(message);
 }

@@ -1,7 +1,7 @@
 <view class="flow-page">
   <block wx:if="{{currentEvent}}">
     <view class="flow-topbar">
-      <view class="flow-mark">异闻页</view>
+      <view class="flow-mark">异闻当前</view>
     </view>
     <scroll-view class="decision-stage" scroll-y="{{true}}" show-scrollbar="{{false}}">
       <event-card event="{{currentEvent}}" />
@@ -17,33 +17,51 @@
   <block wx:else>
     <view class="journey-stage">
       <view class="journey-upper">
-        <view class="journey-kicker">当前行程</view>
-        <view class="journey-title">已行 {{elapsedText}}</view>
-        <view class="journey-meta">剩余寿元 {{lifespanText}}</view>
-        <view class="journey-copy">{{journeySummary}}</view>
-        <view wx:if="{{eventHistory.length}}" class="journey-result">
-          <view class="journey-result-label">事件结果</view>
-          <view
-            wx:for="{{eventHistory}}"
-            wx:key="historyKey"
-            class="journey-result-item"
-            style="opacity: {{index === 0 ? 1 : index === 1 ? 0.68 : 0.4}};"
-          >
-            <view class="journey-result-summary">{{item.summary}}</view>
+        <block wx:if="{{activeSection === 'cultivation'}}">
+          <view class="journey-kicker">当前修炼</view>
+          <view class="journey-title">突破关口</view>
+          <view class="journey-meta">修为足够后，可以在此直接尝试破境</view>
+          <view class="journey-copy cultivation-copy">{{breakthroughHint}}</view>
+          <breakthrough-panel
+            player="{{player}}"
+            resources="{{resources}}"
+            canBreakthrough="{{canBreakthrough}}"
+            hint="{{breakthroughHint}}"
+            breakthroughTargetExp="{{breakthroughTargetExp}}"
+            breakthroughTargetSpiritStone="{{breakthroughTargetSpiritStone}}"
+            bind:breakthrough="attemptBreakthrough"
+          />
+        </block>
+
+        <block wx:else>
+          <view class="journey-kicker">当前行程</view>
+          <view class="journey-title">已行 {{elapsedText}}</view>
+          <view class="journey-meta">剩余寿元 {{lifespanText}}</view>
+          <view class="journey-copy">{{journeySummary}}</view>
+          <view wx:if="{{eventHistory.length}}" class="journey-result">
+            <view class="journey-result-label">事件结果</view>
             <view
-              wx:for="{{item.impactLines}}"
-              wx:for-item="line"
-              wx:for-index="lineIndex"
-              wx:key="lineIndex"
-              class="journey-result-impact"
+              wx:for="{{eventHistory}}"
+              wx:key="historyKey"
+              class="journey-result-item"
+              style="opacity: {{index === 0 ? 1 : index === 1 ? 0.68 : 0.4}};"
             >
-              {{line}}
+              <view class="journey-result-summary">{{item.summary}}</view>
+              <view
+                wx:for="{{item.impactLines}}"
+                wx:for-item="line"
+                wx:for-index="lineIndex"
+                wx:key="lineIndex"
+                class="journey-result-impact"
+              >
+                {{line}}
+              </view>
             </view>
           </view>
-        </view>
-        <button class="primary-button journey-action" bindtap="advanceTime" loading="{{loading}}">
-          推进时间
-        </button>
+          <button class="primary-button journey-action" bindtap="advanceTime" loading="{{loading}}">
+            推进时间
+          </button>
+        </block>
       </view>
 
       <view class="journey-lower">
@@ -59,6 +77,7 @@
           canBreakthrough="{{canBreakthrough}}"
           breakthroughHint="{{breakthroughHint}}"
           breakthroughTargetExp="{{breakthroughTargetExp}}"
+          breakthroughTargetSpiritStone="{{breakthroughTargetSpiritStone}}"
           bind:change="handleSectionChange"
         />
       </view>

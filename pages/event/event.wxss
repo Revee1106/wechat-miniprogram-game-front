@@ -81,6 +81,10 @@
   line-height: 1.6;
 }
 
+.cultivation-copy {
+  margin-bottom: 18rpx;
+}
+
 .journey-result {
   margin-top: 14rpx;
   min-height: 0;

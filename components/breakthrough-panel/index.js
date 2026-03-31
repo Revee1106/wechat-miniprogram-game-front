@@ -16,6 +16,14 @@ Component({
       type: String,
       value: "",
     },
+    breakthroughTargetExp: {
+      type: Number,
+      value: 0,
+    },
+    breakthroughTargetSpiritStone: {
+      type: Number,
+      value: 0,
+    },
   },
   methods: {
     submitBreakthrough() {

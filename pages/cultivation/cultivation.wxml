@@ -12,6 +12,8 @@
     resources="{{resources}}"
     canBreakthrough="{{canBreakthrough}}"
     hint="{{breakthroughHint}}"
+    breakthroughTargetExp="{{breakthroughTargetExp}}"
+    breakthroughTargetSpiritStone="{{breakthroughTargetSpiritStone}}"
     bind:breakthrough="attemptBreakthrough"
   />
   <view wx:if="{{resultSummary}}" class="status-note">{{resultSummary}}</view>

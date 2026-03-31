@@ -3,6 +3,7 @@
   "usingComponents": {
     "event-card": "/components/event-card/index",
     "choice-button-list": "/components/choice-button-list/index",
-    "inspection-sheet": "/components/inspection-sheet/index"
+    "inspection-sheet": "/components/inspection-sheet/index",
+    "breakthrough-panel": "/components/breakthrough-panel/index"
   }
 }

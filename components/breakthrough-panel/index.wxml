@@ -5,7 +5,7 @@
     <view class="detail-grid">
       <view class="detail-cell">
         <text class="detail-label">当前境界</text>
-        <text class="detail-value">{{player.realm}}</text>
+        <text class="detail-value">{{player.realm_display_name || player.realm}}</text>
       </view>
       <view class="detail-cell">
         <text class="detail-label">现有修为</text>
@@ -17,7 +17,7 @@
       </view>
       <view class="detail-cell">
         <text class="detail-label">破境门槛</text>
-        <text class="detail-value">修为 100 / 灵石 50</text>
+        <text class="detail-value">{{"修为 " + breakthroughTargetExp + " / 灵石 " + breakthroughTargetSpiritStone}}</text>
       </view>
     </view>
     <view class="status-note">{{hint}}</view>

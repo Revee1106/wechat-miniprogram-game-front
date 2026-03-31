@@ -1,3 +1,7 @@
 .status-note {
   margin-top: 18rpx;
 }
+
+.panel {
+  padding: 0;
+}

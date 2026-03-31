@@ -67,11 +67,26 @@ async function breakthrough() {
   const result = await api.breakthrough(state.run.run_id);
   state.run.character = result.character;
   state.run.resources = result.resources;
+   state.run.breakthrough_requirements = result.breakthrough_requirements || null;
   state.run.result_summary = result.message;
   return {
     state: getState(),
     breakthrough: result,
   };
+}
+
+async function buildDwellingFacility(facilityId) {
+  ensureRun();
+  state.error = "";
+  state.run = await api.buildDwellingFacility(state.run.run_id, facilityId);
+  return getState();
+}
+
+async function upgradeDwellingFacility(facilityId) {
+  ensureRun();
+  state.error = "";
+  state.run = await api.upgradeDwellingFacility(state.run.run_id, facilityId);
+  return getState();
 }
 
 async function rebirth() {
@@ -164,5 +179,7 @@ module.exports = {
   advanceTime,
   resolveEvent,
   breakthrough,
+  buildDwellingFacility,
+  upgradeDwellingFacility,
   rebirth,
 };

@@ -5,7 +5,7 @@
     <view class="detail-grid">
       <view class="detail-cell">
         <text class="detail-label">境界</text>
-        <text class="detail-value">{{player.realm}}</text>
+        <text class="detail-value">{{player.realm_display_name || player.realm}}</text>
       </view>
       <view class="detail-cell">
         <text class="detail-label">修为</text>

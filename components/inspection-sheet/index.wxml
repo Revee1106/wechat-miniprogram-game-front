@@ -35,7 +35,7 @@
       <view class="info-grid">
         <view class="info-card">
           <view class="info-label">境界</view>
-          <view class="info-value">{{player ? player.realm : "未立命牌"}}</view>
+          <view class="info-value">{{player ? player.realm_display_name || player.realm : "未立命牌"}}</view>
         </view>
         <view class="info-card">
           <view class="info-label">修为</view>
@@ -80,6 +80,10 @@
         <view class="info-card full">
           <view class="info-label">提示</view>
           <view class="info-copy">{{breakthroughHint}}</view>
+        </view>
+        <view class="info-card full">
+          <view class="info-label">当前门槛</view>
+          <view class="info-value">{{"修为 " + breakthroughTargetExp + " / 灵石 " + breakthroughTargetSpiritStone}}</view>
         </view>
       </view>
     </block>

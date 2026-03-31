@@ -47,6 +47,14 @@ function breakthrough(runId) {
   return post("/api/run/breakthrough", { run_id: runId });
 }
 
+function buildDwellingFacility(runId, facilityId) {
+  return post("/api/run/dwelling/build", { run_id: runId, facility_id: facilityId });
+}
+
+function upgradeDwellingFacility(runId, facilityId) {
+  return post("/api/run/dwelling/upgrade", { run_id: runId, facility_id: facilityId });
+}
+
 function rebirth(runId) {
   return post("/api/run/rebirth", { run_id: runId });
 }
@@ -58,5 +66,7 @@ module.exports = {
   advanceTime,
   resolveEvent,
   breakthrough,
+  buildDwellingFacility,
+  upgradeDwellingFacility,
   rebirth,
 };

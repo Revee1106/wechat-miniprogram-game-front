@@ -28,6 +28,10 @@ Component({
       type: Number,
       value: 100,
     },
+    breakthroughTargetSpiritStone: {
+      type: Number,
+      value: 0,
+    },
   },
   methods: {
     handleSectionTap(event) {

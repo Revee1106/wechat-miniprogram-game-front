@@ -1,1 +1,54 @@
 @import "../../app.wxss";
+
+.dwelling-overview,
+.settlement-card,
+.facility-item {
+  margin-bottom: 18rpx;
+  padding: 24rpx;
+  border-radius: 30rpx;
+  border: 2rpx solid rgba(68, 53, 36, 0.14);
+  background: linear-gradient(180deg, rgba(253, 246, 231, 0.98) 0%, rgba(237, 223, 192, 0.98) 100%);
+  box-shadow: 0 16rpx 34rpx rgba(48, 33, 18, 0.1);
+  box-sizing: border-box;
+}
+
+.overview-kicker {
+  margin-bottom: 10rpx;
+  color: var(--clay-main);
+  font-size: 22rpx;
+  letter-spacing: 4rpx;
+}
+
+.overview-title {
+  margin-bottom: 8rpx;
+  color: var(--ink-main);
+  font-size: 38rpx;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.overview-copy,
+.settlement-line,
+.settlement-detail {
+  color: var(--ink-soft);
+  font-size: 24rpx;
+  line-height: 1.6;
+}
+
+.settlement-detail {
+  margin-top: 8rpx;
+}
+
+.facility-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.facility-actions {
+  margin-top: 16rpx;
+}
+
+.facility-button {
+  width: 100%;
+}

@@ -1,8 +1,8 @@
 Component({
   properties: {
-    level: {
-      type: Number,
-      value: 1,
+    facility: {
+      type: Object,
+      value: null,
     },
   },
 });
