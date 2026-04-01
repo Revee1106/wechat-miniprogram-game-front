@@ -1,23 +1,15 @@
 const store = require("../../utils/run-store");
 
-const DWELLING_PANELS = ["facilities", "overview", "settlement"];
-
 Page({
   data: {
     run: null,
     dwellingLevel: 1,
+    currentSpiritStone: 0,
     facilities: [],
     facilityCards: [],
     selectedFacilityId: "",
     selectedFacilityCard: null,
     facilitySheetVisible: false,
-    builtFacilityCount: 0,
-    dwelling_last_settlement: null,
-    settlementSummary: "",
-    settlementLines: [],
-    activePanel: "facilities",
-    currentPanelIndex: 0,
-    panelTabs: buildPanelTabs("facilities"),
     error: "",
     loadingFacilityId: "",
   },
@@ -47,7 +39,6 @@ Page({
     const snapshot = store.getState();
     const run = snapshot.run;
     const facilities = run ? run.dwelling_facilities || [] : [];
-    const settlement = run ? run.dwelling_last_settlement : null;
     const facilityCards = normalizeFacilities(facilities);
     const selectedFacilityCard = syncSelectedFacilityCard(
       facilityCards,
@@ -57,40 +48,12 @@ Page({
     this.setData({
       run,
       dwellingLevel: run ? run.dwelling_level : 1,
+      currentSpiritStone: run ? Number((run.resources || {}).spirit_stone) || 0 : 0,
       facilities,
       facilityCards,
       selectedFacilityCard,
-      builtFacilityCount: facilities.filter((item) => item.level > 0).length,
-      dwelling_last_settlement: settlement,
-      settlementSummary: buildSettlementSummary(settlement),
-      settlementLines: settlement ? settlement.summary_lines || [] : [],
-      panelTabs: buildPanelTabs(this.data.activePanel),
       error: snapshot.error || "",
       loadingFacilityId: "",
-    });
-  },
-
-  switchPanel(event) {
-    const panel = event.currentTarget.dataset.panel;
-    const currentPanelIndex = DWELLING_PANELS.indexOf(panel);
-    if (currentPanelIndex < 0) {
-      return;
-    }
-
-    this.setData({
-      activePanel: panel,
-      currentPanelIndex,
-      panelTabs: buildPanelTabs(panel),
-    });
-  },
-
-  handlePanelSwipe(event) {
-    const currentPanelIndex = Number(event.detail.current) || 0;
-    const activePanel = DWELLING_PANELS[currentPanelIndex] || DWELLING_PANELS[0];
-    this.setData({
-      activePanel,
-      currentPanelIndex,
-      panelTabs: buildPanelTabs(activePanel),
     });
   },
 
@@ -163,7 +126,7 @@ Page({
         loadingFacilityId: "",
       });
       wx.showToast({
-        title: error.message || (action === "build" ? "建造失败" : "升级失败"),
+        title: translateDwellingActionError(error, action),
         icon: "none",
       });
     }
@@ -196,31 +159,11 @@ function normalizeFacilities(facilities) {
   });
 }
 
-function buildSettlementSummary(settlement) {
-  if (!settlement) {
-    return "洞府尚无月结记录，先确定设施布局，再逐步稳定产出。";
-  }
-
-  const gains = settlement.total_resource_gains || {};
-  return `最近一次结算支出 ${(settlement.total_maintenance_paid || {}).spirit_stone || 0} 灵石，直产 ${
-    gains.spirit_stone || 0
-  } 灵石，入囊灵植 ${gains.basic_herb || 0}、灵矿 ${gains.basic_ore || 0}、灵泉 ${
-    gains.spirit_spring_water || 0
-  }。`;
-}
-
-function buildPanelTabs(activePanel) {
-  return [
-    { id: "facilities", label: "设施", active: activePanel === "facilities" },
-    { id: "overview", label: "总览", active: activePanel === "overview" },
-    { id: "settlement", label: "月结", active: activePanel === "settlement" },
-  ];
-}
-
 function buildStatusText(status) {
   const labels = {
     active: "运转中",
     paused: "暂停中",
+    stalled: "停摆",
     unbuilt: "未建造",
     insufficient_maintenance: "维护不足",
   };
@@ -238,4 +181,26 @@ function syncSelectedFacilityCard(facilityCards, selectedFacilityId) {
 function isMissingRunError(error) {
   const message = String((error && error.message) || "");
   return /run .* not found/i.test(message) || /No active run/i.test(message);
+}
+
+function translateDwellingActionError(error, action) {
+  const message = String((error && error.message) || "");
+  const fallback = action === "build" ? "建造失败" : "升级失败";
+
+  if (/not enough resources for dwelling action/i.test(message)) {
+    return action === "build" ? "资源不足，无法建造" : "资源不足，无法升级";
+  }
+  if (/is already built/i.test(message)) {
+    return "该设施已建造";
+  }
+  if (/is not built/i.test(message)) {
+    return "该设施尚未建造";
+  }
+  if (/already at max level/i.test(message)) {
+    return "该设施已达最高等级";
+  }
+  if (/unknown dwelling facility/i.test(message)) {
+    return "洞府设施不存在";
+  }
+  return fallback;
 }

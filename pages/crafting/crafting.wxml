@@ -40,48 +40,19 @@
   <swiper class="compact-swiper" current="{{currentPanelIndex}}" bindchange="handlePanelSwipe">
     <swiper-item>
       <view class="compact-panel">
-        <view class="panel-heading">
-          <view class="section-title">丹方列表</view>
-          <view class="muted-text">左右滑动切换丹方卡，直接在卡片内开炉。</view>
-        </view>
-        <scroll-view
-          class="card-rail"
-          scroll-x="{{true}}"
-          enable-flex="{{true}}"
-          show-scrollbar="{{false}}"
-        >
-          <view class="rail-track">
-            <view wx:for="{{recipeCards}}" wx:key="recipe_id" class="recipe-card">
-              <view class="recipe-title">{{item.display_name}}</view>
-              <view class="recipe-copy">{{item.description}}</view>
-              <view class="recipe-copy">
-                耗时 {{item.duration_months}} 月 / 基础成功率 {{item.base_success_rate}}
-              </view>
-              <view class="recipe-copy">主材：{{item.ingredientsText}}</view>
-              <view wx:if="{{item.disabled_reason}}" class="status-note">{{item.disabled_reason}}</view>
-              <view class="recipe-actions">
-                <button
-                  class="primary-button recipe-button"
-                  data-recipe-id="{{item.recipe_id}}"
-                  bindtap="startAlchemy"
-                  loading="{{loadingRecipeId === item.recipe_id}}"
-                  disabled="{{!item.can_start}}"
-                >
-                  开炉
-                </button>
-                <button
-                  class="secondary-button recipe-button"
-                  data-recipe-id="{{item.recipe_id}}"
-                  bindtap="startAlchemyWithSpring"
-                  loading="{{loadingRecipeId === item.recipe_id}}"
-                  disabled="{{!item.can_start}}"
-                >
-                  借灵泉
-                </button>
-              </view>
-            </view>
+        <view wx:if="{{recipeCards.length}}" class="recipe-tag-grid">
+          <view
+            wx:for="{{recipeCards}}"
+            wx:key="recipe_id"
+            class="recipe-tag {{selectedRecipeId === item.recipe_id ? 'is-selected' : ''}}"
+            data-recipe-id="{{item.recipe_id}}"
+            bindtap="openRecipeSheet"
+          >
+            <view class="recipe-tag-title">{{item.display_name}}</view>
+            <view class="recipe-tag-meta">{{item.can_start ? "可开炉" : "已学丹方"}}</view>
           </view>
-        </scroll-view>
+        </view>
+        <view wx:else class="status-note overview-note">快去学习丹方吧</view>
       </view>
     </swiper-item>
 
@@ -144,6 +115,64 @@
       </view>
     </swiper-item>
   </swiper>
+
+  <view
+    wx:if="{{recipeSheetVisible && selectedRecipeCard}}"
+    class="recipe-sheet-mask"
+    bindtap="closeRecipeSheet"
+  ></view>
+  <view wx:if="{{recipeSheetVisible && selectedRecipeCard}}" class="recipe-sheet-panel">
+    <view class="recipe-sheet-handle"></view>
+    <view class="recipe-sheet-head">
+      <view>
+        <view class="scroll-kicker">丹方详情</view>
+        <view class="recipe-sheet-title">{{selectedRecipeCard.display_name}}</view>
+      </view>
+      <button class="ghost-button recipe-sheet-close" bindtap="closeRecipeSheet">收起</button>
+    </view>
+
+    <scroll-view class="recipe-sheet-content" scroll-y="{{true}}">
+      <view class="recipe-sheet-block">
+        <view class="recipe-sheet-label">丹方说明</view>
+        <view class="recipe-sheet-copy">{{selectedRecipeCard.description}}</view>
+      </view>
+      <view class="recipe-sheet-block">
+        <view class="recipe-sheet-label">炼制信息</view>
+        <view class="recipe-sheet-copy">
+          耗时 {{selectedRecipeCard.duration_months}} 月 / 基础成功率 {{selectedRecipeCard.base_success_rate}}
+        </view>
+      </view>
+      <view class="recipe-sheet-block">
+        <view class="recipe-sheet-label">主材需求</view>
+        <view class="recipe-sheet-copy">{{selectedRecipeCard.ingredientsText}}</view>
+      </view>
+      <view wx:if="{{selectedRecipeCard.disabled_reason}}" class="recipe-sheet-block">
+        <view class="recipe-sheet-label">当前限制</view>
+        <view class="recipe-sheet-copy">{{selectedRecipeCard.disabled_reason}}</view>
+      </view>
+    </scroll-view>
+
+    <view class="recipe-sheet-actions">
+      <button
+        class="primary-button recipe-sheet-button"
+        data-recipe-id="{{selectedRecipeCard.recipe_id}}"
+        bindtap="startAlchemy"
+        loading="{{loadingRecipeId === selectedRecipeCard.recipe_id}}"
+        disabled="{{!selectedRecipeCard.can_start}}"
+      >
+        开炉
+      </button>
+      <button
+        class="secondary-button recipe-sheet-button"
+        data-recipe-id="{{selectedRecipeCard.recipe_id}}"
+        bindtap="startAlchemyWithSpring"
+        loading="{{loadingRecipeId === selectedRecipeCard.recipe_id}}"
+        disabled="{{!selectedRecipeCard.can_start}}"
+      >
+        借灵泉
+      </button>
+    </view>
+  </view>
 
   <view wx:if="{{error}}" class="status-note danger compact-error">{{error}}</view>
 </view>

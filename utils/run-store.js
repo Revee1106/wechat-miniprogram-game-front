@@ -4,6 +4,7 @@ const state = {
   run: null,
   playerProfile: null,
   eventHistory: [],
+  dwellingSettlementHistory: [],
   error: "",
 };
 
@@ -21,6 +22,7 @@ function clearRun() {
   state.run = null;
   state.error = "";
   state.eventHistory = [];
+  state.dwellingSettlementHistory = [];
   eventHistorySequence = 0;
 }
 
@@ -33,6 +35,7 @@ function ensureRun() {
 async function createRun(playerId = "demo-player") {
   state.error = "";
   state.eventHistory = [];
+  state.dwellingSettlementHistory = [];
   eventHistorySequence = 0;
   state.run = await api.createRun(playerId);
   return getState();
@@ -48,7 +51,9 @@ async function refreshRun() {
 async function advanceTime() {
   ensureRun();
   state.error = "";
+  const beforeRun = clone(state.run);
   state.run = await api.advanceTime(state.run.run_id);
+  pushDwellingSettlementHistory(beforeRun, state.run);
   return getState();
 }
 
@@ -96,6 +101,13 @@ async function sellResource(resourceKey, amount) {
   return getState();
 }
 
+async function convertSpiritStoneToCultivation(amount) {
+  ensureRun();
+  state.error = "";
+  state.run = await api.convertSpiritStoneToCultivation(state.run.run_id, amount);
+  return getState();
+}
+
 async function startAlchemy(recipeId, useSpiritSpring = false) {
   ensureRun();
   state.error = "";
@@ -117,6 +129,7 @@ async function rebirth() {
   state.playerProfile = result.player_profile;
   state.run = result.new_run;
   state.eventHistory = [];
+  state.dwellingSettlementHistory = [];
   eventHistorySequence = 0;
   return getState();
 }
@@ -135,7 +148,27 @@ function pushEventHistory(beforeRun, afterRun) {
       impactLines,
     },
     ...state.eventHistory,
-  ].slice(0, 3);
+  ].slice(0, 2);
+}
+
+function pushDwellingSettlementHistory(beforeRun, afterRun) {
+  const settlement = afterRun ? afterRun.dwelling_last_settlement : null;
+  if (!settlement) {
+    return;
+  }
+
+  const previousRoundIndex =
+    state.dwellingSettlementHistory.length > 0
+      ? state.dwellingSettlementHistory[0].roundIndex
+      : null;
+  if (previousRoundIndex === settlement.round_index) {
+    return;
+  }
+
+  state.dwellingSettlementHistory = [
+    buildDwellingSettlementHistoryItem(afterRun, settlement),
+    ...state.dwellingSettlementHistory,
+  ].slice(0, 2);
 }
 
 function buildImpactLines(beforeRun, afterRun) {
@@ -175,6 +208,27 @@ function buildImpactLines(beforeRun, afterRun) {
   return lines;
 }
 
+function buildDwellingSettlementHistoryItem(run, settlement) {
+  const maintenance = Number((settlement.total_maintenance_paid || {}).spirit_stone || 0);
+  const income = Number((settlement.total_resource_gains || {}).spirit_stone || 0);
+  const stalledFacilities = (settlement.entries || [])
+    .filter((item) => item.status === "stalled")
+    .map((item) => item.display_name)
+    .filter(Boolean);
+  const impactLines = [`支出 ${maintenance} 灵石，收入 ${income} 灵石`];
+
+  if (stalledFacilities.length) {
+    impactLines.push(`停摆：${stalledFacilities.join("、")}`);
+  }
+
+  return {
+    historyKey: `dwelling-history-${settlement.round_index}-${eventHistorySequence++}`,
+    roundIndex: settlement.round_index,
+    summary: formatUnsignedMonths(settlement.round_index || 0),
+    impactLines,
+  };
+}
+
 function pushDeltaLine(lines, label, delta) {
   if (!delta) {
     return;
@@ -192,6 +246,13 @@ function formatSignedMonths(delta) {
   return `${sign}${years}年${months}个月`;
 }
 
+function formatUnsignedMonths(totalMonths) {
+  const safeMonths = Math.max(0, Number(totalMonths) || 0);
+  const years = Math.floor(safeMonths / 12);
+  const months = safeMonths % 12;
+  return `${years}年${months}个月`;
+}
+
 module.exports = {
   getState,
   clearRun,
@@ -203,6 +264,7 @@ module.exports = {
   buildDwellingFacility,
   upgradeDwellingFacility,
   sellResource,
+  convertSpiritStoneToCultivation,
   startAlchemy,
   consumeAlchemyItem,
   rebirth,

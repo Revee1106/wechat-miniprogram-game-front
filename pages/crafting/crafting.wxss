@@ -91,6 +91,39 @@
   margin-bottom: 16rpx;
 }
 
+.recipe-tag-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16rpx;
+}
+
+.recipe-tag {
+  min-height: 164rpx;
+  padding: 20rpx;
+  border-radius: 24rpx;
+  background: rgba(255, 250, 242, 0.92);
+  border: 2rpx solid rgba(89, 66, 43, 0.12);
+  box-sizing: border-box;
+}
+
+.recipe-tag.is-selected {
+  border-color: rgba(32, 63, 58, 0.34);
+  box-shadow: 0 10rpx 24rpx rgba(32, 63, 58, 0.14);
+}
+
+.recipe-tag-title {
+  color: var(--ink-main);
+  font-size: 28rpx;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.recipe-tag-meta {
+  margin-top: 12rpx;
+  color: var(--ink-soft);
+  font-size: 22rpx;
+}
+
 .card-rail {
   height: calc(100% - 92rpx);
   white-space: nowrap;
@@ -137,6 +170,89 @@
 
 .compact-action {
   margin-top: 16rpx;
+}
+
+.recipe-sheet-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(33, 25, 17, 0.32);
+  z-index: 20;
+}
+
+.recipe-sheet-panel {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 21;
+  padding: 18rpx 24rpx calc(28rpx + env(safe-area-inset-bottom));
+  border-radius: 32rpx 32rpx 0 0;
+  background: linear-gradient(180deg, rgba(253, 246, 231, 0.99) 0%, rgba(237, 223, 192, 0.99) 100%);
+  box-shadow: 0 -18rpx 36rpx rgba(48, 33, 18, 0.16);
+}
+
+.recipe-sheet-handle {
+  width: 88rpx;
+  height: 8rpx;
+  margin: 0 auto 18rpx;
+  border-radius: 999rpx;
+  background: rgba(89, 66, 43, 0.18);
+}
+
+.recipe-sheet-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18rpx;
+}
+
+.recipe-sheet-title {
+  margin-top: 6rpx;
+  color: var(--ink-main);
+  font-size: 34rpx;
+  font-weight: 700;
+}
+
+.recipe-sheet-close {
+  width: auto;
+  min-width: 148rpx;
+  margin: 0;
+  padding: 0 24rpx;
+}
+
+.recipe-sheet-content {
+  max-height: 48vh;
+  margin-top: 18rpx;
+}
+
+.recipe-sheet-block {
+  margin-bottom: 14rpx;
+  padding: 18rpx 20rpx;
+  border-radius: 22rpx;
+  background: rgba(255, 250, 242, 0.86);
+  border: 2rpx solid rgba(89, 66, 43, 0.1);
+}
+
+.recipe-sheet-label {
+  margin-bottom: 8rpx;
+  color: var(--ink-faint);
+  font-size: 22rpx;
+}
+
+.recipe-sheet-copy {
+  color: var(--ink-soft);
+  font-size: 24rpx;
+  line-height: 1.6;
+}
+
+.recipe-sheet-actions {
+  margin-top: 18rpx;
+  display: flex;
+  gap: 12rpx;
+}
+
+.recipe-sheet-button {
+  flex: 1;
 }
 
 .job-grid {

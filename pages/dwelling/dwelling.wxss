@@ -24,35 +24,9 @@
   min-width: 220rpx;
 }
 
-.compact-tabs {
-  display: flex;
-  gap: 12rpx;
-}
-
-.compact-tab {
-  flex: 1;
-  padding: 18rpx 0;
-  border-radius: 999rpx;
-  text-align: center;
-  font-size: 24rpx;
-  color: var(--ink-soft);
-  background: rgba(255, 248, 235, 0.82);
-  border: 2rpx solid rgba(89, 66, 43, 0.12);
-}
-
-.compact-tab.is-active {
-  color: #fff7ea;
-  background: linear-gradient(135deg, var(--jade-main) 0%, var(--jade-soft) 100%);
-  box-shadow: 0 10rpx 24rpx rgba(32, 63, 58, 0.18);
-}
-
-.compact-swiper {
+.compact-panel {
   flex: 1;
   min-height: 0;
-}
-
-.compact-panel {
-  height: 100%;
   padding: 24rpx;
   border-radius: 28rpx;
   border: 2rpx solid rgba(68, 53, 36, 0.14);
@@ -106,26 +80,6 @@
   margin-top: 12rpx;
   color: var(--ink-soft);
   font-size: 24rpx;
-}
-
-.overview-note {
-  margin-top: 18rpx;
-}
-
-.settlement-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 12rpx;
-  margin-top: 18rpx;
-}
-
-.settlement-pill {
-  padding: 16rpx 18rpx;
-  border-radius: 18rpx;
-  background: rgba(255, 251, 243, 0.78);
-  color: var(--ink-soft);
-  font-size: 24rpx;
-  line-height: 1.6;
 }
 
 .facility-sheet-mask {

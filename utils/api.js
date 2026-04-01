@@ -63,6 +63,13 @@ function sellResource(runId, resourceKey, amount) {
   });
 }
 
+function convertSpiritStoneToCultivation(runId, amount) {
+  return post("/api/run/resource/convert-cultivation", {
+    run_id: runId,
+    amount,
+  });
+}
+
 function startAlchemy(runId, recipeId, useSpiritSpring = false) {
   return post("/api/run/alchemy/start", {
     run_id: runId,
@@ -93,6 +100,7 @@ module.exports = {
   buildDwellingFacility,
   upgradeDwellingFacility,
   sellResource,
+  convertSpiritStoneToCultivation,
   startAlchemy,
   consumeAlchemyItem,
   rebirth,

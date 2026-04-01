@@ -7,6 +7,9 @@ Page({
     run: null,
     alchemy_state: null,
     recipeCards: [],
+    selectedRecipeId: "",
+    selectedRecipeCard: null,
+    recipeSheetVisible: false,
     inventoryCards: [],
     spiritSpringWaterAmount: 0,
     activePanel: "recipes",
@@ -39,10 +42,14 @@ Page({
     const snapshot = store.getState();
     const run = snapshot.run;
     const alchemyState = run ? normalizeAlchemyState(run.alchemy_state) : null;
+    const recipeCards = filterLearnedRecipes(alchemyState ? alchemyState.available_recipes || [] : []);
+    const selectedRecipeCard = syncSelectedRecipeCard(recipeCards, this.data.selectedRecipeId);
+
     this.setData({
       run,
       alchemy_state: alchemyState,
-      recipeCards: alchemyState ? alchemyState.available_recipes || [] : [],
+      recipeCards,
+      selectedRecipeCard,
       inventoryCards: alchemyState ? alchemyState.inventory || [] : [],
       spiritSpringWaterAmount: run ? getResourceStackAmount(run, "spirit_spring_water") : 0,
       panelTabs: buildPanelTabs(this.data.activePanel),
@@ -76,6 +83,29 @@ Page({
     });
   },
 
+  openRecipeSheet(event) {
+    const recipeId = event.currentTarget.dataset.recipeId;
+    const selectedRecipeCard = syncSelectedRecipeCard(this.data.recipeCards, recipeId);
+    if (!selectedRecipeCard) {
+      return;
+    }
+
+    this.setData({
+      selectedRecipeId: recipeId,
+      selectedRecipeCard,
+      recipeSheetVisible: true,
+      error: "",
+    });
+  },
+
+  closeRecipeSheet() {
+    this.setData({
+      selectedRecipeId: "",
+      selectedRecipeCard: null,
+      recipeSheetVisible: false,
+    });
+  },
+
   async startAlchemy(event) {
     await this.handleStartAlchemy(event.currentTarget.dataset.recipeId, false);
   },
@@ -101,6 +131,7 @@ Page({
     this.setData({ loadingRecipeId: recipeId, error: "" });
     try {
       await store.startAlchemy(recipeId, useSpiritSpring);
+      this.closeRecipeSheet();
       this.syncState();
       wx.showToast({
         title: useSpiritSpring ? "已借灵泉开炉" : "已起炉火",
@@ -149,6 +180,18 @@ function normalizeAlchemyState(alchemyState) {
       inventoryKey: `${item.item_id}-${item.quality}`,
     })),
   };
+}
+
+function filterLearnedRecipes(recipes) {
+  return recipes.filter((item) => item.is_unlocked || item.can_start);
+}
+
+function syncSelectedRecipeCard(recipeCards, selectedRecipeId) {
+  if (!selectedRecipeId) {
+    return null;
+  }
+
+  return recipeCards.find((item) => item.recipe_id === selectedRecipeId) || null;
 }
 
 function buildIngredientsText(ingredients) {
