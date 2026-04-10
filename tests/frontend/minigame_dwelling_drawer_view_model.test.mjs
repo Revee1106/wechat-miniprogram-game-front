@@ -16,7 +16,7 @@ const snapshot = {
         display_name: "灵田",
         level: 1,
         max_level: 3,
-        status: "active",
+        status: "stalled",
         monthly_resource_yields: {
           basic_herb: 3,
         },
@@ -124,7 +124,7 @@ const maxLevelSnapshot = {
         display_name: "灵泉",
         level: 4,
         max_level: 4,
-        status: "max_level",
+        status: "stalled",
         monthly_resource_yields: {
           spirit_spring_water: 3,
         },
@@ -174,7 +174,7 @@ const aggregateSnapshot = {
         display_name: "矿洞",
         level: 3,
         max_level: 3,
-        status: "max_level",
+        status: "stalled",
         monthly_resource_yields: {
           basic_ore: 3,
           spirit_stone: 10,
@@ -230,3 +230,49 @@ assert.deepEqual(aggregateViewModel.productionSummaryItems, [
 ]);
 assert.equal(aggregateViewModel.facilityCards[0].isStalled, false);
 assert.equal(aggregateViewModel.facilityCards[1].isStalled, true);
+
+const recoveredSnapshot = {
+  run: {
+    resources: {
+      spirit_stone: 8,
+    },
+    dwelling_level: 2,
+    dwelling_facilities: [
+      {
+        facility_id: "mine_cave",
+        display_name: "鐭挎礊",
+        level: 1,
+        max_level: 3,
+        status: "active",
+        monthly_resource_yields: {
+          basic_ore: 2,
+        },
+        maintenance_cost: {
+          spirit_stone: 5,
+        },
+        next_upgrade_cost: {
+          spirit_stone: 30,
+        },
+        monthly_cultivation_exp_gain: 0,
+      },
+    ],
+    dwelling_last_settlement: {
+      round_index: 8,
+      total_maintenance_paid: {
+        spirit_stone: 0,
+      },
+      total_resource_gains: {},
+      entries: [
+        {
+          facility_id: "mine_cave",
+          display_name: "鐭挎礊",
+          status: "stalled",
+        },
+      ],
+      summary_lines: [],
+    },
+  },
+};
+
+const recoveredViewModel = buildDwellingDrawerViewModel(recoveredSnapshot);
+assert.equal(recoveredViewModel.facilityCards[0].isStalled, false);

@@ -12,14 +12,6 @@ function buildDwellingDrawerViewModel(snapshot) {
   const facilities = run ? run.dwelling_facilities || [] : [];
   const settlement = run ? run.dwelling_last_settlement : null;
   const currentSpiritStone = run ? Number((run.resources || {}).spirit_stone || 0) : 0;
-  const stalledFacilityIds = new Set(
-    settlement
-      ? (settlement.entries || [])
-          .filter((item) => item.status === "stalled")
-          .map((item) => item.facility_id)
-          .filter(Boolean)
-      : []
-  );
 
   const totalMaintenanceSpiritStone = facilities.reduce(
     (sum, facility) => sum + Number(((facility.maintenance_cost || {}).spirit_stone || 0)),
@@ -35,7 +27,7 @@ function buildDwellingDrawerViewModel(snapshot) {
     const isBuilt = Number(facility.level) > 0;
     const maxLevel = Number(facility.max_level) || 0;
     const isMaxLevel = (maxLevel > 0 && Number(facility.level) >= maxLevel) || facility.status === "max_level";
-    const isStalled = stalledFacilityIds.has(facility.facility_id);
+    const isStalled = facility.status === "stalled";
     const action = isBuilt
       ? isMaxLevel
         ? { action: "upgrade-facility", label: "已满级", facilityId: facility.facility_id, disabled: true }
