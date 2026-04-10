@@ -1,10 +1,12 @@
+const { formatRealmName } = require("../src/game/utils/display-text");
+
 function getBreakthroughRequirements(run) {
   const requirements = run && run.breakthrough_requirements ? run.breakthrough_requirements : null;
   return {
     requiredCultivationExp: requirements ? Number(requirements.required_cultivation_exp || 0) : 0,
     requiredSpiritStone: requirements ? Number(requirements.required_spirit_stone || 0) : 0,
     targetRealmDisplayName: requirements
-      ? requirements.target_realm_display_name || requirements.target_realm_key || ""
+      ? formatRealmName(requirements.target_realm_key, requirements.target_realm_display_name)
       : "",
   };
 }

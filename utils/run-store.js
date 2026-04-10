@@ -5,6 +5,7 @@ const state = {
   playerProfile: null,
   eventHistory: [],
   dwellingSettlementHistory: [],
+  suppressCultivationCapPromptForCurrentRun: false,
   error: "",
 };
 
@@ -23,12 +24,13 @@ function clearRun() {
   state.error = "";
   state.eventHistory = [];
   state.dwellingSettlementHistory = [];
+  state.suppressCultivationCapPromptForCurrentRun = false;
   eventHistorySequence = 0;
 }
 
 function ensureRun() {
   if (!state.run) {
-    throw new Error("No active run. Create one first.");
+    throw new Error("当前没有进行中的修仙历程，请先启程。");
   }
 }
 
@@ -36,6 +38,7 @@ async function createRun(playerId = "demo-player") {
   state.error = "";
   state.eventHistory = [];
   state.dwellingSettlementHistory = [];
+  state.suppressCultivationCapPromptForCurrentRun = false;
   eventHistorySequence = 0;
   state.run = await api.createRun(playerId);
   return getState();
@@ -72,7 +75,7 @@ async function breakthrough() {
   const result = await api.breakthrough(state.run.run_id);
   state.run.character = result.character;
   state.run.resources = result.resources;
-   state.run.breakthrough_requirements = result.breakthrough_requirements || null;
+  state.run.breakthrough_requirements = result.breakthrough_requirements || null;
   state.run.result_summary = result.message;
   return {
     state: getState(),
@@ -130,8 +133,17 @@ async function rebirth() {
   state.run = result.new_run;
   state.eventHistory = [];
   state.dwellingSettlementHistory = [];
+  state.suppressCultivationCapPromptForCurrentRun = false;
   eventHistorySequence = 0;
   return getState();
+}
+
+function markCultivationCapPromptSuppressed() {
+  state.suppressCultivationCapPromptForCurrentRun = true;
+}
+
+function isCultivationCapPromptSuppressed() {
+  return state.suppressCultivationCapPromptForCurrentRun === true;
 }
 
 function pushEventHistory(beforeRun, afterRun) {
@@ -166,33 +178,25 @@ function pushDwellingSettlementHistory(beforeRun, afterRun) {
   }
 
   state.dwellingSettlementHistory = [
-    buildDwellingSettlementHistoryItem(afterRun, settlement),
+    buildDwellingSettlementHistoryItem(settlement),
     ...state.dwellingSettlementHistory,
   ].slice(0, 2);
 }
 
 function buildImpactLines(beforeRun, afterRun) {
   const lines = [];
+  const eventResolution = afterRun ? afterRun.last_event_resolution || null : null;
 
-  pushDeltaLine(
-    lines,
-    "灵石",
-    afterRun.resources.spirit_stone - beforeRun.resources.spirit_stone
-  );
+  pushDeltaLine(lines, "灵石", afterRun.resources.spirit_stone - beforeRun.resources.spirit_stone);
   pushDeltaLine(lines, "药草", afterRun.resources.herbs - beforeRun.resources.herbs);
-  pushDeltaLine(
+  pushDeltaLine(lines, "玄铁精华", afterRun.resources.iron_essence - beforeRun.resources.iron_essence);
+  pushCultivationDeltaLine(
     lines,
-    "玄铁精华",
-    afterRun.resources.iron_essence - beforeRun.resources.iron_essence
-  );
-  pushDeltaLine(
-    lines,
-    "修为",
-    afterRun.character.cultivation_exp - beforeRun.character.cultivation_exp
+    afterRun.character.cultivation_exp - beforeRun.character.cultivation_exp,
+    eventResolution
   );
 
-  const lifespanDelta =
-    afterRun.character.lifespan_current - beforeRun.character.lifespan_current;
+  const lifespanDelta = afterRun.character.lifespan_current - beforeRun.character.lifespan_current;
   if (lifespanDelta !== 0) {
     lines.push(`寿元 ${formatSignedMonths(lifespanDelta)}`);
   }
@@ -208,7 +212,7 @@ function buildImpactLines(beforeRun, afterRun) {
   return lines;
 }
 
-function buildDwellingSettlementHistoryItem(run, settlement) {
+function buildDwellingSettlementHistoryItem(settlement) {
   const maintenance = Number((settlement.total_maintenance_paid || {}).spirit_stone || 0);
   const income = Number((settlement.total_resource_gains || {}).spirit_stone || 0);
   const stalledFacilities = (settlement.entries || [])
@@ -234,8 +238,28 @@ function pushDeltaLine(lines, label, delta) {
     return;
   }
 
-  const sign = delta > 0 ? "+" : "";
-  lines.push(`${label} ${sign}${delta}`);
+  lines.push(`${label} ${formatSignedNumber(delta)}`);
+}
+
+function pushCultivationDeltaLine(lines, actualDelta, eventResolution) {
+  const intendedDelta = Number(
+    ((eventResolution && eventResolution.intended_character) || {}).cultivation_exp || 0
+  );
+  const cappedDelta = Number(
+    ((eventResolution && eventResolution.capped_character) || {}).cultivation_exp || 0
+  );
+
+  if (intendedDelta !== 0 && cappedDelta > 0) {
+    lines.push(`修为 ${formatSignedNumber(intendedDelta)}（已达上限，实际${formatSignedNumber(actualDelta, true)}）`);
+    return;
+  }
+
+  pushDeltaLine(lines, "修为", actualDelta);
+}
+
+function formatSignedNumber(delta, includePositiveZero = false) {
+  const needsPlus = delta > 0 || (includePositiveZero && delta === 0);
+  return `${needsPlus ? "+" : ""}${delta}`;
 }
 
 function formatSignedMonths(delta) {
@@ -260,6 +284,8 @@ module.exports = {
   refreshRun,
   advanceTime,
   resolveEvent,
+  markCultivationCapPromptSuppressed,
+  isCultivationCapPromptSuppressed,
   breakthrough,
   buildDwellingFacility,
   upgradeDwellingFacility,

@@ -231,5 +231,30 @@
     </view>
   </view>
 
+  <view
+    wx:if="{{cultivationCapPromptVisible}}"
+    class="cultivation-cap-sheet-mask"
+    bindtap="cancelCultivationCapAdvance"
+  >
+    <view class="sale-sheet cultivation-cap-sheet-panel" catchtap="noop">
+      <view class="sale-sheet-head">
+        <view>
+          <view class="sale-sheet-title">修为已满</view>
+          <view class="sale-sheet-copy">若不突破则无法增加修为，是否继续推进时间？</view>
+        </view>
+      </view>
+      <button
+        class="ghost-button cultivation-cap-toggle {{cultivationCapPromptSkipFuture ? 'is-selected' : ''}}"
+        bindtap="toggleCultivationCapPromptSkip"
+      >
+        不再提示
+      </button>
+      <view class="cultivation-cap-actions">
+        <button class="ghost-button" bindtap="cancelCultivationCapAdvance">放弃推进</button>
+        <button class="primary-button" bindtap="confirmCultivationCapAdvance">继续推进</button>
+      </view>
+    </view>
+  </view>
+
   <view wx:if="{{error}}" class="status-note danger flow-error">{{error}}</view>
 </view>

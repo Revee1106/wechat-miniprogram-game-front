@@ -1,4 +1,5 @@
 const store = require("../../utils/run-store");
+const { isMissingRunError } = require("../../src/game/utils/display-text");
 const {
   buildBreakthroughHint,
   canAttemptBreakthrough,
@@ -78,8 +79,3 @@ Page({
     }
   },
 });
-
-function isMissingRunError(error) {
-  const message = String((error && error.message) || "");
-  return /run .* not found/i.test(message) || /No active run/i.test(message);
-}

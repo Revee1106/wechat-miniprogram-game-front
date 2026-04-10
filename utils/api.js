@@ -1,4 +1,5 @@
 const config = require("./config");
+const { createLocalizedApiError } = require("../src/game/utils/display-text");
 
 let apiBaseUrl = config.apiBaseUrl;
 
@@ -18,10 +19,10 @@ function post(path, data) {
           return;
         }
 
-        reject(new Error(response.data.detail || `Request failed: ${response.statusCode}`));
+        reject(createLocalizedApiError(response.data, response.statusCode));
       },
       fail(error) {
-        reject(new Error(error.errMsg || "Network request failed"));
+        reject(new Error(error.errMsg || "网络请求失败"));
       },
     });
   });

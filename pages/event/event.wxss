@@ -198,6 +198,38 @@
   background: rgba(21, 28, 27, 0.28);
 }
 
+.cultivation-cap-sheet-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  display: flex;
+  align-items: flex-end;
+  justify-content: stretch;
+  background: rgba(21, 28, 27, 0.34);
+}
+
+.cultivation-cap-sheet-panel {
+  width: 100%;
+}
+
+.cultivation-cap-toggle {
+  width: 100%;
+  margin-top: 16rpx;
+}
+
+.cultivation-cap-toggle.is-selected {
+  color: #fff7ea;
+  background: linear-gradient(135deg, var(--jade-main) 0%, var(--jade-soft) 100%);
+  border-color: transparent;
+}
+
+.cultivation-cap-actions {
+  margin-top: 16rpx;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12rpx;
+}
+
 .sale-sheet-panel {
   width: 100%;
   padding: 22rpx 22rpx calc(22rpx + env(safe-area-inset-bottom));

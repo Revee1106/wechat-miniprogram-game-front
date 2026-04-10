@@ -1,4 +1,5 @@
 const store = require("../../utils/run-store");
+const { formatResourceName, isMissingRunError } = require("../../src/game/utils/display-text");
 
 const CRAFTING_PANELS = ["recipes", "job", "inventory"];
 
@@ -195,14 +196,8 @@ function syncSelectedRecipeCard(recipeCards, selectedRecipeId) {
 }
 
 function buildIngredientsText(ingredients) {
-  const labels = {
-    herb: "药草",
-    ore: "灵矿",
-    spirit_stone: "灵石",
-    spirit_spring_water: "灵泉水",
-  };
   const entries = Object.keys(ingredients).map(
-    (key) => `${labels[key] || key} x${ingredients[key]}`
+    (key) => `${formatResourceName(key)} x${ingredients[key]}`
   );
   return entries.join(" / ");
 }
@@ -218,9 +213,4 @@ function buildPanelTabs(activePanel) {
 function getResourceStackAmount(run, resourceKey) {
   const stack = (run.resource_stacks || []).find((item) => item.resource_key === resourceKey);
   return stack ? stack.amount : 0;
-}
-
-function isMissingRunError(error) {
-  const message = String((error && error.message) || "");
-  return /run .* not found/i.test(message) || /No active run/i.test(message);
 }

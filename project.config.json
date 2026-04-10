@@ -1,5 +1,5 @@
 {
-  "description": "Wendao core loop mini program shell",
+  "description": "Wendao core loop mini game debug shell",
   "packOptions": {
     "ignore": [],
     "include": []
@@ -28,9 +28,10 @@
       "outputPath": ""
     }
   },
-  "compileType": "miniprogram",
+  "compileType": "game",
+  "miniprogramRoot": "./",
   "libVersion": "3.6.1",
-  "appid": "wx4f9b19755ab8a5b1",
+  "appid": "wxe5a726b21f022962",
   "projectname": "wendao-core-loop",
   "simulatorType": "wechat",
   "simulatorPluginLibVersion": {},

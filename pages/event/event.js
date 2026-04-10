@@ -1,9 +1,17 @@
 const store = require("../../utils/run-store");
+const { formatFacilityName, isMissingRunError } = require("../../src/game/utils/display-text");
 const {
   buildBreakthroughHint,
   canAttemptBreakthrough,
   getBreakthroughRequirements,
 } = require("../../utils/breakthrough");
+
+const CULTIVATION_CAP_PROMPT_COPY = {
+  title: "修为已满",
+  description: "若不突破则无法增加修为",
+  confirmText: "继续推进",
+  cancelText: "放弃推进",
+};
 
 Page({
   data: {
@@ -27,6 +35,8 @@ Page({
     selectedInventoryResource: null,
     selectedInventoryAction: null,
     inventoryActionQuantity: 1,
+    cultivationCapPromptVisible: false,
+    cultivationCapPromptSkipFuture: false,
     elapsedText: "",
     lifespanText: "",
     activeSection: "player",
@@ -86,6 +96,8 @@ Page({
       selectedInventoryResource: null,
       selectedInventoryAction: null,
       inventoryActionQuantity: 1,
+      cultivationCapPromptVisible: false,
+      cultivationCapPromptSkipFuture: false,
       elapsedText: run ? formatMonths(run.round_index || 0) : "0年0个月",
       lifespanText:
         run && run.character ? formatMonths(run.character.lifespan_current) : "0年0个月",
@@ -106,6 +118,14 @@ Page({
       if (!modalResult.confirm) {
         return;
       }
+    }
+
+    if (
+      shouldShowCultivationCapPrompt(this.data.run) &&
+      !store.isCultivationCapPromptSuppressed()
+    ) {
+      this.showCultivationCapPrompt();
+      return;
     }
 
     await this.performAdvanceTime();
@@ -291,6 +311,41 @@ Page({
     wx.navigateTo({ url: "/pages/dwelling/dwelling" });
   },
 
+  showCultivationCapPrompt() {
+    this.setData({
+      cultivationCapPromptVisible: true,
+      cultivationCapPromptSkipFuture: false,
+      cultivationCapPromptTitle: CULTIVATION_CAP_PROMPT_COPY.title,
+      cultivationCapPromptDescription: CULTIVATION_CAP_PROMPT_COPY.description,
+      cultivationCapPromptConfirmText: CULTIVATION_CAP_PROMPT_COPY.confirmText,
+      cultivationCapPromptCancelText: CULTIVATION_CAP_PROMPT_COPY.cancelText,
+    });
+  },
+
+  toggleCultivationCapPromptSkip() {
+    this.setData({
+      cultivationCapPromptSkipFuture: !this.data.cultivationCapPromptSkipFuture,
+    });
+  },
+
+  async confirmCultivationCapAdvance() {
+    if (this.data.cultivationCapPromptSkipFuture) {
+      store.markCultivationCapPromptSuppressed();
+    }
+    this.setData({
+      cultivationCapPromptVisible: false,
+      cultivationCapPromptSkipFuture: false,
+    });
+    await this.performAdvanceTime();
+  },
+
+  cancelCultivationCapAdvance() {
+    this.setData({
+      cultivationCapPromptVisible: false,
+      cultivationCapPromptSkipFuture: false,
+    });
+  },
+
   handleSectionChange(event) {
     this.setData({ activeSection: event.detail.section });
   },
@@ -393,7 +448,7 @@ function buildDwellingStallWarning(run) {
       return;
     }
 
-    stalledFacilities.push(facility.display_name || facility.facility_id || "未知设施");
+    stalledFacilities.push(formatFacilityName(facility.facility_id, facility.display_name) || "未知设施");
   });
 
   if (!stalledFacilities.length) {
@@ -422,16 +477,22 @@ function showDwellingStallWarningModal(content) {
   });
 }
 
+function shouldShowCultivationCapPrompt(run) {
+  if (!run || !run.character || !run.breakthrough_requirements || run.character.is_dead) {
+    return false;
+  }
+
+  return (
+    Number(run.character.cultivation_exp || 0) >=
+    Number(run.breakthrough_requirements.required_cultivation_exp || 0)
+  );
+}
+
 function formatMonths(totalMonths) {
   const safeMonths = Math.max(0, Number(totalMonths) || 0);
   const years = Math.floor(safeMonths / 12);
   const months = safeMonths % 12;
   return `${years}年${months}个月`;
-}
-
-function isMissingRunError(error) {
-  const message = String((error && error.message) || "");
-  return /run .* not found/i.test(message) || /No active run/i.test(message);
 }
 
 function buildDwellingFinanceSummary(run) {

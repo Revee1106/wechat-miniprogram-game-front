@@ -1,4 +1,5 @@
 const store = require("../../utils/run-store");
+const { formatFacilityName, isMissingRunError } = require("../../src/game/utils/display-text");
 
 Page({
   data: {
@@ -139,6 +140,7 @@ function normalizeFacilities(facilities) {
     const nextUpgradeCost = item.next_upgrade_cost || {};
     return {
       ...item,
+      display_name: formatFacilityName(item.facility_id, item.display_name),
       statusText: buildStatusText(item.status),
       yieldText: [
         `灵石 ${resourceYields.spirit_stone || 0}`,
@@ -178,12 +180,10 @@ function syncSelectedFacilityCard(facilityCards, selectedFacilityId) {
   return facilityCards.find((item) => item.facility_id === selectedFacilityId) || null;
 }
 
-function isMissingRunError(error) {
-  const message = String((error && error.message) || "");
-  return /run .* not found/i.test(message) || /No active run/i.test(message);
-}
-
 function translateDwellingActionError(error, action) {
+  if (error && error.message) {
+    return error.message;
+  }
   const message = String((error && error.message) || "");
   const fallback = action === "build" ? "建造失败" : "升级失败";
 

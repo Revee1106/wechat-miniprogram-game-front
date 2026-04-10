@@ -1,0 +1,55 @@
+const themeTokens = {
+  color: {
+    ink: "#2c1e10",
+    inkSoft: "#5a4630",
+    jade: "#203f3a",
+    jadeDeep: "#163530",
+    jadeSoft: "#365d57",
+    paper: "#efe4c8",
+    paperDeep: "#e8d7b7",
+    paperSoft: "#f6eddc",
+    scrollEdge: "#dcc29c",
+    accent: "#9f6b2f",
+    bronze: "#a36d2d",
+    bronzeSoft: "#c69657",
+    overlay: "rgba(24, 22, 18, 0.34)",
+    overlayHeavy: "rgba(24, 22, 18, 0.5)",
+    muted: "#b5ac99",
+    disabledText: "#7c6f5e",
+    creamText: "#fff8eb",
+    buttonSurface: "#fffaf2",
+    buttonBorder: "#2c1e10",
+    buttonText: "#2c1e10",
+    buttonDisabledSurface: "#ddd4c5",
+    buttonDisabledBorder: "#a69780",
+    buttonDisabledText: "#7c6f5e",
+    timeCostText: "#b44a3b",
+  },
+  spacing: {
+    xs: 8,
+    sm: 12,
+    md: 16,
+    lg: 24,
+    xl: 32,
+  },
+  radius: {
+    sm: 10,
+    md: 18,
+    lg: 28,
+    pill: 999,
+  },
+  font: {
+    title: 28,
+    heading: 22,
+    body: 16,
+    caption: 12,
+  },
+  shadow: {
+    cardBlur: 18,
+    cardOffsetY: 8,
+  },
+};
+
+module.exports = {
+  themeTokens,
+};
