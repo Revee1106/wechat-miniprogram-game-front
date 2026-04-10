@@ -5,7 +5,8 @@
     <view class="detail-grid">
       <view class="detail-cell">
         <text class="detail-label">当前境界</text>
-        <text class="detail-value">{{player.realm_display_name || player.realm}}</text>
+        <text wx:if="{{player.realm_display_name}}" class="detail-value">{{player.realm_display_name}}</text>
+        <text wx:else class="detail-value">{{player.realm}}</text>
       </view>
       <view class="detail-cell">
         <text class="detail-label">现有修为</text>
@@ -17,7 +18,8 @@
       </view>
       <view class="detail-cell">
         <text class="detail-label">破境门槛</text>
-        <text class="detail-value">{{"修为 " + breakthroughTargetExp + " / 灵石 " + breakthroughTargetSpiritStone}}</text>
+        <text class="detail-value">修为 {{breakthroughTargetExp}}</text>
+        <text class="detail-value"> / 灵石 {{breakthroughTargetSpiritStone}}</text>
       </view>
     </view>
     <view class="status-note">{{hint}}</view>
@@ -25,5 +27,5 @@
       尝试破境
     </button>
   </block>
-  <view wx:else class="status-note">暂无可供冲关之身。</view>
+  <view wx:else class="status-note">No player data.</view>
 </view>
