@@ -23,7 +23,12 @@
       </view>
     </view>
     <view class="status-note">{{hint}}</view>
-    <button class="primary-button" bindtap="submitBreakthrough" disabled="{{!canBreakthrough}}">
+    <button
+      class="primary-button"
+      style="margin-top: 18rpx;"
+      bindtap="submitBreakthrough"
+      disabled="{{!canBreakthrough}}"
+    >
       尝试破境
     </button>
   </block>
