@@ -2,7 +2,8 @@
   <view class="ending-panel">
     <view class="ending-mark">此世终卷</view>
     <view class="ending-title">卷尾已定</view>
-    <view class="ending-copy">{{resultSummary || "这一世的因果已写定，留待下一次转生改写。"}}</view>
+    <view wx:if="{{resultSummary}}" class="ending-copy">{{resultSummary}}</view>
+    <view wx:else class="ending-copy">{{defaultResultSummary}}</view>
   </view>
 
   <run-result-modal

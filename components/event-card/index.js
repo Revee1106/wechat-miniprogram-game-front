@@ -7,11 +7,13 @@ Component({
   },
   data: {
     triggerSourcesText: "",
+    displayTitle: "",
   },
   observers: {
     event(event) {
       this.setData({
         triggerSourcesText: formatTriggerSources(event),
+        displayTitle: formatDisplayTitle(event),
       });
     },
   },
@@ -23,4 +25,12 @@ function formatTriggerSources(event) {
   }
 
   return event.trigger_sources.join(" / ");
+}
+
+function formatDisplayTitle(event) {
+  if (!event) {
+    return "";
+  }
+
+  return event.title_text || event.event_name || "";
 }

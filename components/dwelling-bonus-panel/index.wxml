@@ -16,19 +16,17 @@
     </view>
     <view class="detail-cell">
       <text class="detail-label">维护费用</text>
-      <text class="detail-value">{{facility.maintenance_cost.spirit_stone || 0}} 灵石</text>
+      <text class="detail-value">{{maintenanceSpiritStoneText}} 灵石</text>
     </view>
     <view class="detail-cell">
       <text class="detail-label">月度产出</text>
       <text class="detail-value">
-        灵植 {{facility.monthly_resource_yields.herb || 0}} / 灵矿
-        {{facility.monthly_resource_yields.ore || 0}} / 修为
-        {{facility.monthly_cultivation_exp_gain || 0}}
+        灵植 {{herbYieldText}} / 灵矿 {{oreYieldText}} / 修为 {{cultivationGainText}}
       </text>
     </view>
     <view class="detail-cell">
       <text class="detail-label">下一次升级</text>
-      <text class="detail-value">{{facility.next_upgrade_cost.spirit_stone || 0}} 灵石</text>
+      <text class="detail-value">{{nextUpgradeSpiritStoneText}} 灵石</text>
     </view>
   </view>
   <view class="status-note">{{facility.summary}}</view>

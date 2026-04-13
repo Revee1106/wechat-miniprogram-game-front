@@ -26,12 +26,15 @@
 
 .hero-metrics {
   margin-top: 18rpx;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14rpx;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
 }
 
 .hero-chip {
+  box-sizing: border-box;
+  width: 32%;
+  margin-bottom: 14rpx;
   padding: 18rpx 20rpx;
   border-radius: 22rpx;
   background: rgba(255, 249, 237, 0.86);
@@ -40,12 +43,12 @@
 
 .hero-chip-label {
   margin-bottom: 6rpx;
-  color: var(--ink-faint);
+  color: #857661;
   font-size: 22rpx;
 }
 
 .hero-chip-value {
-  color: var(--ink-main);
+  color: #1f1a17;
   font-size: 28rpx;
   font-weight: 700;
 }
@@ -61,14 +64,14 @@
   border-radius: 999rpx;
   text-align: center;
   font-size: 24rpx;
-  color: var(--ink-soft);
+  color: #5e5141;
   background: rgba(255, 248, 235, 0.82);
   border: 2rpx solid rgba(89, 66, 43, 0.12);
 }
 
 .compact-tab.is-active {
   color: #fff7ea;
-  background: linear-gradient(135deg, var(--jade-main) 0%, var(--jade-soft) 100%);
+  background: linear-gradient(135deg, #203f3a 0%, #365d57 100%);
   box-shadow: 0 10rpx 24rpx rgba(32, 63, 58, 0.18);
 }
 
@@ -79,6 +82,8 @@
 
 .compact-panel {
   height: 100%;
+  display: flex;
+  flex-direction: column;
   padding: 24rpx;
   border-radius: 28rpx;
   border: 2rpx solid rgba(68, 53, 36, 0.14);
@@ -92,18 +97,20 @@
 }
 
 .recipe-tag-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16rpx;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
 }
 
 .recipe-tag {
+  box-sizing: border-box;
+  width: 48%;
   min-height: 164rpx;
   padding: 20rpx;
+  margin-bottom: 16rpx;
   border-radius: 24rpx;
   background: rgba(255, 250, 242, 0.92);
   border: 2rpx solid rgba(89, 66, 43, 0.12);
-  box-sizing: border-box;
 }
 
 .recipe-tag.is-selected {
@@ -112,7 +119,7 @@
 }
 
 .recipe-tag-title {
-  color: var(--ink-main);
+  color: #1f1a17;
   font-size: 28rpx;
   font-weight: 700;
   line-height: 1.4;
@@ -120,12 +127,13 @@
 
 .recipe-tag-meta {
   margin-top: 12rpx;
-  color: var(--ink-soft);
+  color: #5e5141;
   font-size: 22rpx;
 }
 
 .card-rail {
-  height: calc(100% - 92rpx);
+  flex: 1;
+  min-height: 0;
   white-space: nowrap;
 }
 
@@ -147,13 +155,13 @@
 
 .recipe-title {
   margin-bottom: 8rpx;
-  color: var(--ink-main);
+  color: #1f1a17;
   font-size: 30rpx;
   font-weight: 700;
 }
 
 .recipe-copy {
-  color: var(--ink-soft);
+  color: #5e5141;
   font-size: 24rpx;
   line-height: 1.6;
 }
@@ -185,7 +193,7 @@
   right: 0;
   bottom: 0;
   z-index: 21;
-  padding: 18rpx 24rpx calc(28rpx + env(safe-area-inset-bottom));
+  padding: 18rpx 24rpx 46rpx;
   border-radius: 32rpx 32rpx 0 0;
   background: linear-gradient(180deg, rgba(253, 246, 231, 0.99) 0%, rgba(237, 223, 192, 0.99) 100%);
   box-shadow: 0 -18rpx 36rpx rgba(48, 33, 18, 0.16);
@@ -208,7 +216,7 @@
 
 .recipe-sheet-title {
   margin-top: 6rpx;
-  color: var(--ink-main);
+  color: #1f1a17;
   font-size: 34rpx;
   font-weight: 700;
 }
@@ -235,12 +243,12 @@
 
 .recipe-sheet-label {
   margin-bottom: 8rpx;
-  color: var(--ink-faint);
+  color: #857661;
   font-size: 22rpx;
 }
 
 .recipe-sheet-copy {
-  color: var(--ink-soft);
+  color: #5e5141;
   font-size: 24rpx;
   line-height: 1.6;
 }
@@ -257,9 +265,18 @@
 
 .job-grid {
   margin-top: 18rpx;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14rpx;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.job-grid > view,
+.job-grid > .detail-cell,
+.job-grid > .sheet-chip,
+.job-grid > .section-metric {
+  box-sizing: border-box;
+  width: 48%;
+  margin-bottom: 14rpx;
 }
 
 .overview-note {

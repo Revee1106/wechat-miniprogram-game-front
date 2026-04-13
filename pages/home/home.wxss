@@ -19,21 +19,21 @@
 
 .cover-mark {
   margin-bottom: 18rpx;
-  color: var(--clay-main);
+  color: #8c4d36;
   font-size: 24rpx;
   letter-spacing: 6rpx;
 }
 
 .cover-title {
   margin-bottom: 18rpx;
-  color: var(--ink-main);
+  color: #1f1a17;
   font-size: 54rpx;
   font-weight: 700;
   letter-spacing: 4rpx;
 }
 
 .cover-copy {
-  color: var(--ink-soft);
+  color: #5e5141;
   font-size: 28rpx;
   line-height: 1.8;
 }

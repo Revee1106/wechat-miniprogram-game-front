@@ -17,9 +17,9 @@ Component({
     displayChoices: [],
   },
   observers: {
-    "choices, choicePattern"(choices, choicePattern) {
+    "choices, choicePattern, loading"(choices, choicePattern, loading) {
       this.setData({
-        displayChoices: normalizeChoices(choices, choicePattern),
+        displayChoices: normalizeChoices(choices, choicePattern, loading),
       });
     },
   },
@@ -36,7 +36,7 @@ Component({
   },
 });
 
-function normalizeChoices(choices, choicePattern) {
+function normalizeChoices(choices, choicePattern, loading) {
   if (!Array.isArray(choices)) {
     return [];
   }
@@ -46,6 +46,9 @@ function normalizeChoices(choices, choicePattern) {
     return {
       ...choice,
       displayText: choicePattern === "single_outcome" ? "完成事件" : choice.option_text,
+      buttonClass: choice.is_available ? "secondary-button" : "ghost-button",
+      isDisabled: Boolean(loading || !choice.is_available),
+      showDisabledReason: Boolean(!choice.is_available && choice.disabled_reason),
       hasResourceRequirements: resourceEntries.length > 0,
       resourceText: resourceEntries
         .map(([name, amount]) => `${formatResourceName(name)} ${amount}`)

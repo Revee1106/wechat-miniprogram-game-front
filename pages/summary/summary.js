@@ -6,6 +6,7 @@ Page({
     character: null,
     resources: null,
     resultSummary: "",
+    defaultResultSummary: "这一世的因果已写定，留待下一次转生改写。",
     isDead: false,
     playerProfile: null,
     error: "",

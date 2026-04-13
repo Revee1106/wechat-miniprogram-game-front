@@ -5,7 +5,7 @@
 }
 
 .choice-title {
-  color: var(--clay-main);
+  color: #8c4d36;
   font-size: 22rpx;
   letter-spacing: 4rpx;
 }

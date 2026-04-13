@@ -7,11 +7,13 @@ Component({
   },
   data: {
     lifespanText: "",
+    realmDisplayName: "",
   },
   observers: {
     player(player) {
       this.setData({
         lifespanText: formatLifespan(player),
+        realmDisplayName: formatRealmDisplayName(player),
       });
     },
   },
@@ -34,4 +36,12 @@ function formatMonths(totalMonths) {
   }
 
   return `${years}年${months}个月`;
+}
+
+function formatRealmDisplayName(player) {
+  if (!player) {
+    return "";
+  }
+
+  return player.realm_display_name || player.realm || "";
 }

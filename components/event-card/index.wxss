@@ -8,14 +8,14 @@
 
 .decision-kicker {
   margin-bottom: 14rpx;
-  color: var(--clay-main);
+  color: #8c4d36;
   font-size: 22rpx;
   letter-spacing: 4rpx;
 }
 
 .decision-title {
   margin-bottom: 12rpx;
-  color: var(--ink-main);
+  color: #1f1a17;
   font-size: 36rpx;
   font-weight: 700;
   line-height: 1.4;
@@ -23,7 +23,7 @@
 
 .decision-body {
   margin-bottom: 12rpx;
-  color: var(--ink-main);
+  color: #1f1a17;
   font-size: 26rpx;
   line-height: 1.65;
   display: -webkit-box;
@@ -34,7 +34,7 @@
 
 .decision-meta,
 .decision-note {
-  color: var(--ink-soft);
+  color: #5e5141;
   font-size: 22rpx;
   line-height: 1.6;
 }

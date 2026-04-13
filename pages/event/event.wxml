@@ -6,7 +6,7 @@
     <scroll-view class="decision-stage" scroll-y="{{true}}" show-scrollbar="{{false}}">
       <event-card event="{{currentEvent}}" />
       <choice-button-list
-        choices="{{currentEvent.options || []}}"
+        choices="{{currentEventChoices}}"
         choicePattern="{{currentEvent.choice_pattern}}"
         loading="{{loading}}"
         bind:choose="handleChoice"
@@ -15,9 +15,9 @@
   </block>
 
   <block wx:else>
-    <view class="journey-stage journey-stage-rest">
-      <view class="journey-overview {{activeSection === 'dwelling' ? 'is-dwelling-overview' : ''}}">
-        <block wx:if="{{activeSection === 'dwelling'}}">
+    <view class="journey-stage-rest">
+      <view class="{{journeyOverviewClass}}">
+        <block wx:if="{{showDwellingOverview}}">
           <view class="journey-overview-head">
             <view>
               <view class="dwelling-overview-title">洞府</view>
@@ -27,10 +27,10 @@
           <view class="journey-result dwelling-finance-result">
             <view class="journey-result-label">每月收支</view>
             <view
-              wx:for="{{dwellingSettlementHistory.length ? dwellingSettlementHistory : [{ historyKey: 'current', summary: dwellingFinanceSummary, impactLines: dwellingFinanceLines }]}}"
+              wx:for="{{dwellingSettlementHistoryDisplay}}"
               wx:key="historyKey"
               class="journey-result-item"
-              style="opacity: {{index === 0 ? 1 : index === 1 ? 0.68 : 0.4}};"
+              style="{{item.opacityStyle}}"
             >
               <view class="journey-result-summary">{{item.summary}}</view>
               <view
@@ -52,16 +52,16 @@
               <view class="journey-title">已行 {{elapsedText}}</view>
               <view class="journey-meta">剩余寿元 {{lifespanText}}</view>
             </view>
-            <view class="overview-pill">{{player ? player.realm_display_name || player.realm : "未立命牌"}}</view>
+            <view class="overview-pill">{{realmDisplayText}}</view>
           </view>
           <view class="journey-copy">{{journeySummary}}</view>
-          <view wx:if="{{eventHistory.length}}" class="journey-result">
+          <view wx:if="{{eventHistoryDisplay.length}}" class="journey-result">
             <view class="journey-result-label">事件结果</view>
             <view
-              wx:for="{{eventHistory}}"
+              wx:for="{{eventHistoryDisplay}}"
               wx:key="historyKey"
               class="journey-result-item"
-              style="opacity: {{index === 0 ? 1 : index === 1 ? 0.68 : 0.4}};"
+              style="{{item.opacityStyle}}"
             >
               <view class="journey-result-summary">{{item.summary}}</view>
               <view
@@ -79,7 +79,7 @@
       </view>
 
       <view class="journey-main-stage">
-        <block wx:if="{{activeSection === 'player'}}">
+        <block wx:if="{{showPlayerSection}}">
           <view class="section-card">
             <view class="section-head">
               <view class="section-title">命牌</view>
@@ -88,17 +88,15 @@
             <view class="section-grid">
               <view class="section-metric">
                 <view class="metric-label">境界</view>
-                <view class="metric-value">{{player ? player.realm_display_name || player.realm : "未立命牌"}}</view>
+                <view class="metric-value">{{realmDisplayText}}</view>
               </view>
               <view class="section-metric">
                 <view class="metric-label">修为</view>
-                <view class="metric-value">
-                  {{player ? player.cultivation_exp + " / " + breakthroughTargetExp : "--"}}
-                </view>
+                <view class="metric-value">{{cultivationDisplayText}}</view>
               </view>
               <view class="section-metric full">
                 <view class="metric-label">气运</view>
-                <view class="metric-value">{{player ? player.luck : "--"}}</view>
+                <view class="metric-value">{{luckDisplayText}}</view>
               </view>
             </view>
             <button class="primary-button stage-action" bindtap="advanceTime" loading="{{loading}}">
@@ -107,7 +105,7 @@
           </view>
         </block>
 
-        <block wx:elif="{{activeSection === 'resources'}}">
+        <block wx:elif="{{showResourcesSection}}">
           <view class="section-card">
             <view class="section-head">
               <view class="section-title">行囊</view>
@@ -117,7 +115,7 @@
               <view
                 wx:for="{{inventoryCards}}"
                 wx:key="resourceKey"
-                class="section-metric inventory-card {{item.actions.length ? 'is-actionable' : ''}}"
+                class="{{item.cardClass}}"
                 data-resource-key="{{item.resourceKey}}"
                 bindtap="openInventoryActionSheet"
               >
@@ -131,7 +129,7 @@
           </view>
         </block>
 
-        <block wx:elif="{{activeSection === 'cultivation'}}">
+        <block wx:elif="{{showCultivationSection}}">
           <view class="section-card">
             <view class="section-head">
               <view class="section-title">修炼</view>
@@ -150,7 +148,7 @@
           </view>
         </block>
 
-        <block wx:elif="{{activeSection === 'dwelling'}}">
+        <block wx:elif="{{showDwellingSection}}">
           <view class="section-card">
             <view class="dwelling-entry-grid">
               <view class="entry-card dwelling-entry-card" bindtap="openDwellingPage">
@@ -179,7 +177,7 @@
   </block>
 
   <view
-    wx:if="{{inventoryActionSheetVisible && selectedInventoryResource && selectedInventoryAction}}"
+    wx:if="{{inventoryActionSheetVisible}}"
     class="sale-sheet-mask"
     bindtap="closeInventoryActionSheet"
   >
@@ -192,21 +190,18 @@
         <button class="ghost-button sale-sheet-close" bindtap="closeInventoryActionSheet">收起</button>
       </view>
 
-      <view
-        wx:if="{{selectedInventoryResource.actions.length > 1}}"
-        class="sale-action-group"
-      >
+      <view wx:if="{{inventoryActionHasMultipleOptions}}" class="sale-action-group">
         <button
-          wx:for="{{selectedInventoryResource.actions}}"
+          wx:for="{{inventoryActionButtons}}"
           wx:key="actionKey"
-          class="ghost-button sale-action-button {{selectedInventoryAction.actionKey === item.actionKey ? 'is-selected' : ''}}"
+          class="{{item.buttonClass}}"
           data-action-key="{{item.actionKey}}"
           bindtap="selectInventoryAction"
         >
           {{item.label}}
         </button>
       </view>
-      <view wx:else class="sale-sheet-current-action">当前操作：{{selectedInventoryAction.label}}</view>
+      <view wx:else class="sale-sheet-current-action">当前操作：{{inventoryActionCurrentLabel}}</view>
 
       <view class="sale-sheet-quantity">
         <button class="ghost-button sale-step-button" bindtap="decreaseInventoryActionQuantity">-1</button>
@@ -217,14 +212,12 @@
         <button class="ghost-button sale-shortcut-button" data-mode="half" bindtap="fillInventoryActionQuantity">半数</button>
         <button class="ghost-button sale-shortcut-button" data-mode="all" bindtap="fillInventoryActionQuantity">全部</button>
       </view>
-      <view class="sale-sheet-total">
-        可得 {{selectedInventoryAction.outputRatio * inventoryActionQuantity}} {{selectedInventoryAction.outputLabel}}
-      </view>
+      <view class="sale-sheet-total">可得 {{inventoryActionTotalText}}</view>
       <button
         class="primary-button sale-confirm-button"
         bindtap="confirmInventoryAction"
-        loading="{{saleLoadingKey === (selectedInventoryResource.resourceKey + ':' + selectedInventoryAction.actionKey) && loading}}"
-        disabled="{{selectedInventoryResource.amount <= 0}}"
+        loading="{{inventoryActionLoading}}"
+        disabled="{{inventoryActionConfirmDisabled}}"
       >
         {{selectedInventoryAction.confirmLabel}}
       </button>
@@ -239,19 +232,20 @@
     <view class="sale-sheet cultivation-cap-sheet-panel" catchtap="noop">
       <view class="sale-sheet-head">
         <view>
-          <view class="sale-sheet-title">修为已满</view>
-          <view class="sale-sheet-copy">若不突破则无法增加修为，是否继续推进时间？</view>
+          <view class="sale-sheet-title">{{cultivationCapPromptTitle}}</view>
+          <view class="sale-sheet-copy">{{cultivationCapPromptDescription}}</view>
         </view>
       </view>
-      <button
-        class="ghost-button cultivation-cap-toggle {{cultivationCapPromptSkipFuture ? 'is-selected' : ''}}"
-        bindtap="toggleCultivationCapPromptSkip"
-      >
+      <button class="{{cultivationCapToggleClass}}" bindtap="toggleCultivationCapPromptSkip">
         不再提示
       </button>
       <view class="cultivation-cap-actions">
-        <button class="ghost-button" bindtap="cancelCultivationCapAdvance">放弃推进</button>
-        <button class="primary-button" bindtap="confirmCultivationCapAdvance">继续推进</button>
+        <button class="ghost-button cultivation-cap-action-button" bindtap="cancelCultivationCapAdvance">
+          {{cultivationCapPromptCancelText}}
+        </button>
+        <button class="primary-button cultivation-cap-action-button" bindtap="confirmCultivationCapAdvance">
+          {{cultivationCapPromptConfirmText}}
+        </button>
       </view>
     </view>
   </view>

@@ -3,23 +3,26 @@
 }
 
 .inspection-tabs {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12rpx;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
 }
 
 .inspection-tab {
+  box-sizing: border-box;
+  width: 24%;
+  margin-bottom: 12rpx;
   padding: 16rpx 0;
   border-radius: 999rpx;
   text-align: center;
   background: rgba(255, 250, 241, 0.92);
-  color: var(--ink-soft);
+  color: #5e5141;
   font-size: 24rpx;
   border: 2rpx solid rgba(89, 66, 43, 0.12);
 }
 
 .inspection-tab.active {
-  background: linear-gradient(135deg, var(--jade-main) 0%, var(--jade-soft) 100%);
+  background: linear-gradient(135deg, #203f3a 0%, #365d57 100%);
   color: #fff7ea;
   box-shadow: 0 10rpx 20rpx rgba(32, 63, 58, 0.16);
 }

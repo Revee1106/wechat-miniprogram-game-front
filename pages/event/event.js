@@ -1,14 +1,20 @@
 const store = require("../../utils/run-store");
-const { formatFacilityName, isMissingRunError } = require("../../src/game/utils/display-text");
+const {
+  formatFacilityName,
+  isMissingRunError,
+} = require("../../src/game/utils/display-text");
 const {
   buildBreakthroughHint,
   canAttemptBreakthrough,
   getBreakthroughRequirements,
 } = require("../../utils/breakthrough");
 
+const DEFAULT_ACTIVE_SECTION = "player";
+const VALID_SECTIONS = ["player", "resources", "cultivation", "dwelling"];
+
 const CULTIVATION_CAP_PROMPT_COPY = {
   title: "修为已满",
-  description: "若不突破则无法增加修为",
+  description: "若不突破，则无法继续获得修为，是否继续推进时间？",
   confirmText: "继续推进",
   cancelText: "放弃推进",
 };
@@ -17,6 +23,7 @@ Page({
   data: {
     run: null,
     currentEvent: null,
+    currentEventChoices: [],
     player: null,
     resources: null,
     dwellingLevel: 1,
@@ -29,17 +36,39 @@ Page({
     breakthroughTargetSpiritStone: 0,
     journeySummary: "",
     eventHistory: [],
+    eventHistoryDisplay: [],
     dwellingSettlementHistory: [],
+    dwellingSettlementHistoryDisplay: [],
     inventoryCards: [],
     inventoryActionSheetVisible: false,
     selectedInventoryResource: null,
     selectedInventoryAction: null,
+    inventoryActionButtons: [],
     inventoryActionQuantity: 1,
+    inventoryActionHasMultipleOptions: false,
+    inventoryActionCurrentLabel: "",
+    inventoryActionTotalText: "",
+    inventoryActionLoading: false,
+    inventoryActionConfirmDisabled: true,
     cultivationCapPromptVisible: false,
     cultivationCapPromptSkipFuture: false,
+    cultivationCapPromptTitle: CULTIVATION_CAP_PROMPT_COPY.title,
+    cultivationCapPromptDescription: CULTIVATION_CAP_PROMPT_COPY.description,
+    cultivationCapPromptConfirmText: CULTIVATION_CAP_PROMPT_COPY.confirmText,
+    cultivationCapPromptCancelText: CULTIVATION_CAP_PROMPT_COPY.cancelText,
+    cultivationCapToggleClass: buildCultivationCapToggleClass(false),
     elapsedText: "",
     lifespanText: "",
-    activeSection: "player",
+    realmDisplayText: "未立命牌",
+    cultivationDisplayText: "--",
+    luckDisplayText: "--",
+    activeSection: DEFAULT_ACTIVE_SECTION,
+    journeyOverviewClass: buildJourneyOverviewClass(DEFAULT_ACTIVE_SECTION),
+    showDwellingOverview: false,
+    showPlayerSection: true,
+    showResourcesSection: false,
+    showCultivationSection: false,
+    showDwellingSection: false,
     error: "",
     loading: false,
     saleLoadingKey: "",
@@ -47,6 +76,7 @@ Page({
 
   async onShow() {
     const snapshot = store.getState();
+
     if (snapshot.run) {
       try {
         await store.refreshRun();
@@ -57,9 +87,11 @@ Page({
           wx.reLaunch({ url: "/pages/home/home" });
           return;
         }
+
         this.setData({ error: error.message });
       }
     }
+
     this.syncState();
   },
 
@@ -72,37 +104,69 @@ Page({
       return;
     }
 
+    const player = run ? run.character : null;
+    const resources = run ? run.resources : null;
+    const activeSection = normalizeSection(this.data.activeSection);
     const requirements = getBreakthroughRequirements(run);
     const canBreakthrough = canAttemptBreakthrough(run);
+    const dwellingFinanceSummary = buildDwellingFinanceSummary(run);
+    const dwellingFinanceLines = buildDwellingFinanceLines(run);
+    const inventoryCards = buildInventoryCards(run);
+    const sectionState = buildSectionState(activeSection);
 
     this.setData({
       run,
       currentEvent: run ? run.current_event : null,
-      player: run ? run.character : null,
-      resources: run ? run.resources : null,
-      dwellingLevel: run ? run.dwelling_level || 1 : 1,
+      currentEventChoices: buildCurrentEventChoices(run),
+      player,
+      resources,
+      dwellingLevel: run ? Number(run.dwelling_level) || 1 : 1,
       dwellingLastSettlement: run ? run.dwelling_last_settlement : null,
-      dwellingFinanceSummary: buildDwellingFinanceSummary(run),
-      dwellingFinanceLines: buildDwellingFinanceLines(run),
+      dwellingFinanceSummary,
+      dwellingFinanceLines,
       canBreakthrough,
       breakthroughHint: buildBreakthroughHint(run, canBreakthrough),
       breakthroughTargetExp: requirements.requiredCultivationExp,
       breakthroughTargetSpiritStone: requirements.requiredSpiritStone,
       journeySummary: buildJourneySummary(run),
       eventHistory: snapshot.eventHistory || [],
+      eventHistoryDisplay: buildHistoryDisplay(snapshot.eventHistory || []),
       dwellingSettlementHistory: snapshot.dwellingSettlementHistory || [],
-      inventoryCards: buildInventoryCards(run),
+      dwellingSettlementHistoryDisplay: buildDwellingSettlementHistoryDisplay(
+        snapshot.dwellingSettlementHistory || [],
+        dwellingFinanceSummary,
+        dwellingFinanceLines
+      ),
+      inventoryCards,
       inventoryActionSheetVisible: false,
       selectedInventoryResource: null,
       selectedInventoryAction: null,
+      inventoryActionButtons: [],
       inventoryActionQuantity: 1,
+      inventoryActionHasMultipleOptions: false,
+      inventoryActionCurrentLabel: "",
+      inventoryActionTotalText: "",
+      inventoryActionLoading: false,
+      inventoryActionConfirmDisabled: true,
       cultivationCapPromptVisible: false,
       cultivationCapPromptSkipFuture: false,
-      elapsedText: run ? formatMonths(run.round_index || 0) : "0年0个月",
-      lifespanText:
-        run && run.character ? formatMonths(run.character.lifespan_current) : "0年0个月",
+      cultivationCapPromptTitle: CULTIVATION_CAP_PROMPT_COPY.title,
+      cultivationCapPromptDescription: CULTIVATION_CAP_PROMPT_COPY.description,
+      cultivationCapPromptConfirmText: CULTIVATION_CAP_PROMPT_COPY.confirmText,
+      cultivationCapPromptCancelText: CULTIVATION_CAP_PROMPT_COPY.cancelText,
+      cultivationCapToggleClass: buildCultivationCapToggleClass(false),
+      elapsedText: run ? formatMonths(run.round_index) : formatMonths(0),
+      lifespanText: player ? formatMonths(player.lifespan_current) : formatMonths(0),
+      realmDisplayText: buildRealmDisplayText(player),
+      cultivationDisplayText: buildCultivationDisplayText(
+        player,
+        requirements.requiredCultivationExp
+      ),
+      luckDisplayText: buildLuckDisplayText(player),
       error: snapshot.error || "",
+      loading: false,
       saleLoadingKey: "",
+      ...sectionState,
     });
   },
 
@@ -153,6 +217,7 @@ Page({
         wx.reLaunch({ url: "/pages/home/home" });
         return;
       }
+
       this.setData({ error: error.message });
     } finally {
       this.setData({ loading: false });
@@ -176,6 +241,7 @@ Page({
         wx.reLaunch({ url: "/pages/home/home" });
         return;
       }
+
       this.setData({ error: error.message });
     } finally {
       this.setData({ loading: false });
@@ -204,6 +270,7 @@ Page({
         wx.reLaunch({ url: "/pages/home/home" });
         return;
       }
+
       this.setData({ error: error.message });
     } finally {
       this.setData({ loading: false });
@@ -215,17 +282,27 @@ Page({
     const selectedInventoryResource = this.data.inventoryCards.find(
       (item) => item.resourceKey === resourceKey
     );
+
     if (!selectedInventoryResource || !selectedInventoryResource.actions.length) {
       return;
     }
 
     const selectedInventoryAction = selectedInventoryResource.actions[0];
+    const inventoryActionQuantity = selectedInventoryResource.amount > 0 ? 1 : 0;
+
     this.setData({
       inventoryActionSheetVisible: true,
       selectedInventoryResource,
       selectedInventoryAction,
-      inventoryActionQuantity: selectedInventoryResource.amount > 0 ? 1 : 0,
+      inventoryActionQuantity,
       error: "",
+      ...buildInventorySheetState(
+        selectedInventoryResource,
+        selectedInventoryAction,
+        inventoryActionQuantity,
+        this.data.loading,
+        this.data.saleLoadingKey
+      ),
     });
   },
 
@@ -234,13 +311,20 @@ Page({
       inventoryActionSheetVisible: false,
       selectedInventoryResource: null,
       selectedInventoryAction: null,
+      inventoryActionButtons: [],
       inventoryActionQuantity: 1,
+      inventoryActionHasMultipleOptions: false,
+      inventoryActionCurrentLabel: "",
+      inventoryActionTotalText: "",
+      inventoryActionLoading: false,
+      inventoryActionConfirmDisabled: true,
     });
   },
 
   selectInventoryAction(event) {
     const actionKey = event.currentTarget.dataset.actionKey;
     const selectedInventoryResource = this.data.selectedInventoryResource;
+
     if (!selectedInventoryResource) {
       return;
     }
@@ -248,13 +332,23 @@ Page({
     const selectedInventoryAction = (selectedInventoryResource.actions || []).find(
       (item) => item.actionKey === actionKey
     );
+
     if (!selectedInventoryAction) {
       return;
     }
 
+    const inventoryActionQuantity = selectedInventoryResource.amount > 0 ? 1 : 0;
+
     this.setData({
       selectedInventoryAction,
-      inventoryActionQuantity: selectedInventoryResource.amount > 0 ? 1 : 0,
+      inventoryActionQuantity,
+      ...buildInventorySheetState(
+        selectedInventoryResource,
+        selectedInventoryAction,
+        inventoryActionQuantity,
+        this.data.loading,
+        this.data.saleLoadingKey
+      ),
     });
   },
 
@@ -263,10 +357,20 @@ Page({
     if (maxQuantity <= 0) {
       return;
     }
+
+    const inventoryActionQuantity = Math.max(
+      1,
+      (Number(this.data.inventoryActionQuantity) || 1) - 1
+    );
+
     this.setData({
-      inventoryActionQuantity: Math.max(
-        1,
-        (Number(this.data.inventoryActionQuantity) || 1) - 1
+      inventoryActionQuantity,
+      ...buildInventorySheetState(
+        this.data.selectedInventoryResource,
+        this.data.selectedInventoryAction,
+        inventoryActionQuantity,
+        this.data.loading,
+        this.data.saleLoadingKey
       ),
     });
   },
@@ -276,10 +380,20 @@ Page({
     if (maxQuantity <= 0) {
       return;
     }
+
+    const inventoryActionQuantity = Math.min(
+      maxQuantity,
+      (Number(this.data.inventoryActionQuantity) || 1) + 1
+    );
+
     this.setData({
-      inventoryActionQuantity: Math.min(
-        maxQuantity,
-        (Number(this.data.inventoryActionQuantity) || 1) + 1
+      inventoryActionQuantity,
+      ...buildInventorySheetState(
+        this.data.selectedInventoryResource,
+        this.data.selectedInventoryAction,
+        inventoryActionQuantity,
+        this.data.loading,
+        this.data.saleLoadingKey
       ),
     });
   },
@@ -287,18 +401,30 @@ Page({
   fillInventoryActionQuantity(event) {
     const mode = event.currentTarget.dataset.mode;
     const maxQuantity = getSelectedInventoryMax(this.data.selectedInventoryResource);
+
     if (maxQuantity <= 0) {
       return;
     }
+
+    const inventoryActionQuantity =
+      mode === "all" ? maxQuantity : Math.max(1, Math.ceil(maxQuantity / 2));
+
     this.setData({
-      inventoryActionQuantity:
-        mode === "all" ? maxQuantity : Math.max(1, Math.ceil(maxQuantity / 2)),
+      inventoryActionQuantity,
+      ...buildInventorySheetState(
+        this.data.selectedInventoryResource,
+        this.data.selectedInventoryAction,
+        inventoryActionQuantity,
+        this.data.loading,
+        this.data.saleLoadingKey
+      ),
     });
   },
 
   async confirmInventoryAction() {
     const selectedInventoryResource = this.data.selectedInventoryResource;
     const selectedInventoryAction = this.data.selectedInventoryAction;
+
     await this.handleInventoryAction(
       selectedInventoryAction ? selectedInventoryAction.actionKey : "",
       selectedInventoryResource ? selectedInventoryResource.resourceKey : "",
@@ -319,12 +445,18 @@ Page({
       cultivationCapPromptDescription: CULTIVATION_CAP_PROMPT_COPY.description,
       cultivationCapPromptConfirmText: CULTIVATION_CAP_PROMPT_COPY.confirmText,
       cultivationCapPromptCancelText: CULTIVATION_CAP_PROMPT_COPY.cancelText,
+      cultivationCapToggleClass: buildCultivationCapToggleClass(false),
     });
   },
 
   toggleCultivationCapPromptSkip() {
+    const cultivationCapPromptSkipFuture = !this.data.cultivationCapPromptSkipFuture;
+
     this.setData({
-      cultivationCapPromptSkipFuture: !this.data.cultivationCapPromptSkipFuture,
+      cultivationCapPromptSkipFuture,
+      cultivationCapToggleClass: buildCultivationCapToggleClass(
+        cultivationCapPromptSkipFuture
+      ),
     });
   },
 
@@ -332,10 +464,13 @@ Page({
     if (this.data.cultivationCapPromptSkipFuture) {
       store.markCultivationCapPromptSuppressed();
     }
+
     this.setData({
       cultivationCapPromptVisible: false,
       cultivationCapPromptSkipFuture: false,
+      cultivationCapToggleClass: buildCultivationCapToggleClass(false),
     });
+
     await this.performAdvanceTime();
   },
 
@@ -343,11 +478,12 @@ Page({
     this.setData({
       cultivationCapPromptVisible: false,
       cultivationCapPromptSkipFuture: false,
+      cultivationCapToggleClass: buildCultivationCapToggleClass(false),
     });
   },
 
   handleSectionChange(event) {
-    this.setData({ activeSection: event.detail.section });
+    this.setData(buildSectionState(event.detail.section));
   },
 
   noop() {},
@@ -357,10 +493,12 @@ Page({
       wx.reLaunch({ url: "/pages/home/home" });
       return;
     }
+
     if (!actionKey || !resourceKey || amount <= 0) {
       return;
     }
 
+    const loadingKey = buildSaleLoadingKey(resourceKey, actionKey);
     const selectedInventoryAction = this.data.selectedInventoryAction;
     const outputRatio = Number(
       (selectedInventoryAction && selectedInventoryAction.outputRatio) || 0
@@ -368,8 +506,15 @@ Page({
 
     this.setData({
       loading: true,
-      saleLoadingKey: `${resourceKey}:${actionKey}`,
+      saleLoadingKey: loadingKey,
       error: "",
+      ...buildInventorySheetState(
+        this.data.selectedInventoryResource,
+        this.data.selectedInventoryAction,
+        this.data.inventoryActionQuantity,
+        true,
+        loadingKey
+      ),
     });
 
     try {
@@ -402,12 +547,182 @@ Page({
         wx.reLaunch({ url: "/pages/home/home" });
         return;
       }
-      this.setData({ error: error.message });
-    } finally {
-      this.setData({ loading: false, saleLoadingKey: "" });
+
+      this.setData({
+        error: error.message,
+        loading: false,
+        saleLoadingKey: "",
+        ...buildInventorySheetState(
+          this.data.selectedInventoryResource,
+          this.data.selectedInventoryAction,
+          this.data.inventoryActionQuantity,
+          false,
+          ""
+        ),
+      });
+      return;
     }
+
+    this.setData({ loading: false, saleLoadingKey: "" });
   },
 });
+
+function buildCurrentEventChoices(run) {
+  const currentEvent = run ? run.current_event : null;
+  return currentEvent && Array.isArray(currentEvent.options) ? currentEvent.options : [];
+}
+
+function normalizeSection(section) {
+  return VALID_SECTIONS.includes(section) ? section : DEFAULT_ACTIVE_SECTION;
+}
+
+function buildSectionState(section) {
+  const activeSection = normalizeSection(section);
+
+  return {
+    activeSection,
+    journeyOverviewClass: buildJourneyOverviewClass(activeSection),
+    showDwellingOverview: activeSection === "dwelling",
+    showPlayerSection: activeSection === "player",
+    showResourcesSection: activeSection === "resources",
+    showCultivationSection: activeSection === "cultivation",
+    showDwellingSection: activeSection === "dwelling",
+  };
+}
+
+function buildJourneyOverviewClass(activeSection) {
+  return activeSection === "dwelling"
+    ? "journey-overview is-dwelling-overview"
+    : "journey-overview";
+}
+
+function buildCultivationCapToggleClass(isSelected) {
+  return isSelected
+    ? "ghost-button cultivation-cap-toggle is-selected"
+    : "ghost-button cultivation-cap-toggle";
+}
+
+function buildRealmDisplayText(player) {
+  if (!player) {
+    return "未立命牌";
+  }
+
+  return player.realm_display_name || player.realm || "未立命牌";
+}
+
+function buildCultivationDisplayText(player, breakthroughTargetExp) {
+  if (!player) {
+    return "--";
+  }
+
+  const cultivationExp = Number(player.cultivation_exp) || 0;
+  const targetExp = Number(breakthroughTargetExp) || 0;
+  return `${cultivationExp} / ${targetExp}`;
+}
+
+function buildLuckDisplayText(player) {
+  if (!player || typeof player.luck === "undefined" || player.luck === null) {
+    return "--";
+  }
+
+  return `${player.luck}`;
+}
+
+function buildHistoryDisplay(items) {
+  return (items || []).map((item, index) => ({
+    ...item,
+    opacityStyle: buildHistoryOpacityStyle(index),
+  }));
+}
+
+function buildDwellingSettlementHistoryDisplay(history, summary, impactLines) {
+  const sourceHistory =
+    history && history.length
+      ? history
+      : [
+          {
+            historyKey: "current",
+            summary,
+            impactLines,
+          },
+        ];
+
+  return buildHistoryDisplay(sourceHistory);
+}
+
+function buildHistoryOpacityStyle(index) {
+  if (index === 0) {
+    return "opacity: 1;";
+  }
+
+  if (index === 1) {
+    return "opacity: 0.68;";
+  }
+
+  return "opacity: 0.4;";
+}
+
+function buildInventorySheetState(
+  selectedInventoryResource,
+  selectedInventoryAction,
+  inventoryActionQuantity,
+  loading,
+  saleLoadingKey
+) {
+  const safeQuantity = Math.max(0, Number(inventoryActionQuantity) || 0);
+  const actions =
+    selectedInventoryResource && Array.isArray(selectedInventoryResource.actions)
+      ? selectedInventoryResource.actions
+      : [];
+  const selectedActionKey = selectedInventoryAction
+    ? selectedInventoryAction.actionKey
+    : "";
+  const currentLoadingKey = buildSaleLoadingKey(
+    selectedInventoryResource ? selectedInventoryResource.resourceKey : "",
+    selectedActionKey
+  );
+  const outputRatio = Number(
+    (selectedInventoryAction && selectedInventoryAction.outputRatio) || 0
+  );
+  const outputLabel = selectedInventoryAction
+    ? selectedInventoryAction.outputLabel || ""
+    : "";
+
+  return {
+    inventoryActionButtons: actions.map((item) => ({
+      ...item,
+      buttonClass:
+        item.actionKey === selectedActionKey
+          ? "ghost-button sale-action-button is-selected"
+          : "ghost-button sale-action-button",
+    })),
+    inventoryActionHasMultipleOptions: actions.length > 1,
+    inventoryActionCurrentLabel: selectedInventoryAction
+      ? selectedInventoryAction.label || ""
+      : "",
+    inventoryActionTotalText:
+      selectedInventoryAction && outputLabel
+        ? `${outputRatio * safeQuantity} ${outputLabel}`
+        : "",
+    inventoryActionLoading:
+      Boolean(loading) &&
+      Boolean(currentLoadingKey) &&
+      currentLoadingKey === saleLoadingKey,
+    inventoryActionConfirmDisabled:
+      !selectedInventoryResource ||
+      !selectedInventoryAction ||
+      Number(selectedInventoryResource.amount) <= 0 ||
+      safeQuantity <= 0,
+  };
+}
+
+function buildSaleLoadingKey(resourceKey, actionKey) {
+  if (!resourceKey || !actionKey) {
+    return "";
+  }
+
+  return `${resourceKey}:${actionKey}`;
+}
 
 function buildJourneySummary(run) {
   if (!run) {
@@ -438,7 +753,8 @@ function buildDwellingStallWarning(run) {
       return;
     }
 
-    const maintenanceCost = Number((facility.maintenance_cost || {}).spirit_stone) || 0;
+    const maintenanceCost =
+      Number((facility.maintenance_cost || {}).spirit_stone) || 0;
     if (maintenanceCost <= 0) {
       return;
     }
@@ -448,7 +764,9 @@ function buildDwellingStallWarning(run) {
       return;
     }
 
-    stalledFacilities.push(formatFacilityName(facility.facility_id, facility.display_name) || "未知设施");
+    stalledFacilities.push(
+      formatFacilityName(facility.facility_id, facility.display_name) || "未知设施"
+    );
   });
 
   if (!stalledFacilities.length) {
@@ -511,6 +829,7 @@ function buildDwellingFinanceLines(run) {
   const income = Number(
     settlement ? (settlement.total_resource_gains || {}).spirit_stone || 0 : 0
   );
+
   return [`维护支出 ${maintenance} 灵石`, `收入 ${income} 灵石`];
 }
 
@@ -520,7 +839,10 @@ function buildInventoryCards(run) {
   }
 
   const stackAmounts = Object.fromEntries(
-    (run.resource_stacks || []).map((item) => [item.resource_key, Number(item.amount) || 0])
+    (run.resource_stacks || []).map((item) => [
+      item.resource_key,
+      Number(item.amount) || 0,
+    ])
   );
 
   return [
@@ -542,7 +864,12 @@ function buildInventoryCards(run) {
         "确认出售"
       ),
     ]),
-    buildInventoryCard("iron_essence", "玄铁精华", Number(run.resources.iron_essence) || 0, []),
+    buildInventoryCard(
+      "iron_essence",
+      "玄铁精华",
+      Number(run.resources.iron_essence) || 0,
+      []
+    ),
     buildInventoryCard("basic_herb", "灵植", stackAmounts.basic_herb || 0, [
       buildInventoryAction(
         "sell_for_spirit_stone",
@@ -561,15 +888,20 @@ function buildInventoryCards(run) {
         "确认出售"
       ),
     ]),
-    buildInventoryCard("spirit_spring_water", "灵泉水", stackAmounts.spirit_spring_water || 0, [
-      buildInventoryAction(
-        "sell_for_spirit_stone",
-        "出售",
-        3,
-        "灵石",
-        "确认出售"
-      ),
-    ]),
+    buildInventoryCard(
+      "spirit_spring_water",
+      "灵泉水",
+      stackAmounts.spirit_spring_water || 0,
+      [
+        buildInventoryAction(
+          "sell_for_spirit_stone",
+          "出售",
+          3,
+          "灵石",
+          "确认出售"
+        ),
+      ]
+    ),
   ].filter((item) => item.amount > 0);
 }
 
@@ -579,10 +911,19 @@ function buildInventoryCard(resourceKey, displayName, amount, actions) {
     displayName,
     amount,
     actions,
+    cardClass: actions.length
+      ? "section-metric inventory-card is-actionable"
+      : "section-metric inventory-card",
   };
 }
 
-function buildInventoryAction(actionKey, label, outputRatio, outputLabel, confirmLabel) {
+function buildInventoryAction(
+  actionKey,
+  label,
+  outputRatio,
+  outputLabel,
+  confirmLabel
+) {
   return {
     actionKey,
     label,
@@ -593,5 +934,7 @@ function buildInventoryAction(actionKey, label, outputRatio, outputLabel, confir
 }
 
 function getSelectedInventoryMax(selectedInventoryResource) {
-  return Number((selectedInventoryResource && selectedInventoryResource.amount) || 0);
+  return Number(
+    (selectedInventoryResource && selectedInventoryResource.amount) || 0
+  );
 }

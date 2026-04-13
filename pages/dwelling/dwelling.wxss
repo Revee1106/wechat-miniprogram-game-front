@@ -40,18 +40,20 @@
 }
 
 .facility-tag-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16rpx;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
 }
 
 .facility-tag {
+  box-sizing: border-box;
+  width: 48%;
   min-height: 132rpx;
   padding: 20rpx;
+  margin-bottom: 16rpx;
   border-radius: 24rpx;
   background: rgba(255, 250, 242, 0.92);
   border: 2rpx solid rgba(89, 66, 43, 0.12);
-  box-sizing: border-box;
 }
 
 .facility-tag.is-selected {
@@ -66,19 +68,19 @@
 }
 
 .facility-tag-title {
-  color: var(--ink-main);
+  color: #1f1a17;
   font-size: 28rpx;
   font-weight: 700;
 }
 
 .facility-tag-level {
-  color: var(--clay-main);
+  color: #8c4d36;
   font-size: 22rpx;
 }
 
 .facility-tag-status {
   margin-top: 12rpx;
-  color: var(--ink-soft);
+  color: #5e5141;
   font-size: 24rpx;
 }
 
@@ -95,7 +97,7 @@
   right: 0;
   bottom: 0;
   z-index: 21;
-  padding: 18rpx 24rpx calc(28rpx + env(safe-area-inset-bottom));
+  padding: 18rpx 24rpx 46rpx;
   border-radius: 32rpx 32rpx 0 0;
   background: linear-gradient(180deg, rgba(253, 246, 231, 0.99) 0%, rgba(237, 223, 192, 0.99) 100%);
   box-shadow: 0 -18rpx 36rpx rgba(48, 33, 18, 0.16);
@@ -118,7 +120,7 @@
 
 .sheet-title {
   margin-top: 6rpx;
-  color: var(--ink-main);
+  color: #1f1a17;
   font-size: 34rpx;
   font-weight: 700;
 }
@@ -136,13 +138,16 @@
 }
 
 .facility-sheet-summary {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14rpx;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
   margin-bottom: 16rpx;
 }
 
 .sheet-chip {
+  box-sizing: border-box;
+  width: 48%;
+  margin-bottom: 14rpx;
   padding: 18rpx 20rpx;
   border-radius: 22rpx;
   background: rgba(255, 249, 237, 0.86);
@@ -151,12 +156,12 @@
 
 .sheet-chip-label {
   margin-bottom: 6rpx;
-  color: var(--ink-faint);
+  color: #857661;
   font-size: 22rpx;
 }
 
 .sheet-chip-value {
-  color: var(--ink-main);
+  color: #1f1a17;
   font-size: 28rpx;
   font-weight: 700;
 }
@@ -171,12 +176,12 @@
 
 .sheet-block-label {
   margin-bottom: 8rpx;
-  color: var(--ink-faint);
+  color: #857661;
   font-size: 22rpx;
 }
 
 .sheet-block-value {
-  color: var(--ink-soft);
+  color: #5e5141;
   font-size: 24rpx;
   line-height: 1.6;
 }

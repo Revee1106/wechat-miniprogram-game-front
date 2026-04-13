@@ -7,20 +7,20 @@
 
 .ending-action-kicker {
   margin-bottom: 12rpx;
-  color: var(--clay-main);
+  color: #8c4d36;
   font-size: 22rpx;
   letter-spacing: 4rpx;
 }
 
 .ending-action-title {
   margin-bottom: 12rpx;
-  color: var(--ink-main);
+  color: #1f1a17;
   font-size: 38rpx;
   font-weight: 700;
 }
 
 .ending-action-copy {
-  color: var(--ink-soft);
+  color: #5e5141;
   font-size: 26rpx;
   line-height: 1.7;
 }

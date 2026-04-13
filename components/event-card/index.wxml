@@ -1,10 +1,10 @@
 <view class="decision-card event-scroll-card">
   <block wx:if="{{event}}">
     <view class="decision-kicker">当前遭遇</view>
-    <view class="decision-title">{{event.title_text || event.event_name}}</view>
+    <view class="decision-title">{{displayTitle}}</view>
     <view class="decision-body">{{event.body_text}}</view>
     <view class="decision-meta">
-      {{event.event_type}} · {{event.outcome_type}} · 风险 {{event.risk_level}}
+      {{event.event_type}} / {{event.outcome_type}} / 风险 {{event.risk_level}}
     </view>
     <view class="decision-note">异闻注解：{{triggerSourcesText}} / {{event.status}}</view>
   </block>
