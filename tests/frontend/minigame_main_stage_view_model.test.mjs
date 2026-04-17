@@ -22,9 +22,15 @@ const activeSnapshot = {
       realm_display_name: "炼气中期",
       cultivation_exp: 180,
       lifespan_current: 132,
+      hp_current: 88,
+      hp_max: 100,
+      attack: 12,
+      defense: 7,
+      speed: 5,
       is_dead: false,
     },
     current_event: null,
+    active_battle: null,
   },
   playerProfile: {
     total_rebirth_count: 2,
@@ -33,7 +39,7 @@ const activeSnapshot = {
     {
       historyKey: "event-1",
       eventName: "林中异动",
-      summary: "得灵石 12，失寿元 2 月",
+      summary: "得灵石 12，失寿元 2 个月",
       impactLines: ["灵石 +12", "寿元 -2 个月"],
     },
   ],
@@ -65,6 +71,36 @@ const deadSnapshot = {
   },
 };
 
+const activeBattleSnapshot = {
+  ...pendingEventSnapshot,
+  run: {
+    ...pendingEventSnapshot.run,
+    active_battle: {
+      round_index: 2,
+      allow_flee: true,
+      pill_count: 1,
+      player: {
+        realm_label: "炼气中期",
+        hp_current: 24,
+        hp_max: 30,
+        attack: 6,
+        defense: 2,
+        speed: 4,
+      },
+      enemy: {
+        name: "山匪",
+        realm_label: "炼气初期",
+        hp_current: 12,
+        hp_max: 12,
+        attack: 4,
+        defense: 1,
+        speed: 3,
+      },
+      log_lines: ["战斗已开始。"],
+    },
+  },
+};
+
 const emptyViewModel = buildMainStageViewModel(emptySnapshot);
 assert.equal(emptyViewModel.mode, "boot");
 assert.equal(emptyViewModel.heroTitle, "问道长生");
@@ -77,6 +113,11 @@ assert.equal(activeViewModel.mode, "journey");
 assert.equal(activeViewModel.topSummary.realm, "炼气中期");
 assert.equal(activeViewModel.topSummary.spiritStone, 42);
 assert.equal(activeViewModel.topSummary.round, 7);
+assert.equal(activeViewModel.topSummary.hpCurrent, 88);
+assert.equal(activeViewModel.topSummary.hpMax, 100);
+assert.equal(activeViewModel.topSummary.attack, 12);
+assert.equal(activeViewModel.topSummary.defense, 7);
+assert.equal(activeViewModel.topSummary.speed, 5);
 assert.equal(activeViewModel.logEntries.length, 1);
 assert.equal(activeViewModel.logEntries[0].title, "林中异动");
 assert.match(activeViewModel.logEntries[0].detailLines[0], /灵石 \+12/);
@@ -86,6 +127,10 @@ const pendingEventViewModel = buildMainStageViewModel(pendingEventSnapshot);
 assert.equal(pendingEventViewModel.mode, "event");
 assert.equal(pendingEventViewModel.eventHint.title, "林中异动");
 assert.equal(getPrimaryAction(pendingEventSnapshot).action, "open-event");
+
+const activeBattleViewModel = buildMainStageViewModel(activeBattleSnapshot);
+assert.equal(activeBattleViewModel.mode, "battle");
+assert.equal(getPrimaryAction(activeBattleSnapshot).action, "open-battle");
 
 const deadViewModel = buildMainStageViewModel(deadSnapshot);
 assert.equal(deadViewModel.mode, "summary");

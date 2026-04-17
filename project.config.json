@@ -1,7 +1,44 @@
 {
   "description": "Wendao core loop mini game debug shell",
   "packOptions": {
-    "ignore": [],
+    "ignore": [
+      {
+        "type": "folder",
+        "value": "components"
+      },
+      {
+        "type": "folder",
+        "value": "pages"
+      },
+      {
+        "type": "folder",
+        "value": "docs"
+      },
+      {
+        "type": "folder",
+        "value": "tests"
+      },
+      {
+        "type": "file",
+        "value": "app.js"
+      },
+      {
+        "type": "file",
+        "value": "app.json"
+      },
+      {
+        "type": "file",
+        "value": "app.wxss"
+      },
+      {
+        "type": "file",
+        "value": "sitemap.json"
+      },
+      {
+        "type": "file",
+        "value": "README.md"
+      }
+    ],
     "include": []
   },
   "setting": {
@@ -17,6 +54,7 @@
     "minifyWXSS": true,
     "minifyWXML": true,
     "localPlugins": false,
+    "useApiHook": false,
     "disableUseStrict": false,
     "useCompilerPlugins": false,
     "condition": false,

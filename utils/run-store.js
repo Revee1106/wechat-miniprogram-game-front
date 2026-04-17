@@ -65,7 +65,20 @@ async function resolveEvent(optionId) {
   state.error = "";
   const beforeRun = clone(state.run);
   state.run = await api.resolveEvent(state.run.run_id, optionId);
-  pushEventHistory(beforeRun, state.run);
+  if (!state.run.active_battle) {
+    pushEventHistory(beforeRun, state.run);
+  }
+  return getState();
+}
+
+async function performBattleAction(action) {
+  ensureRun();
+  state.error = "";
+  const beforeRun = clone(state.run);
+  state.run = await api.performBattleAction(state.run.run_id, action);
+  if (beforeRun.active_battle && !state.run.active_battle) {
+    pushEventHistory(beforeRun, state.run);
+  }
   return getState();
 }
 
@@ -284,6 +297,7 @@ module.exports = {
   refreshRun,
   advanceTime,
   resolveEvent,
+  performBattleAction,
   markCultivationCapPromptSuppressed,
   isCultivationCapPromptSuppressed,
   breakthrough,

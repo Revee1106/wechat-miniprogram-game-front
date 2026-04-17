@@ -22,14 +22,17 @@ function drawScrollCard(context, rect, content = {}) {
   context.fillRect(rect.x + 18, logTop - 12, rect.width - 36, 1);
 
   if (Array.isArray(content.summaryRows)) {
+    const rowCount = Math.max(1, content.summaryRows.length);
+    const rowGap = Math.min(42, Math.max(26, Math.floor((infoBottom - infoTop - 8) / rowCount)));
+    const valueX = rect.x + rect.width * 0.52;
     content.summaryRows.forEach((row, index) => {
-      const top = infoTop + index * 42;
+      const top = infoTop + index * rowGap;
       context.fillStyle = themeTokens.color.inkSoft;
-      context.font = "15px sans-serif";
-      context.fillText(String(row.label), rect.x + headerInset, top + 18);
+      context.font = rowGap < 32 ? "13px sans-serif" : "15px sans-serif";
+      context.fillText(String(row.label), rect.x + headerInset, top + rowGap - 10);
       context.fillStyle = themeTokens.color.ink;
-      context.font = "bold 16px sans-serif";
-      context.fillText(String(row.value), rect.x + rect.width * 0.5, top + 18);
+      context.font = rowGap < 32 ? "bold 14px sans-serif" : "bold 16px sans-serif";
+      context.fillText(String(row.value), valueX, top + rowGap - 10);
     });
   }
 

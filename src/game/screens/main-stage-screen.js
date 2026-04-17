@@ -4,12 +4,14 @@ const { drawScrollCard } = require("../ui/scroll-card");
 const { drawSealButton } = require("../ui/seal-button");
 const { drawTagButton } = require("../ui/tag-button");
 const { buildMainStageViewModel } = require("../view-models/main-stage");
+const { buildBattleModalViewModel } = require("../view-models/battle-modal");
 const { buildEventModalViewModel } = require("../view-models/event-modal");
 const { buildResourcesDrawerViewModel } = require("../view-models/resources-drawer");
 const { buildCultivationDrawerViewModel } = require("../view-models/cultivation-drawer");
 const { buildDwellingDrawerViewModel } = require("../view-models/dwelling-drawer");
 const { buildAlchemyDrawerViewModel } = require("../view-models/alchemy-drawer");
 const { buildSummaryModalViewModel } = require("../view-models/summary-modal");
+const { drawBattleModal } = require("./battle-modal");
 const { drawEventModal } = require("./event-modal");
 const { drawResourcesDrawer } = require("./resources-drawer");
 const { drawCultivationDrawer } = require("./cultivation-drawer");
@@ -92,6 +94,10 @@ function createMainStageScreen(options) {
       return;
     }
 
+    if (run.active_battle) {
+      return;
+    }
+
     if (run.current_event) {
       return;
     }
@@ -114,6 +120,7 @@ function createMainStageScreen(options) {
       footerTagRows: Math.ceil(bottomTags.length / 3),
     });
     const stage = buildMainStageViewModel(snapshot);
+    const battleModal = buildBattleModalViewModel(snapshot);
     const eventModal = buildEventModalViewModel(snapshot);
     const alchemyUnlocked = bottomTags.some((item) => item.key === "alchemy");
     const resourcesDrawer = uiState.activeDrawer === "resources" ? buildResourcesDrawerViewModel(snapshot) : null;
@@ -146,7 +153,10 @@ function createMainStageScreen(options) {
     drawSealButton(context, primaryRect, {
       label: stage.primaryAction.label,
       disabled:
-        uiState.busy || stage.primaryAction.action === "open-event" || stage.primaryAction.action === "open-summary",
+        uiState.busy ||
+        stage.primaryAction.action === "open-event" ||
+        stage.primaryAction.action === "open-summary" ||
+        stage.primaryAction.action === "open-battle",
     });
     registerHitRegion({
       ...primaryRect,
@@ -244,7 +254,14 @@ function createMainStageScreen(options) {
       });
     }
 
-    if (eventModal) {
+    if (battleModal) {
+      registerBlockingRegion(registerHitRegion, 0, 0, width, height);
+      drawBattleModal(context, { width, height, viewport }, battleModal, registerHitRegion, (action) =>
+        perform(async () => {
+          await adapter.performBattleAction(action);
+        })
+      );
+    } else if (eventModal) {
       registerBlockingRegion(registerHitRegion, 0, 0, width, height);
       drawEventModal(context, { width, height, viewport }, eventModal, registerHitRegion, (optionId) =>
         perform(async () => {
@@ -493,6 +510,10 @@ function buildSummaryRows(stage) {
     { label: "修为", value: stage.topSummary.cultivationExp },
     { label: "灵石", value: stage.topSummary.spiritStone },
     { label: "寿元", value: stage.topSummary.lifespan },
+    { label: "气血", value: `${stage.topSummary.hpCurrent}/${stage.topSummary.hpMax}` },
+    { label: "攻击", value: stage.topSummary.attack },
+    { label: "防御", value: stage.topSummary.defense },
+    { label: "速度", value: stage.topSummary.speed },
   ];
 }
 

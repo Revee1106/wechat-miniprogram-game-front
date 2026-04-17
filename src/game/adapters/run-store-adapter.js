@@ -20,6 +20,10 @@ async function resolveEvent(optionId) {
   return store.resolveEvent(optionId);
 }
 
+async function performBattleAction(action) {
+  return store.performBattleAction(action);
+}
+
 async function breakthrough() {
   return store.breakthrough();
 }
@@ -58,6 +62,7 @@ module.exports = {
   refreshRun,
   advanceTime,
   resolveEvent,
+  performBattleAction,
   breakthrough,
   sellResource,
   convertSpiritStoneToCultivation,

@@ -44,6 +44,10 @@ function resolveEvent(runId, optionId) {
   return post("/api/run/resolve", { run_id: runId, option_id: optionId });
 }
 
+function performBattleAction(runId, action) {
+  return post("/api/run/battle/action", { run_id: runId, action });
+}
+
 function breakthrough(runId) {
   return post("/api/run/breakthrough", { run_id: runId });
 }
@@ -97,6 +101,7 @@ module.exports = {
   getRunState,
   advanceTime,
   resolveEvent,
+  performBattleAction,
   breakthrough,
   buildDwellingFacility,
   upgradeDwellingFacility,

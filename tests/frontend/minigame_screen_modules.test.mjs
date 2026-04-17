@@ -12,6 +12,7 @@ assert.equal(typeof require("../../src/game/ui/scroll-card.js").drawScrollCard, 
 assert.equal(typeof require("../../src/game/ui/seal-button.js").drawSealButton, "function");
 assert.equal(typeof require("../../src/game/ui/tag-button.js").drawTagButton, "function");
 assert.equal(typeof require("../../src/game/screens/confirm-modal.js").drawConfirmModal, "function");
+assert.equal(typeof require("../../src/game/screens/battle-modal.js").drawBattleModal, "function");
 
 const mainStageSource = readFileSync(
   new URL("../../src/game/screens/main-stage-screen.js", import.meta.url),
@@ -23,6 +24,12 @@ assert.match(mainStageSource, /drawScrollCard/);
 assert.match(mainStageSource, /drawSealButton/);
 assert.match(mainStageSource, /drawTagButton/);
 assert.match(mainStageSource, /drawConfirmModal/);
+assert.match(mainStageSource, /buildBattleModalViewModel/);
+assert.match(mainStageSource, /drawBattleModal/);
+assert.match(mainStageSource, /气血/);
+assert.match(mainStageSource, /攻击/);
+assert.match(mainStageSource, /防御/);
+assert.match(mainStageSource, /速度/);
 assert.match(mainStageSource, /confirmDialog/);
 assert.match(mainStageSource, /setTimeout/);
 assert.match(mainStageSource, /clearTimeout/);
@@ -46,6 +53,7 @@ assert.ok(toastIndex > dwellingIndex, "toast should render after drawers so it s
 assert.doesNotMatch(mainStageSource, /primaryButtonY - 54/);
 
 const themedScreenFiles = [
+  "../../src/game/screens/battle-modal.js",
   "../../src/game/screens/event-modal.js",
   "../../src/game/screens/resources-drawer.js",
   "../../src/game/screens/cultivation-drawer.js",
@@ -68,6 +76,13 @@ assert.match(sealButtonSource, /buttonSurface/);
 assert.match(sealButtonSource, /buttonBorder/);
 assert.match(sealButtonSource, /buttonText/);
 assert.doesNotMatch(sealButtonSource, /creamText/);
+
+const scrollCardSource = readFileSync(
+  new URL("../../src/game/ui/scroll-card.js", import.meta.url),
+  "utf8"
+);
+assert.match(scrollCardSource, /rowGap/);
+assert.match(scrollCardSource, /rowCount/);
 
 const tagButtonSource = readFileSync(
   new URL("../../src/game/ui/tag-button.js", import.meta.url),

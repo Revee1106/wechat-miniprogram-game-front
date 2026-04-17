@@ -13,6 +13,8 @@ testLockedAlchemyTagIsHidden();
 testDwellingUsesThirdSlotInFirstRow();
 testUnlockedAlchemyUsesFirstSlotInSecondRow();
 testEventModalBlocksClickThrough();
+testBattleModalBlocksClickThrough();
+await testBattleActionTapCallsAdapter();
 testEventModalExpandsWrappedOptionHitRegion();
 testSummaryModalBlocksClickThrough();
 testConfirmModalBlocksClickThrough();
@@ -367,6 +369,136 @@ function testEventModalBlocksClickThrough() {
   assert.equal(renderCount, 0, "event modal should block taps from reaching the bottom drawer tags");
 }
 
+function testBattleModalBlocksClickThrough() {
+  const snapshot = {
+    run: {
+      round_index: 1,
+      resources: {
+        spirit_stone: 12,
+      },
+      character: {
+        realm: "qi_refining_early",
+        realm_display_name: "鐐兼皵鍒濇湡",
+        cultivation_exp: 8,
+        lifespan_current: 719,
+        is_dead: false,
+      },
+      current_event: {
+        event_name: "灞遍棬寮傞椈",
+        body_text: "鍓嶆柟浼犳潵鏂扮殑娑堟伅銆?",
+        options: [],
+      },
+      active_battle: {
+        round_index: 1,
+        allow_flee: true,
+        pill_count: 1,
+        player: {
+          realm_label: "鐐兼皵鍒濇湡",
+          hp_current: 20,
+          hp_max: 20,
+          attack: 5,
+          defense: 2,
+          speed: 3,
+        },
+        enemy: {
+          name: "灞卞尓",
+          realm_label: "鐐兼皵鍒濇湡",
+          hp_current: 12,
+          hp_max: 12,
+          attack: 3,
+          defense: 1,
+          speed: 2,
+        },
+        log_lines: ["battle started"],
+      },
+    },
+    playerProfile: null,
+    eventHistory: [],
+    dwellingSettlementHistory: [],
+  };
+
+  let renderCount = 0;
+  const screen = createMainStageScreen({
+    adapter: createAdapter(snapshot),
+    requestRender() {
+      renderCount += 1;
+    },
+  });
+  const frame = createFrame();
+  const viewport = createViewportLayout(frame.width, frame.height, { safeArea: null });
+
+  screen.render(frame);
+  screen.handleTouchEnd(createTap(viewport.contentLeft + 24, viewport.footerTop + 32));
+
+  assert.equal(renderCount, 0, "battle modal should block taps from reaching the bottom drawer tags");
+}
+
+async function testBattleActionTapCallsAdapter() {
+  const snapshot = {
+    run: {
+      round_index: 1,
+      resources: {
+        spirit_stone: 12,
+      },
+      character: {
+        realm: "qi_refining_early",
+        realm_display_name: "鐐兼皵鍒濇湡",
+        cultivation_exp: 8,
+        lifespan_current: 719,
+        is_dead: false,
+      },
+      current_event: {
+        event_name: "灞遍棬寮傞椈",
+        body_text: "鍓嶆柟浼犳潵鏂扮殑娑堟伅銆?",
+        options: [],
+      },
+      active_battle: {
+        round_index: 1,
+        allow_flee: true,
+        pill_count: 1,
+        player: {
+          realm_label: "鐐兼皵鍒濇湡",
+          hp_current: 20,
+          hp_max: 20,
+          attack: 5,
+          defense: 2,
+          speed: 3,
+        },
+        enemy: {
+          name: "灞卞尓",
+          realm_label: "鐐兼皵鍒濇湡",
+          hp_current: 12,
+          hp_max: 12,
+          attack: 3,
+          defense: 1,
+          speed: 2,
+        },
+        log_lines: ["battle started"],
+      },
+    },
+    playerProfile: null,
+    eventHistory: [],
+    dwellingSettlementHistory: [],
+  };
+
+  const actions = [];
+  const screen = createMainStageScreen({
+    adapter: createAdapter(snapshot, {
+      async performBattleAction(action) {
+        actions.push(action);
+      },
+    }),
+    requestRender() {},
+  });
+  const frame = createFrame();
+
+  screen.render(frame);
+  screen.handleTouchEnd(createTap(110, 420));
+  await flushAsyncWork();
+
+  assert.deepEqual(actions, ["attack"]);
+}
+
 function testEventModalExpandsWrappedOptionHitRegion() {
   const hitRegions = [];
   const frame = createFrame({
@@ -674,6 +806,7 @@ function createAdapter(snapshot, overrides = {}) {
     async createRun() {},
     async advanceTime() {},
     async resolveEvent() {},
+    async performBattleAction() {},
     async breakthrough() {},
     async sellResource() {},
     async convertSpiritStoneToCultivation() {},

@@ -46,6 +46,9 @@ const LEGACY_ERROR_PATTERNS = [
   [/there is already an active alchemy job/i, "当前已有炼丹事务在进行。"],
   [/recipe cannot be started/i, "当前丹方无法开炉。"],
   [/not enough resources for alchemy/i, "资源不足，无法开始炼丹。"],
+  [/battle is already in progress/i, "当前战斗还在进行中，请先继续战斗。"],
+  [/there is no active battle/i, "当前没有正在进行的战斗。"],
+  [/battle has already finished/i, "当前战斗已经结束。"],
 ];
 
 const RESOURCE_LABELS = {

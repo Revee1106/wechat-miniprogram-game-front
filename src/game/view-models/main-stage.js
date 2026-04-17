@@ -16,6 +16,13 @@ function getPrimaryAction(snapshot) {
     };
   }
 
+  if (run.active_battle) {
+    return {
+      action: "open-battle",
+      label: "战斗中",
+    };
+  }
+
   if (run.current_event) {
     return {
       action: "open-event",
@@ -58,6 +65,11 @@ function buildMainStageViewModel(snapshot) {
     cultivationExp: (run.character && Number(run.character.cultivation_exp)) || 0,
     spiritStone: (run.resources && Number(run.resources.spirit_stone)) || 0,
     lifespan: (run.character && Number(run.character.lifespan_current)) || 0,
+    hpCurrent: (run.character && Number(run.character.hp_current)) || 0,
+    hpMax: (run.character && Number(run.character.hp_max)) || 0,
+    attack: (run.character && Number(run.character.attack)) || 0,
+    defense: (run.character && Number(run.character.defense)) || 0,
+    speed: (run.character && Number(run.character.speed)) || 0,
     rebirthCount: (playerProfile && Number(playerProfile.total_rebirth_count)) || 0,
   };
 
@@ -73,6 +85,13 @@ function buildMainStageViewModel(snapshot) {
       ...baseViewModel,
       mode: "summary",
       deathNotice: "此世已尽",
+    };
+  }
+
+  if (run.active_battle) {
+    return {
+      ...baseViewModel,
+      mode: "battle",
     };
   }
 
