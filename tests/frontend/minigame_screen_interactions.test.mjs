@@ -5,19 +5,24 @@ const require = createRequire(import.meta.url);
 const { createMainStageScreen } = require("../../src/game/screens/main-stage-screen.js");
 const { createViewportLayout } = require("../../src/game/core/layout.js");
 const { drawEventModal } = require("../../src/game/screens/event-modal.js");
+const { drawConfirmModal } = require("../../src/game/screens/confirm-modal.js");
 
 testDrawerOverlayBlocksClickThrough();
 await testResourcesDrawerSupportsSellAllAndPromptedQuantity();
+await testResourcesDrawerConsumesConcretePill();
 testMaxLevelDwellingButtonDoesNotOpenConfirm();
 testLockedAlchemyTagIsHidden();
 testDwellingUsesThirdSlotInFirstRow();
 testUnlockedAlchemyUsesFirstSlotInSecondRow();
+testAlchemyRecipeTapSelectsDetailDrawer();
+await testAlchemyRecipeDetailButtonStartsAlchemy();
 testEventModalBlocksClickThrough();
 testBattleModalBlocksClickThrough();
 await testBattleActionTapCallsAdapter();
 testEventModalExpandsWrappedOptionHitRegion();
 testSummaryModalBlocksClickThrough();
 testConfirmModalBlocksClickThrough();
+testConfirmModalWrapsLongBodyLines();
 await testEventResolutionDoesNotShowToast();
 
 function testDrawerOverlayBlocksClickThrough() {
@@ -287,7 +292,7 @@ function testUnlockedAlchemyUsesFirstSlotInSecondRow() {
             display_name: "养气丹",
             can_start: true,
             ingredients: {
-              herb: 2,
+              basic_herb: 2,
             },
           },
         ],
@@ -320,6 +325,167 @@ function testUnlockedAlchemyUsesFirstSlotInSecondRow() {
   );
 
   assert.equal(renderedTexts.includes("养气丹"), true, "alchemy should open from the first slot in the second row");
+}
+
+function testAlchemyRecipeTapSelectsDetailDrawer() {
+  const snapshot = {
+    run: {
+      round_index: 2,
+      resources: {
+        spirit_stone: 20,
+      },
+      resource_stacks: [],
+      character: {
+        realm: "qi_refining_early",
+        realm_display_name: "炼气初期",
+        cultivation_exp: 18,
+        lifespan_current: 719,
+        is_dead: false,
+      },
+      current_event: null,
+      dwelling_facilities: [
+        {
+          facility_id: "alchemy_room",
+          display_name: "炼丹房",
+          level: 1,
+        },
+      ],
+      alchemy_state: {
+        mastery_title: "丹道已开",
+        mastery_exp: 0,
+        available_recipes: [
+          {
+            recipe_id: "yangqi-pill",
+            display_name: "养气丹",
+            can_start: true,
+            ingredients: {
+              basic_herb: 2,
+            },
+            description: "前期主力修炼丹。",
+            effect_summary: "直接增加修为",
+            effect_type: "cultivation_exp",
+            effect_value: 12,
+            duration_months: 1,
+            base_success_rate: 0.86,
+            required_alchemy_level: 0,
+          },
+        ],
+        inventory: [],
+      },
+    },
+    playerProfile: null,
+    eventHistory: [],
+    dwellingSettlementHistory: [],
+  };
+
+  let startAlchemyCalls = 0;
+  const screen = createMainStageScreen({
+    adapter: createAdapter(snapshot, {
+      async startAlchemy() {
+        startAlchemyCalls += 1;
+      },
+    }),
+    requestRender() {},
+  });
+  const frame = createFrame();
+  const viewport = createViewportLayout(frame.width, frame.height, { safeArea: null, footerTagRows: 2 });
+  const alchemyTagCenter = getTagCenter(viewport, 1, 0);
+
+  screen.render(frame);
+  screen.handleTouchEnd(createTap(alchemyTagCenter.x, alchemyTagCenter.y));
+  screen.render(frame);
+  screen.handleTouchEnd(createTap(60, 396));
+
+  const renderedTexts = [];
+  screen.render(
+    createFrame({
+      fillText(text) {
+        renderedTexts.push(String(text));
+      },
+    })
+  );
+
+  assert.equal(startAlchemyCalls, 0, "tapping a recipe chip should only select it");
+  assert.equal(renderedTexts.includes("作用: 服用后提升 12 点修为"), true, "selected recipe should show details in the drawer");
+  assert.equal(renderedTexts.includes("开炉"), true, "selected recipe detail should expose the start button");
+  assert.equal(renderedTexts.includes("知道了"), false, "recipe details should not use the modal action");
+}
+
+async function testAlchemyRecipeDetailButtonStartsAlchemy() {
+  const snapshot = {
+    run: {
+      round_index: 2,
+      resources: {
+        spirit_stone: 20,
+      },
+      resource_stacks: [],
+      character: {
+        realm: "qi_refining_early",
+        realm_display_name: "炼气初期",
+        cultivation_exp: 18,
+        lifespan_current: 719,
+        is_dead: false,
+      },
+      current_event: null,
+      dwelling_facilities: [
+        {
+          facility_id: "alchemy_room",
+          display_name: "炼丹房",
+          level: 1,
+        },
+      ],
+      alchemy_state: {
+        mastery_title: "丹道已开",
+        mastery_exp: 0,
+        available_recipes: [
+          {
+            recipe_id: "yangqi-pill",
+            display_name: "养气丹",
+            can_start: true,
+            ingredients: {
+              basic_herb: 2,
+            },
+            description: "前期主力修炼丹。",
+            effect_summary: "直接增加修为",
+            effect_type: "cultivation_exp",
+            effect_value: 12,
+            duration_months: 1,
+            base_success_rate: 0.86,
+            required_alchemy_level: 0,
+          },
+        ],
+        inventory: [],
+      },
+    },
+    playerProfile: null,
+    eventHistory: [],
+    dwellingSettlementHistory: [],
+  };
+
+  const startAlchemyCalls = [];
+  const screen = createMainStageScreen({
+    adapter: createAdapter(snapshot, {
+      async startAlchemy(recipeId, useSpiritSpring) {
+        startAlchemyCalls.push({ recipeId, useSpiritSpring });
+      },
+    }),
+    requestRender() {},
+  });
+  const frame = createFrame();
+  const viewport = createViewportLayout(frame.width, frame.height, { safeArea: null, footerTagRows: 2 });
+  const alchemyTagCenter = getTagCenter(viewport, 1, 0);
+
+  screen.render(frame);
+  screen.handleTouchEnd(createTap(alchemyTagCenter.x, alchemyTagCenter.y));
+  screen.render(frame);
+  screen.handleTouchEnd(createTap(60, 396));
+  screen.render(frame);
+  screen.handleTouchEnd(createTap(187, 704));
+  await flushAsyncWork();
+
+  assert.deepEqual(startAlchemyCalls, [
+    { recipeId: "yangqi-pill", useSpiritSpring: false },
+  ]);
 }
 
 function testEventModalBlocksClickThrough() {
@@ -662,6 +828,47 @@ function testConfirmModalBlocksClickThrough() {
   assert.equal(renderCount, previousRenderCount + 1, "confirm modal backdrop tap should only close the modal itself");
 }
 
+function testConfirmModalWrapsLongBodyLines() {
+  const drawnTexts = [];
+  const frame = createFrame({
+    fillText(text, x, y) {
+      drawnTexts.push({ text: String(text), x, y });
+    },
+    measureText(text) {
+      return {
+        width: String(text || "").length * 16,
+      };
+    },
+  });
+
+  drawConfirmModal(
+    frame.context,
+    { width: frame.width, height: frame.height },
+    {
+      title: "Recipe",
+      bodyLines: [
+        "effect:abcdefghijklmnopqrstuvwxyz",
+        "borrow spring:abcdefghijklmnopqrstuvwxyz",
+      ],
+      confirmText: "OK",
+      showCancel: false,
+    },
+    () => {},
+    {
+      onCancel() {},
+      onConfirm() {},
+    }
+  );
+
+  const bodyTexts = drawnTexts.filter((item) => item.y > 330 && item.y < 520).map((item) => item.text);
+  assert.ok(bodyTexts.length > 2, "long confirm modal body lines should wrap onto additional rows");
+  assert.equal(
+    bodyTexts.includes("effect:abcdefghijklmnopqrstuvwxyz"),
+    false,
+    "wrapped confirm modal should not draw the full overflowing body line"
+  );
+}
+
 async function testEventResolutionDoesNotShowToast() {
   const snapshot = {
     run: {
@@ -786,7 +993,7 @@ async function testResourcesDrawerSupportsSellAllAndPromptedQuantity() {
     screen.render(frame);
     screen.handleTouchEnd(createTap(10, 10));
     screen.render(frame);
-    screen.handleTouchEnd(createTap(280, 750));
+    screen.handleTouchEnd(createTap(100, 740));
     await flushAsyncWork();
 
     assert.deepEqual(saleCalls, [
@@ -796,6 +1003,79 @@ async function testResourcesDrawerSupportsSellAllAndPromptedQuantity() {
   } finally {
     globalThis.wx = originalWx;
   }
+}
+
+async function testResourcesDrawerConsumesConcretePill() {
+  const snapshot = {
+    run: {
+      round_index: 3,
+      resources: {
+        spirit_stone: 0,
+        herbs: 0,
+        iron_essence: 0,
+        ore: 0,
+        beast_material: 0,
+        pill: 1,
+        craft_material: 0,
+      },
+      resource_stacks: [],
+      alchemy_state: {
+        inventory: [
+          {
+            item_id: "yang_qi_dan",
+            display_name: "养气丹",
+            quality: "low",
+            amount: 1,
+            effect_summary: "直接增加修为",
+            effect_type: "cultivation_exp",
+            effect_value: 12,
+          },
+        ],
+      },
+      character: {
+        realm: "qi_refining_early",
+        realm_display_name: "炼气初期",
+        cultivation_exp: 37,
+        lifespan_current: 717,
+        is_dead: false,
+      },
+      current_event: null,
+    },
+    playerProfile: null,
+    eventHistory: [],
+    dwellingSettlementHistory: [],
+  };
+
+  const consumeCalls = [];
+  const screen = createMainStageScreen({
+    adapter: createAdapter(snapshot, {
+      async consumeAlchemyItem(itemId, quality) {
+        consumeCalls.push({ itemId, quality });
+      },
+    }),
+    requestRender() {},
+  });
+  const frame = createFrame();
+  const viewport = createViewportLayout(frame.width, frame.height, { safeArea: null });
+
+  screen.render(frame);
+  screen.handleTouchEnd(createTap(viewport.contentLeft + 24, viewport.footerTop + 32));
+  screen.render(frame);
+  screen.handleTouchEnd(createTap(100, 368));
+
+  const renderedTexts = [];
+  screen.render(
+    createFrame({
+      fillText(text) {
+        renderedTexts.push(String(text));
+      },
+    })
+  );
+  screen.handleTouchEnd(createTap(187, 745));
+  await flushAsyncWork();
+
+  assert.equal(renderedTexts.includes("养气丹 1"), true, "inventory should show concrete pill names");
+  assert.deepEqual(consumeCalls, [{ itemId: "yang_qi_dan", quality: "low" }]);
 }
 
 function createAdapter(snapshot, overrides = {}) {

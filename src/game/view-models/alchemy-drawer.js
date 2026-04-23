@@ -9,8 +9,13 @@ function buildAlchemyDrawerViewModel(snapshot) {
     id: recipe.recipe_id,
     title: recipe.display_name,
     description: recipe.description || "",
+    effectSummary: buildRecipeEffectText(recipe),
     canStart: recipe.can_start === true,
     ingredientsText: buildIngredientsText(recipe.ingredients || {}),
+    durationText: `${Number(recipe.duration_months || 0)} 月`,
+    successRateText: formatSuccessRate(recipe.base_success_rate),
+    requiredText: `丹道 ${Number(recipe.required_alchemy_level || 0)} 级`,
+    disabledReason: recipe.disabled_reason || "",
     action: {
       action: "start-alchemy",
       label: "开炉",
@@ -23,26 +28,14 @@ function buildAlchemyDrawerViewModel(snapshot) {
     },
   }));
 
-  const inventoryCards = (alchemyState.inventory || []).map((item) => ({
-    id: `${item.item_id}-${item.quality}`,
-    title: `${item.display_name} / ${item.quality}`,
-    amount: Number(item.amount) || 0,
-    effectSummary: item.effect_summary || "",
-    consumeAction: {
-      action: "consume-item",
-      label: "服用",
-      itemId: item.item_id,
-      quality: item.quality,
-    },
-  }));
-
   return {
     title: "炼丹",
     masteryTitle: alchemyState.mastery_title || "丹道未入门",
     masteryExp: Number(alchemyState.mastery_exp || 0),
     spiritSpringWaterAmount,
+    hasActiveJob: Boolean(alchemyState.active_job),
+    spiritSpringHint: "借灵泉额外消耗 1 灵泉水，炼丹评分 +0.08",
     recipeCards,
-    inventoryCards,
     activeJobSummary: alchemyState.active_job
       ? `${alchemyState.active_job.recipe_name} 尚需 ${Number(alchemyState.active_job.remaining_months || 0)} 月`
       : "当前没有在炼丹方",
@@ -59,6 +52,28 @@ function buildIngredientsText(ingredients) {
   return Object.entries(ingredients)
     .map(([key, amount]) => `${formatResourceName(key)} x${amount}`)
     .join(" / ");
+}
+
+function buildRecipeEffectText(recipe) {
+  const value = Number(recipe.effect_value || 0);
+  if (recipe.effect_type === "cultivation_exp") {
+    return `服用后提升 ${value} 点修为`;
+  }
+  if (recipe.effect_type === "hp_restore") {
+    return `服用后恢复 ${value} 点气血`;
+  }
+  if (recipe.effect_type === "lifespan_restore") {
+    return `服用后恢复 ${value} 个月寿元`;
+  }
+  if (recipe.effect_type === "breakthrough_bonus") {
+    return `服用后提高 ${value} 点突破辅助值`;
+  }
+  return recipe.effect_summary || recipe.effectSummary || "";
+}
+
+function formatSuccessRate(value) {
+  const rate = Number(value || 0);
+  return `${Math.round(rate * 100)}%`;
 }
 
 module.exports = {

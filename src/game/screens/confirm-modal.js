@@ -8,9 +8,13 @@ function drawConfirmModal(context, layout, viewModel, registerHitRegion, actions
   const width = layout.width;
   const height = layout.height;
   const panelWidth = width - 56;
-  const panelHeight = 214;
+  const bodyTextWidth = panelWidth - 48;
+  context.font = "16px sans-serif";
+  const visibleBodyLines = wrapBodyLines(context, viewModel.bodyLines || [], bodyTextWidth, 8);
+  const bodyLineHeight = 24;
+  const panelHeight = Math.min(height - 64, Math.max(214, 136 + visibleBodyLines.length * bodyLineHeight));
   const panelX = 28;
-  const panelY = Math.max(120, (height - panelHeight) / 2);
+  const panelY = Math.max(32, (height - panelHeight) / 2);
 
   context.fillStyle = themeTokens.color.overlayHeavy;
   context.fillRect(0, 0, width, height);
@@ -26,40 +30,58 @@ function drawConfirmModal(context, layout, viewModel, registerHitRegion, actions
 
   context.fillStyle = themeTokens.color.ink;
   context.font = "16px sans-serif";
-  (viewModel.bodyLines || []).slice(0, 3).forEach((line, index) => {
-    context.fillText(String(line), panelX + 24, panelY + 82 + index * 26);
+  visibleBodyLines.forEach((line, index) => {
+    context.fillText(String(line), panelX + 24, panelY + 82 + index * bodyLineHeight);
   });
 
   const cancelRect = { x: panelX + 24, y: panelY + panelHeight - 64, width: panelWidth / 2 - 36, height: 40 };
   const confirmRect = { x: panelX + panelWidth / 2 + 12, y: panelY + panelHeight - 64, width: panelWidth / 2 - 36, height: 40 };
+  const singleConfirmRect = { x: panelX + 24, y: panelY + panelHeight - 64, width: panelWidth - 48, height: 40 };
+  const showCancel = viewModel.showCancel !== false;
 
+  if (showCancel) {
+    fillRoundedRect(
+      context,
+      cancelRect.x,
+      cancelRect.y,
+      cancelRect.width,
+      cancelRect.height,
+      14,
+      themeTokens.color.buttonSurface
+    );
+  }
+  const activeConfirmRect = showCancel ? confirmRect : singleConfirmRect;
   fillRoundedRect(
     context,
-    cancelRect.x,
-    cancelRect.y,
-    cancelRect.width,
-    cancelRect.height,
-    14,
-    themeTokens.color.buttonSurface
-  );
-  fillRoundedRect(
-    context,
-    confirmRect.x,
-    confirmRect.y,
-    confirmRect.width,
-    confirmRect.height,
+    activeConfirmRect.x,
+    activeConfirmRect.y,
+    activeConfirmRect.width,
+    activeConfirmRect.height,
     14,
     themeTokens.color.buttonSurface
   );
   context.strokeStyle = themeTokens.color.buttonBorder;
   context.lineWidth = 2;
-  strokeRoundedRect(context, cancelRect.x + 1, cancelRect.y + 1, cancelRect.width - 2, cancelRect.height - 2, 13);
-  strokeRoundedRect(context, confirmRect.x + 1, confirmRect.y + 1, confirmRect.width - 2, confirmRect.height - 2, 13);
+  if (showCancel) {
+    strokeRoundedRect(context, cancelRect.x + 1, cancelRect.y + 1, cancelRect.width - 2, cancelRect.height - 2, 13);
+  }
+  strokeRoundedRect(
+    context,
+    activeConfirmRect.x + 1,
+    activeConfirmRect.y + 1,
+    activeConfirmRect.width - 2,
+    activeConfirmRect.height - 2,
+    13
+  );
 
   context.fillStyle = themeTokens.color.buttonText;
   context.font = "bold 16px sans-serif";
-  context.fillText(viewModel.cancelText || "取消", cancelRect.x + 20, cancelRect.y + 25);
-  context.fillText(viewModel.confirmText || "确认", confirmRect.x + 20, confirmRect.y + 25);
+  if (showCancel) {
+    context.fillText(viewModel.cancelText || "取消", cancelRect.x + 20, cancelRect.y + 25);
+  }
+  const confirmLabel = viewModel.confirmText || "确认";
+  const confirmTextWidth = context.measureText(confirmLabel).width;
+  context.fillText(confirmLabel, activeConfirmRect.x + (activeConfirmRect.width - confirmTextWidth) / 2, activeConfirmRect.y + 25);
 
   registerHitRegion({
     x: 0,
@@ -68,12 +90,14 @@ function drawConfirmModal(context, layout, viewModel, registerHitRegion, actions
     height,
     onTap: actions.onCancel,
   });
+  if (showCancel) {
+    registerHitRegion({
+      ...cancelRect,
+      onTap: actions.onCancel,
+    });
+  }
   registerHitRegion({
-    ...cancelRect,
-    onTap: actions.onCancel,
-  });
-  registerHitRegion({
-    ...confirmRect,
+    ...activeConfirmRect,
     onTap: actions.onConfirm,
   });
 }
@@ -102,6 +126,43 @@ function traceRoundedRect(context, x, y, width, height, radius) {
   context.lineTo(x, y + nextRadius);
   context.quadraticCurveTo(x, y, x + nextRadius, y);
   context.closePath();
+}
+
+function wrapBodyLines(context, lines, maxWidth, maxLines) {
+  const wrappedLines = [];
+  for (const rawLine of lines) {
+    const nextLines = wrapLine(context, String(rawLine || ""), maxWidth);
+    for (const line of nextLines) {
+      if (wrappedLines.length >= maxLines) {
+        return wrappedLines;
+      }
+      wrappedLines.push(line);
+    }
+  }
+  return wrappedLines;
+}
+
+function wrapLine(context, text, maxWidth) {
+  if (!text || context.measureText(text).width <= maxWidth) {
+    return [text];
+  }
+
+  const lines = [];
+  let currentLine = "";
+  Array.from(text).forEach((character) => {
+    const candidate = `${currentLine}${character}`;
+    if (currentLine && context.measureText(candidate).width > maxWidth) {
+      lines.push(currentLine);
+      currentLine = character;
+      return;
+    }
+    currentLine = candidate;
+  });
+
+  if (currentLine) {
+    lines.push(currentLine);
+  }
+  return lines;
 }
 
 module.exports = {

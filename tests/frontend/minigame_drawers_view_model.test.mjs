@@ -31,6 +31,19 @@ const snapshot = {
       required_spirit_stone: 20,
       target_realm_display_name: "炼气后期",
     },
+    alchemy_state: {
+      inventory: [
+        {
+          item_id: "yang_qi_dan",
+          display_name: "养气丹",
+          quality: "mid",
+          amount: 1,
+          effect_summary: "直接增加修为",
+          effect_type: "cultivation_exp",
+          effect_value: 12,
+        },
+      ],
+    },
   },
 };
 
@@ -39,6 +52,7 @@ assert.equal(resourcesViewModel.title, "行囊");
 assert.equal(resourcesViewModel.items.length, 9);
 assert.equal(resourcesViewModel.items[0].key, "spirit_stone");
 assert.equal(resourcesViewModel.items[0].label, "灵石");
+assert.equal(resourcesViewModel.items[0].conversionRateText, "1 灵石 = 3 修为");
 assert.equal(resourcesViewModel.items[0].actions.length, 3);
 assert.equal(resourcesViewModel.items[0].actions[0].label, "转化一份");
 assert.equal(resourcesViewModel.items[0].actions[1].label, "全部转化");
@@ -49,7 +63,11 @@ assert.equal(resourcesViewModel.items[1].actions[1].label, "全部出售");
 assert.equal(resourcesViewModel.items[1].actions[2].label, "输入数量出售");
 assert.equal(resourcesViewModel.items[3].label, "灵矿");
 assert.equal(resourcesViewModel.items[4].label, "兽材");
-assert.equal(resourcesViewModel.items[5].label, "丹药");
+assert.equal(resourcesViewModel.items[5].label, "养气丹");
+assert.equal(resourcesViewModel.items[5].key, "alchemy_item:yang_qi_dan:mid");
+assert.equal(resourcesViewModel.items[5].detailText, "中品，服用后提升 15 点修为");
+assert.equal(resourcesViewModel.items[5].actions[0].action, "consume-alchemy-item");
+assert.equal(resourcesViewModel.items[5].actions[0].label, "服用一枚");
 assert.equal(resourcesViewModel.items[6].label, "杂材");
 assert.equal(resourcesViewModel.items[7].key, "basic_herb");
 assert.equal(resourcesViewModel.items[7].amount, 4);

@@ -30,6 +30,7 @@ function createMainStageScreen(options) {
     toast: "",
     confirmDialog: null,
     selectedResourceKey: "",
+    selectedAlchemyRecipeId: "",
   };
 
   let hitRegions = [];
@@ -192,6 +193,12 @@ function createMainStageScreen(options) {
               return;
             }
 
+            if (action && action.action === "consume-alchemy-item") {
+              await adapter.consumeAlchemyItem(action.itemId, action.quality);
+              showToast("丹药已服用");
+              return;
+            }
+
             await adapter.sellResource(item.key, amount);
             showToast(amount === item.amount ? `已全部出售 ${item.label}` : `已出售 ${item.label} x${amount}`);
           }),
@@ -240,16 +247,16 @@ function createMainStageScreen(options) {
       registerDismissRegion(registerHitRegion, width, height * 0.2, () => closeDrawer(uiState, requestRender));
       registerBlockingRegion(registerHitRegion, 0, height * 0.2, width, height - height * 0.2);
       drawAlchemyDrawer(context, { width, height, viewport }, alchemyDrawer, registerHitRegion, {
+        selectedRecipeId: uiState.selectedAlchemyRecipeId,
+        onSelectRecipe: (recipeId) => {
+          uiState.selectedAlchemyRecipeId = recipeId;
+          requestRender();
+        },
         onRecipeAction: (action) =>
           perform(async () => {
             const useSpiritSpring = action.action === "start-alchemy-with-spring";
             await adapter.startAlchemy(action.recipeId, useSpiritSpring);
             showToast(useSpiritSpring ? "已借灵泉开炉" : "已起丹火");
-          }),
-        onConsumeAction: (action) =>
-          perform(async () => {
-            await adapter.consumeAlchemyItem(action.itemId, action.quality);
-            showToast("丹药已服用");
           }),
       });
     }
@@ -386,6 +393,12 @@ function drawBottomTags(context, viewport, uiState, registerHitRegion, requestRe
       ...rect,
       onTap: () => {
         uiState.activeDrawer = item.key;
+        if (item.key !== "resources") {
+          uiState.selectedResourceKey = "";
+        }
+        if (item.key !== "alchemy") {
+          uiState.selectedAlchemyRecipeId = "";
+        }
         requestRender();
       },
     });
@@ -600,6 +613,7 @@ function closeDrawer(uiState, requestRender) {
   uiState.activeDrawer = null;
   uiState.confirmDialog = null;
   uiState.selectedResourceKey = "";
+  uiState.selectedAlchemyRecipeId = "";
   requestRender();
 }
 

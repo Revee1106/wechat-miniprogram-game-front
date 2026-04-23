@@ -96,22 +96,41 @@ function drawDetailCard(context, rect, selectedItem, registerHitRegion, actions)
     return;
   }
 
+  const visibleActions = selectedItem.actions.slice(0, 3);
+  const buttonHeight = 34;
+  const buttonGap = 8;
+  const buttonColumns = visibleActions.length > 1 ? 2 : 1;
+  const buttonRows = Math.ceil(visibleActions.length / buttonColumns);
+  const buttonBlockHeight = buttonRows * buttonHeight + Math.max(0, buttonRows - 1) * buttonGap;
+  const buttonTop = rect.y + rect.height - buttonBlockHeight - 18;
+  const textMaxY = buttonTop - 14;
+
   context.fillText(`当前持有：${selectedItem.amount}`, rect.x + 18, rect.y + 60);
   const actionText =
-    selectedItem.actions[0] && selectedItem.actions[0].action === "convert-spirit-stone"
+    selectedItem.detailText ||
+    (selectedItem.actions[0] && selectedItem.actions[0].action === "convert-spirit-stone"
       ? "可按单份、全部或自定义数量转化为修为。"
-      : "可按单份、全部或自定义数量出售换取灵石。";
-  context.fillText(actionText, rect.x + 18, rect.y + 92);
+      : "可按单份、全部或自定义数量出售换取灵石。");
+  const detailLines = wrapDetailLines(context, [actionText], rect.width - 36, rect.y + 92, textMaxY);
+  detailLines.forEach((line, index) => {
+    context.fillText(line, rect.x + 18, rect.y + 92 + index * 24);
+  });
+  if (selectedItem.conversionRateText) {
+    const rateY = rect.y + 92 + detailLines.length * 24;
+    if (rateY <= textMaxY) {
+      context.fillText(`每份转化：${selectedItem.conversionRateText}`, rect.x + 18, rateY);
+    }
+  }
 
-  const buttonTop = rect.y + rect.height - 154;
-  const buttonHeight = 40;
-  const buttonGap = 12;
-
-  selectedItem.actions.slice(0, 3).forEach((action, index) => {
+  visibleActions.forEach((action, index) => {
+    const col = index % buttonColumns;
+    const row = Math.floor(index / buttonColumns);
+    const columnGap = buttonColumns > 1 ? 10 : 0;
+    const buttonWidth = (rect.width - 36 - columnGap * (buttonColumns - 1)) / buttonColumns;
     const buttonRect = {
-      x: rect.x + 18,
-      y: buttonTop + index * (buttonHeight + buttonGap),
-      width: rect.width - 36,
+      x: rect.x + 18 + col * (buttonWidth + columnGap),
+      y: buttonTop + row * (buttonHeight + buttonGap),
+      width: buttonWidth,
       height: buttonHeight,
     };
     drawActionButton(context, buttonRect, action.label);
@@ -122,15 +141,53 @@ function drawDetailCard(context, rect, selectedItem, registerHitRegion, actions)
   });
 }
 
+function wrapDetailLines(context, lines, maxWidth, startY, maxY) {
+  const maxLines = Math.max(1, Math.floor((maxY - startY) / 24) + 1);
+  const wrappedLines = [];
+  for (const rawLine of lines) {
+    const nextLines = wrapLine(context, String(rawLine || ""), maxWidth);
+    for (const line of nextLines) {
+      if (wrappedLines.length >= maxLines) {
+        return wrappedLines;
+      }
+      wrappedLines.push(line);
+    }
+  }
+  return wrappedLines;
+}
+
+function wrapLine(context, text, maxWidth) {
+  if (!text || context.measureText(text).width <= maxWidth) {
+    return [text];
+  }
+
+  const lines = [];
+  let currentLine = "";
+  Array.from(text).forEach((character) => {
+    const candidate = `${currentLine}${character}`;
+    if (currentLine && context.measureText(candidate).width > maxWidth) {
+      lines.push(currentLine);
+      currentLine = character;
+      return;
+    }
+    currentLine = candidate;
+  });
+
+  if (currentLine) {
+    lines.push(currentLine);
+  }
+  return lines;
+}
+
 function drawActionButton(context, rect, label) {
-  fillRoundedRect(context, rect.x, rect.y, rect.width, rect.height, 18, themeTokens.color.buttonSurface);
+  fillRoundedRect(context, rect.x, rect.y, rect.width, rect.height, 14, themeTokens.color.buttonSurface);
   context.strokeStyle = themeTokens.color.buttonBorder;
   context.lineWidth = 2;
-  strokeRoundedRect(context, rect.x + 1, rect.y + 1, rect.width - 2, rect.height - 2, 17);
+  strokeRoundedRect(context, rect.x + 1, rect.y + 1, rect.width - 2, rect.height - 2, 13);
   context.fillStyle = themeTokens.color.buttonText;
-  context.font = "bold 16px sans-serif";
+  context.font = "bold 15px sans-serif";
   const textWidth = context.measureText(label).width;
-  context.fillText(label, rect.x + (rect.width - textWidth) / 2, rect.y + 26);
+  context.fillText(label, rect.x + (rect.width - textWidth) / 2, rect.y + 23);
 }
 
 function fillRoundedRect(context, x, y, width, height, radius, fillStyle) {

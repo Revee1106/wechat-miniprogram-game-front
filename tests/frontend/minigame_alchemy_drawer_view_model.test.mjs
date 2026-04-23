@@ -19,12 +19,33 @@ const snapshot = {
           can_start: true,
           is_unlocked: true,
           ingredients: {
-            herb: 2,
+            basic_herb: 2,
             spirit_stone: 1,
           },
           description: "温养灵息。",
+          effect_summary: "直接增加修为",
+          effect_type: "cultivation_exp",
+          effect_value: 12,
           duration_months: 2,
           base_success_rate: 0.8,
+          required_alchemy_level: 0,
+        },
+        {
+          recipe_id: "yang-yuan-pill",
+          display_name: "养元丹",
+          can_start: true,
+          is_unlocked: true,
+          ingredients: {
+            basic_herb: 2,
+            spirit_stone: 2,
+          },
+          description: "外出后调息疗伤。",
+          effect_summary: "恢复气血",
+          effect_type: "hp_restore",
+          effect_value: 25,
+          duration_months: 1,
+          base_success_rate: 0.8,
+          required_alchemy_level: 0,
         },
       ],
       active_job: {
@@ -32,15 +53,7 @@ const snapshot = {
         recipe_name: "养气丹",
         remaining_months: 1,
       },
-      inventory: [
-        {
-          item_id: "yangqi-pill",
-          display_name: "养气丹",
-          quality: "中品",
-          amount: 2,
-          effect_summary: "服用后获得修为",
-        },
-      ],
+      inventory: [],
       last_result: {
         summary: "一炉成丹两枚",
       },
@@ -52,10 +65,16 @@ const viewModel = buildAlchemyDrawerViewModel(snapshot);
 assert.equal(viewModel.title, "炼丹");
 assert.equal(viewModel.masteryTitle, "丹道入门");
 assert.equal(viewModel.spiritSpringWaterAmount, 4);
-assert.equal(viewModel.recipeCards.length, 1);
+assert.equal(viewModel.hasActiveJob, true);
+assert.match(viewModel.spiritSpringHint, /0.08/);
+assert.equal(viewModel.recipeCards.length, 2);
+assert.equal(viewModel.recipeCards[0].ingredientsText, "灵植 x2 / 灵石 x1");
+assert.equal(viewModel.recipeCards[0].effectSummary, "服用后提升 12 点修为");
+assert.equal(viewModel.recipeCards[0].durationText, "2 月");
+assert.equal(viewModel.recipeCards[0].successRateText, "80%");
+assert.equal(viewModel.recipeCards[1].effectSummary, "服用后恢复 25 点气血");
 assert.equal(viewModel.recipeCards[0].action.action, "start-alchemy");
 assert.equal(viewModel.recipeCards[0].springAction.action, "start-alchemy-with-spring");
-assert.equal(viewModel.inventoryCards.length, 1);
-assert.equal(viewModel.inventoryCards[0].consumeAction.action, "consume-item");
+assert.equal(Object.hasOwn(viewModel, "inventoryCards"), false);
 assert.match(viewModel.activeJobSummary, /养气丹/);
 assert.match(viewModel.lastResultSummary, /成丹/);

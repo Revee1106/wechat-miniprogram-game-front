@@ -9,6 +9,7 @@ const RESOURCE_DEFS = [
     buildActions() {
       return buildActionSet("convert-spirit-stone", "转化");
     },
+    conversionRateText: "1 灵石 = 3 修为",
   },
   {
     key: "herb",
@@ -115,13 +116,23 @@ function buildResourcesDrawerViewModel(snapshot) {
   const run = snapshot && snapshot.run ? snapshot.run : null;
   const resources = run ? run.resources || {} : {};
   const stackAmounts = getResourceStackAmounts(run);
+  const alchemyInventoryItems = buildAlchemyInventoryItems(run);
 
-  const definedItems = RESOURCE_DEFS.map((definition) => ({
-    key: definition.key,
-    label: definition.label,
-    amount: definition.getAmount(run),
-    actions: definition.buildActions(),
-  })).filter((item) => item.amount > 0);
+  const definedItems = RESOURCE_DEFS.flatMap((definition) => {
+    if (definition.key === "pill" && alchemyInventoryItems.length > 0) {
+      return alchemyInventoryItems;
+    }
+
+    return [
+      {
+        key: definition.key,
+        label: definition.label,
+        amount: definition.getAmount(run),
+        actions: definition.buildActions(),
+        conversionRateText: definition.conversionRateText || "",
+      },
+    ];
+  }).filter((item) => item.amount > 0);
 
   const knownResourceKeys = new Set(
     RESOURCE_DEFS.flatMap((definition) => definition.sourceKeys || [definition.key])
@@ -172,6 +183,63 @@ function getResourceStackAmounts(run) {
 
 function getResourceStackAmount(run, resourceKey) {
   return getResourceStackAmounts(run)[resourceKey] || 0;
+}
+
+function buildAlchemyInventoryItems(run) {
+  const inventory =
+    run && run.alchemy_state && Array.isArray(run.alchemy_state.inventory) ? run.alchemy_state.inventory : [];
+
+  return inventory
+    .map((item) => ({
+      key: `alchemy_item:${item.item_id}:${item.quality}`,
+      label: item.display_name || item.item_id,
+      amount: Number(item.amount) || 0,
+      detailText: `${formatQuality(item.quality)}，${buildAlchemyItemEffectText(item)}`,
+      actions: [
+        {
+          key: `consume-alchemy-item:${item.item_id}:${item.quality}`,
+          action: "consume-alchemy-item",
+          amountMode: "one",
+          label: "服用一枚",
+          itemId: item.item_id,
+          quality: item.quality,
+        },
+      ],
+    }))
+    .filter((item) => item.amount > 0);
+}
+
+function formatQuality(quality) {
+  return {
+    low: "下品",
+    mid: "中品",
+    high: "上品",
+  }[quality] || String(quality || "未知品质");
+}
+
+function buildAlchemyItemEffectText(item) {
+  const value = Math.trunc(Number(item.effect_value || 0) * getQualityMultiplier(item.quality));
+  if (item.effect_type === "cultivation_exp") {
+    return `服用后提升 ${value} 点修为`;
+  }
+  if (item.effect_type === "hp_restore") {
+    return `服用后恢复 ${value} 点气血`;
+  }
+  if (item.effect_type === "lifespan_restore") {
+    return `服用后恢复 ${value} 个月寿元`;
+  }
+  if (item.effect_type === "breakthrough_bonus") {
+    return `服用后提高 ${value} 点突破辅助值`;
+  }
+  return item.effect_summary || "可服用丹药";
+}
+
+function getQualityMultiplier(quality) {
+  return {
+    low: 1,
+    mid: 1.25,
+    high: 1.5,
+  }[quality] || 1;
 }
 
 module.exports = {
