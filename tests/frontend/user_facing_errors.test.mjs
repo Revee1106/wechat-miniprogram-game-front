@@ -10,6 +10,7 @@ const {
   formatResourceName,
   isMissingRunError,
   localizeLegacyErrorMessage,
+  localizePlayerFacingText,
 } = require("../../src/game/utils/display-text.js");
 
 const apiSource = readFileSync(new URL("../../utils/api.js", import.meta.url), "utf8");
@@ -45,9 +46,12 @@ assert.equal(
 
 assert.equal(localizeLegacyErrorMessage("run 'abc' not found"), "当前没有进行中的修仙历程，请先启程。");
 assert.equal(localizeLegacyErrorMessage("battle is already in progress"), "当前战斗还在进行中，请先继续战斗。");
+assert.equal(localizePlayerFacingText("requires resources spirit_stone:4, herb:2"), "资源不足：灵石 4、药草 2");
+assert.equal(localizePlayerFacingText("requires techniques cloud_step"), "条件不足：需要功法条件");
 assert.equal(formatRealmName("foundation_early", ""), "筑基初期");
 assert.equal(formatFacilityName("spirit_field", ""), "灵田");
 assert.equal(formatResourceName("spirit_spring_water", ""), "灵泉水");
+assert.equal(formatResourceName("unknown_resource", ""), "资源");
 assert.equal(
   isMissingRunError({ code: "core.run.not_found", message: "当前没有进行中的修仙历程，请先启程。" }),
   true

@@ -178,7 +178,42 @@ function formatResourceName(resourceKey, displayName) {
   if (display) {
     return display;
   }
-  return RESOURCE_LABELS[resourceKey] || String(resourceKey || "");
+  return RESOURCE_LABELS[resourceKey] || "资源";
+}
+
+function localizePlayerFacingText(message) {
+  const rawMessage = String(message || "").trim();
+  if (!rawMessage) {
+    return "";
+  }
+
+  const resourceMatch = rawMessage.match(/^requires resources\s+(.+)$/i);
+  if (resourceMatch) {
+    const details = resourceMatch[1]
+      .split(/\s*,\s*/)
+      .map((entry) => entry.trim())
+      .filter(Boolean)
+      .map((entry) => {
+        const [resourceKey, amount] = entry.split(":");
+        const label = formatResourceName(String(resourceKey || "").trim(), "");
+        const value = Number(amount);
+        return Number.isFinite(value) && value > 0 ? `${label} ${value}` : label;
+      })
+      .join("、");
+    return details ? `资源不足：${details}` : "资源不足";
+  }
+
+  if (/^requires statuses\b/i.test(rawMessage)) {
+    return "条件不足：需要状态条件";
+  }
+  if (/^requires techniques\b/i.test(rawMessage)) {
+    return "条件不足：需要功法条件";
+  }
+  if (/^requires equipment_tags\b/i.test(rawMessage)) {
+    return "条件不足：需要装备条件";
+  }
+
+  return localizeLegacyErrorMessage(rawMessage);
 }
 
 module.exports = {
@@ -189,4 +224,5 @@ module.exports = {
   isMissingRunError,
   localizeErrorCode,
   localizeLegacyErrorMessage,
+  localizePlayerFacingText,
 };

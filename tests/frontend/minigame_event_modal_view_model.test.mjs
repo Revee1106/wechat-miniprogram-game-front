@@ -29,6 +29,12 @@ const pendingEventSnapshot = {
           is_available: false,
           disabled_reason: "心神不宁",
         },
+        {
+          option_id: "meditate",
+          title_text: "凝神推演",
+          is_available: false,
+          disabled_reason: "requires resources spirit_stone:4",
+        },
       ],
     },
   },
@@ -39,9 +45,11 @@ assert.equal(buildEventModalViewModel(noEventSnapshot), null);
 const viewModel = buildEventModalViewModel(pendingEventSnapshot);
 assert.equal(viewModel.title, "山壁观息");
 assert.equal(viewModel.body, "石壁间有微弱灵光浮动。");
-assert.equal(viewModel.options.length, 2);
+assert.equal(viewModel.options.length, 3);
 assert.equal(viewModel.options[0].disabled, false);
 assert.equal(viewModel.options[0].timeCostText, "额外耗时 3个月");
 assert.equal(viewModel.options[1].disabled, true);
 assert.equal(viewModel.options[1].disabledReason, "心神不宁");
 assert.equal(viewModel.options[1].timeCostText, "");
+assert.equal(viewModel.options[2].disabled, true);
+assert.equal(viewModel.options[2].disabledReason, "资源不足：灵石 4");

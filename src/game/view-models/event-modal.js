@@ -1,3 +1,5 @@
+const { localizePlayerFacingText } = require("../utils/display-text.js");
+
 function buildEventModalViewModel(snapshot) {
   const event = snapshot && snapshot.run ? snapshot.run.current_event : null;
   if (!event) {
@@ -13,7 +15,7 @@ function buildEventModalViewModel(snapshot) {
             ? `额外耗时 ${Number(option.time_cost_months)}个月`
             : "",
         disabled: option.is_available === false,
-        disabledReason: option.disabled_reason || "",
+        disabledReason: localizePlayerFacingText(option.disabled_reason || ""),
       }))
     : [];
 

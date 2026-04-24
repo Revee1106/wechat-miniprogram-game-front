@@ -13,7 +13,7 @@
         </button>
         <view wx:if="{{item.hasResourceRequirements}}" class="choice-note muted-text">条件：{{item.resourceText}}</view>
         <view wx:if="{{item.showDisabledReason}}" class="choice-note danger-text">
-          {{item.disabled_reason}}
+          {{item.disabledReason}}
         </view>
       </view>
     </block>

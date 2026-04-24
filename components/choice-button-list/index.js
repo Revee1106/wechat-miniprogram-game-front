@@ -1,3 +1,8 @@
+const {
+  formatResourceName,
+  localizePlayerFacingText,
+} = require("../../src/game/utils/display-text.js");
+
 Component({
   properties: {
     choices: {
@@ -49,20 +54,11 @@ function normalizeChoices(choices, choicePattern, loading) {
       buttonClass: choice.is_available ? "secondary-button" : "ghost-button",
       isDisabled: Boolean(loading || !choice.is_available),
       showDisabledReason: Boolean(!choice.is_available && choice.disabled_reason),
+      disabledReason: localizePlayerFacingText(choice.disabled_reason || ""),
       hasResourceRequirements: resourceEntries.length > 0,
       resourceText: resourceEntries
-        .map(([name, amount]) => `${formatResourceName(name)} ${amount}`)
+        .map(([name, amount]) => `${formatResourceName(name, "")} ${amount}`)
         .join("、"),
     };
   });
-}
-
-function formatResourceName(name) {
-  const map = {
-    spirit_stone: "灵石",
-    herbs: "药草",
-    iron_essence: "玄铁精华",
-  };
-
-  return map[name] || name;
 }
