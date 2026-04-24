@@ -8,6 +8,7 @@ const { drawEventModal } = require("../../src/game/screens/event-modal.js");
 const { drawConfirmModal } = require("../../src/game/screens/confirm-modal.js");
 
 testDrawerOverlayBlocksClickThrough();
+await testAdvanceInsufficientSpiritStoneShowsPenaltyConfirm();
 await testResourcesDrawerSupportsSellAllAndPromptedQuantity();
 await testResourcesDrawerConsumesConcretePill();
 testMaxLevelDwellingButtonDoesNotOpenConfirm();
@@ -74,6 +75,65 @@ function testDrawerOverlayBlocksClickThrough() {
   );
 
   assert.equal(advanceTimeCalls, 0, "drawer overlay should block click-through to the primary action");
+}
+
+async function testAdvanceInsufficientSpiritStoneShowsPenaltyConfirm() {
+  const snapshot = {
+    run: {
+      round_index: 3,
+      resources: {
+        spirit_stone: 0,
+      },
+      current_spirit_stone_cost_per_advance: 2,
+      character: {
+        realm: "qi_refining_early",
+        realm_display_name: "炼气初期",
+        cultivation_exp: 50,
+        lifespan_current: 717,
+        is_dead: false,
+      },
+      breakthrough_requirements: {
+        required_cultivation_exp: 100,
+      },
+      current_event: null,
+    },
+    playerProfile: null,
+    eventHistory: [],
+    dwellingSettlementHistory: [],
+  };
+
+  const advanceCalls = [];
+  const screen = createMainStageScreen({
+    adapter: createAdapter(snapshot, {
+      async advanceTime(allowCultivationPenalty) {
+        advanceCalls.push(Boolean(allowCultivationPenalty));
+      },
+    }),
+    requestRender() {},
+  });
+  const frame = createFrame();
+  const viewport = createViewportLayout(frame.width, frame.height, { safeArea: null });
+
+  screen.render(frame);
+  screen.handleTouchEnd(
+    createTap(viewport.contentLeft + viewport.contentWidth / 2, viewport.primaryButtonY + viewport.primaryButtonHeight / 2)
+  );
+  await flushAsyncWork();
+
+  const renderedTexts = [];
+  screen.render(
+    createFrame({
+      fillText(text) {
+        renderedTexts.push(String(text));
+      },
+    })
+  );
+  screen.handleTouchEnd(createTap(260, 470));
+  await flushAsyncWork();
+
+  assert.equal(renderedTexts.includes("灵石不足"), true, "insufficient spirit stone should show a confirm dialog");
+  assert.equal(renderedTexts.includes("继续推进"), true, "confirm dialog should offer penalty advance");
+  assert.deepEqual(advanceCalls, [true]);
 }
 
 function testLockedAlchemyTagIsHidden() {

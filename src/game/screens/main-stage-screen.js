@@ -103,7 +103,24 @@ function createMainStageScreen(options) {
       return;
     }
 
-    await perform(() => adapter.advanceTime());
+    if (shouldPromptAdvancePenalty(run)) {
+      uiState.confirmDialog = buildAdvancePenaltyConfirmDialog(snapshot);
+      requestRender();
+      return;
+    }
+
+    await perform(async () => {
+      try {
+        await adapter.advanceTime(false);
+      } catch (error) {
+        if (error && error.code === "core.time.not_enough_spirit_stones") {
+          uiState.confirmDialog = buildAdvancePenaltyConfirmDialog(snapshot);
+          requestRender();
+          return;
+        }
+        throw error;
+      }
+    });
   }
 
   function render(frame) {
@@ -307,6 +324,12 @@ function createMainStageScreen(options) {
             if (dialog.actionType === "build-facility") {
               await adapter.buildDwellingFacility(dialog.facilityId);
               showToast("设施已建造");
+              return;
+            }
+
+            if (dialog.actionType === "advance-with-cultivation-penalty") {
+              await adapter.advanceTime(true);
+              showToast("灵石不足，修为受损后继续推进");
               return;
             }
 
@@ -630,6 +653,30 @@ function buildDwellingConfirmDialog(card, currentSpiritStone) {
     facilityId: card.id,
     actionType: card.action.action,
   };
+}
+
+function buildAdvancePenaltyConfirmDialog(snapshot) {
+  const run = snapshot && snapshot.run ? snapshot.run : {};
+  const requiredCultivation = Number(
+    ((run.breakthrough_requirements || {}).required_cultivation_exp) || 0
+  );
+  const penalty = Math.max(0, Math.floor(requiredCultivation * 0.1));
+  return {
+    title: "灵石不足",
+    bodyLines: [
+      "当前灵石不足以支付本月基础消耗。",
+      `继续推进将损失 ${penalty} 点修为，最低扣到 0。`,
+    ],
+    confirmText: "继续推进",
+    cancelText: "先不推进",
+    actionType: "advance-with-cultivation-penalty",
+  };
+}
+
+function shouldPromptAdvancePenalty(run) {
+  const currentSpiritStone = Number(((run || {}).resources || {}).spirit_stone || 0);
+  const monthlyCost = Number((run || {}).current_spirit_stone_cost_per_advance || 0);
+  return monthlyCost > 0 && currentSpiritStone < monthlyCost;
 }
 
 module.exports = {

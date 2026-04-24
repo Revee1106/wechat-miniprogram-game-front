@@ -51,11 +51,11 @@ async function refreshRun() {
   return getState();
 }
 
-async function advanceTime() {
+async function advanceTime(allowCultivationPenalty = false) {
   ensureRun();
   state.error = "";
   const beforeRun = clone(state.run);
-  state.run = await api.advanceTime(state.run.run_id);
+  state.run = await api.advanceTime(state.run.run_id, allowCultivationPenalty);
   pushDwellingSettlementHistory(beforeRun, state.run);
   return getState();
 }

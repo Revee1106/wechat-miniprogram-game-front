@@ -12,8 +12,8 @@ async function refreshRun() {
   return store.refreshRun();
 }
 
-async function advanceTime() {
-  return store.advanceTime();
+async function advanceTime(allowCultivationPenalty = false) {
+  return store.advanceTime(allowCultivationPenalty);
 }
 
 async function resolveEvent(optionId) {

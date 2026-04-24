@@ -36,8 +36,11 @@ function getRunState(runId) {
   return post("/api/run/state", { run_id: runId });
 }
 
-function advanceTime(runId) {
-  return post("/api/run/advance", { run_id: runId });
+function advanceTime(runId, allowCultivationPenalty = false) {
+  return post("/api/run/advance", {
+    run_id: runId,
+    allow_cultivation_penalty: allowCultivationPenalty,
+  });
 }
 
 function resolveEvent(runId, optionId) {
