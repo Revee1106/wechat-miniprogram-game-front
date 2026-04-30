@@ -36,12 +36,7 @@ function drawAlchemyDrawer(context, layout, viewModel, registerHitRegion, action
   if (viewModel.lastResultSummary) {
     context.fillText(`最近结果: ${viewModel.lastResultSummary}`, 24, drawerY + 190);
   }
-  if (viewModel.spiritSpringHint) {
-    context.font = "13px sans-serif";
-    context.fillText(viewModel.spiritSpringHint, 24, drawerY + (viewModel.lastResultSummary ? 214 : 190));
-  }
-
-  const recipeStartY = drawerY + (viewModel.lastResultSummary ? 238 : 214);
+  const recipeStartY = drawerY + (viewModel.lastResultSummary ? 220 : 190);
   const recipeRows = Math.ceil(viewModel.recipeCards.length / 2);
   const recipeAreaBottom = recipeStartY + recipeRows * 52;
   const detailTop = recipeAreaBottom + 18;
@@ -119,22 +114,20 @@ function drawRecipeDetail(context, rect, selectedRecipe, registerHitRegion, acti
     `作用: ${selectedRecipe.effectSummary}`,
     `材料: ${selectedRecipe.ingredientsText}`,
     `炼制: ${selectedRecipe.durationText}, 基础评分 ${selectedRecipe.successRateText}`,
+    selectedRecipe.qualityChanceText ? `品级: ${selectedRecipe.qualityChanceText}` : "",
     `要求: ${selectedRecipe.requiredText}`,
-    selectedRecipe.disabledReason ? `状态: ${selectedRecipe.disabledReason}` : "借灵泉: 额外消耗 1 灵泉水, 炼丹评分 +0.08",
-  ], rect.width - 36, 7);
+    selectedRecipe.disabledReason ? `状态: ${selectedRecipe.disabledReason}` : "",
+  ].filter(Boolean), rect.width - 36, 8);
   detailLines.forEach((line, index) => {
     context.fillText(line, rect.x + 18, rect.y + 60 + index * 24);
   });
 
-  const buttonTop = rect.y + rect.height - 100;
+  const buttonTop = rect.y + rect.height - 48;
   const startRect = { x: rect.x + 18, y: buttonTop, width: rect.width - 36, height: 40 };
-  const springRect = { x: rect.x + 18, y: buttonTop + 52, width: rect.width - 36, height: 40 };
   drawActionButton(context, startRect, selectedRecipe.action.label, { disabled: !selectedRecipe.canStart });
-  drawActionButton(context, springRect, selectedRecipe.springAction.label, { disabled: !selectedRecipe.canStart });
 
   if (selectedRecipe.canStart) {
     registerHitRegion({ ...startRect, onTap: () => actions.onRecipeAction(selectedRecipe.action) });
-    registerHitRegion({ ...springRect, onTap: () => actions.onRecipeAction(selectedRecipe.springAction) });
   }
 }
 

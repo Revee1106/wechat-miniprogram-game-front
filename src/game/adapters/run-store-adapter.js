@@ -44,8 +44,8 @@ async function upgradeDwellingFacility(facilityId) {
   return store.upgradeDwellingFacility(facilityId);
 }
 
-async function startAlchemy(recipeId, useSpiritSpring) {
-  return store.startAlchemy(recipeId, useSpiritSpring);
+async function startAlchemy(recipeId) {
+  return store.startAlchemy(recipeId);
 }
 
 async function consumeAlchemyItem(itemId, quality) {

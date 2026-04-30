@@ -58,6 +58,7 @@ function drawResourceTags(context, width, startY, items, selectedResourceKey, re
     };
 
     const active = item.key === selectedResourceKey;
+    const tone = getItemTone(item, active);
     fillRoundedRect(
       context,
       rect.x,
@@ -65,22 +66,48 @@ function drawResourceTags(context, width, startY, items, selectedResourceKey, re
       rect.width,
       rect.height,
       18,
-      active ? themeTokens.color.buttonSurface : "#f3e6cf"
+      tone.surface
     );
     if (active) {
-      context.strokeStyle = themeTokens.color.buttonBorder;
+      context.strokeStyle = tone.border;
       context.lineWidth = 2;
       strokeRoundedRect(context, rect.x + 1, rect.y + 1, rect.width - 2, rect.height - 2, 17);
     }
-    context.fillStyle = active ? themeTokens.color.buttonText : themeTokens.color.ink;
+    context.fillStyle = tone.text;
     context.font = "bold 15px sans-serif";
-    context.fillText(`${item.label} ${item.amount}`, rect.x + 14, rect.y + 25);
+    context.fillText(`${item.tagLabel || item.label} ${item.amount}`, rect.x + 14, rect.y + 25);
 
     registerHitRegion({
       ...rect,
       onTap: () => actions.onSelectResource(item.key),
     });
   });
+}
+
+function getItemTone(item, active) {
+  if (!item || !item.qualityTone) {
+    return {
+      surface: active ? themeTokens.color.buttonSurface : "#f3e6cf",
+      border: themeTokens.color.buttonBorder,
+      text: active ? themeTokens.color.buttonText : themeTokens.color.ink,
+    };
+  }
+
+  const tones = {
+    white: { surface: "#fbfaf6", border: "#d8d2c6", text: "#2c2924" },
+    green: { surface: "#e5f4dc", border: "#76a461", text: "#274f2f" },
+    blue: { surface: "#dcecff", border: "#6397d4", text: "#1f4f82" },
+    purple: { surface: "#eadcff", border: "#9b6ed6", text: "#57308b" },
+  };
+  const tone = tones[item.qualityTone] || tones.white;
+  if (!active) {
+    return tone;
+  }
+  return {
+    surface: tone.surface,
+    border: tone.border,
+    text: tone.text,
+  };
 }
 
 function drawDetailCard(context, rect, selectedItem, registerHitRegion, actions) {

@@ -454,7 +454,7 @@ function testAlchemyRecipeTapSelectsDetailDrawer() {
   screen.render(frame);
   screen.handleTouchEnd(createTap(alchemyTagCenter.x, alchemyTagCenter.y));
   screen.render(frame);
-  screen.handleTouchEnd(createTap(60, 396));
+  screen.handleTouchEnd(createTap(60, 372));
 
   const renderedTexts = [];
   screen.render(
@@ -525,8 +525,8 @@ async function testAlchemyRecipeDetailButtonStartsAlchemy() {
   const startAlchemyCalls = [];
   const screen = createMainStageScreen({
     adapter: createAdapter(snapshot, {
-      async startAlchemy(recipeId, useSpiritSpring) {
-        startAlchemyCalls.push({ recipeId, useSpiritSpring });
+      async startAlchemy(recipeId) {
+        startAlchemyCalls.push({ recipeId });
       },
     }),
     requestRender() {},
@@ -538,13 +538,13 @@ async function testAlchemyRecipeDetailButtonStartsAlchemy() {
   screen.render(frame);
   screen.handleTouchEnd(createTap(alchemyTagCenter.x, alchemyTagCenter.y));
   screen.render(frame);
-  screen.handleTouchEnd(createTap(60, 396));
+  screen.handleTouchEnd(createTap(60, 372));
   screen.render(frame);
-  screen.handleTouchEnd(createTap(187, 704));
+  screen.handleTouchEnd(createTap(187, 756));
   await flushAsyncWork();
 
   assert.deepEqual(startAlchemyCalls, [
-    { recipeId: "yangqi-pill", useSpiritSpring: false },
+    { recipeId: "yangqi-pill" },
   ]);
 }
 
@@ -1085,6 +1085,8 @@ async function testResourcesDrawerConsumesConcretePill() {
             item_id: "yang_qi_dan",
             display_name: "养气丹",
             quality: "low",
+            quality_label: "下品",
+            quality_color: "white",
             amount: 1,
             effect_summary: "直接增加修为",
             effect_type: "cultivation_exp",
@@ -1134,7 +1136,7 @@ async function testResourcesDrawerConsumesConcretePill() {
   screen.handleTouchEnd(createTap(187, 745));
   await flushAsyncWork();
 
-  assert.equal(renderedTexts.includes("养气丹 1"), true, "inventory should show concrete pill names");
+  assert.equal(renderedTexts.includes("下品 · 养气丹 1"), true, "inventory should show pill quality and name");
   assert.deepEqual(consumeCalls, [{ itemId: "yang_qi_dan", quality: "low" }]);
 }
 

@@ -13,17 +13,13 @@ function buildAlchemyDrawerViewModel(snapshot) {
     canStart: recipe.can_start === true,
     ingredientsText: buildIngredientsText(recipe.ingredients || {}),
     durationText: `${Number(recipe.duration_months || 0)} 月`,
-    successRateText: formatSuccessRate(recipe.base_success_rate),
+    successRateText: formatSuccessRate(recipe.current_success_rate ?? recipe.base_success_rate),
+    qualityChanceText: buildQualityChanceText(recipe.quality_chances || []),
     requiredText: `丹道 ${Number(recipe.required_alchemy_level || 0)} 级`,
     disabledReason: recipe.disabled_reason || "",
     action: {
       action: "start-alchemy",
       label: "开炉",
-      recipeId: recipe.recipe_id,
-    },
-    springAction: {
-      action: "start-alchemy-with-spring",
-      label: "借灵泉",
       recipeId: recipe.recipe_id,
     },
   }));
@@ -34,7 +30,6 @@ function buildAlchemyDrawerViewModel(snapshot) {
     masteryExp: Number(alchemyState.mastery_exp || 0),
     spiritSpringWaterAmount,
     hasActiveJob: Boolean(alchemyState.active_job),
-    spiritSpringHint: "借灵泉额外消耗 1 灵泉水，炼丹评分 +0.08",
     recipeCards,
     activeJobSummary: alchemyState.active_job
       ? `${alchemyState.active_job.recipe_name} 尚需 ${Number(alchemyState.active_job.remaining_months || 0)} 月`
@@ -74,6 +69,15 @@ function buildRecipeEffectText(recipe) {
 function formatSuccessRate(value) {
   const rate = Number(value || 0);
   return `${Math.round(rate * 100)}%`;
+}
+
+function buildQualityChanceText(chances) {
+  if (!Array.isArray(chances) || chances.length === 0) {
+    return "";
+  }
+  return chances
+    .map((item) => `${item.display_name || item.quality}: ${Math.round(Number(item.chance || 0) * 100)}%`)
+    .join(" / ");
 }
 
 module.exports = {

@@ -193,8 +193,12 @@ function buildAlchemyInventoryItems(run) {
     .map((item) => ({
       key: `alchemy_item:${item.item_id}:${item.quality}`,
       label: item.display_name || item.item_id,
+      tagLabel: `${formatQuality(item)} · ${item.display_name || item.item_id}`,
+      quality: item.quality,
+      qualityLabel: formatQuality(item),
+      qualityTone: getQualityTone(item),
       amount: Number(item.amount) || 0,
-      detailText: `${formatQuality(item.quality)}，${buildAlchemyItemEffectText(item)}`,
+      detailText: `${formatQuality(item)}，${buildAlchemyItemEffectText(item)}`,
       actions: [
         {
           key: `consume-alchemy-item:${item.item_id}:${item.quality}`,
@@ -209,16 +213,21 @@ function buildAlchemyInventoryItems(run) {
     .filter((item) => item.amount > 0);
 }
 
-function formatQuality(quality) {
+function formatQuality(qualityOrItem) {
+  if (qualityOrItem && typeof qualityOrItem === "object" && qualityOrItem.quality_label) {
+    return qualityOrItem.quality_label;
+  }
+  const quality = qualityOrItem && typeof qualityOrItem === "object" ? qualityOrItem.quality : qualityOrItem;
   return {
     low: "下品",
     mid: "中品",
     high: "上品",
+    supreme: "极品",
   }[quality] || String(quality || "未知品质");
 }
 
 function buildAlchemyItemEffectText(item) {
-  const value = Math.trunc(Number(item.effect_value || 0) * getQualityMultiplier(item.quality));
+  const value = Math.trunc(Number(item.effect_value || 0) * getQualityMultiplier(item));
   if (item.effect_type === "cultivation_exp") {
     return `服用后提升 ${value} 点修为`;
   }
@@ -235,11 +244,29 @@ function buildAlchemyItemEffectText(item) {
 }
 
 function getQualityMultiplier(quality) {
+  if (quality && typeof quality === "object" && Number(quality.effect_multiplier) > 0) {
+    return Number(quality.effect_multiplier);
+  }
+  const qualityKey = quality && typeof quality === "object" ? quality.quality : quality;
   return {
     low: 1,
     mid: 1.25,
     high: 1.5,
-  }[quality] || 1;
+    supreme: 2,
+  }[qualityKey] || 1;
+}
+
+function getQualityTone(item) {
+  const color = String(item.quality_color || "").trim();
+  if (color) {
+    return color;
+  }
+  return {
+    low: "white",
+    mid: "green",
+    high: "blue",
+    supreme: "purple",
+  }[item.quality] || "white";
 }
 
 module.exports = {

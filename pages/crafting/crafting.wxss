@@ -153,6 +153,56 @@
   box-sizing: border-box;
 }
 
+.inventory-card--white {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(245, 241, 232, 0.9));
+}
+
+.inventory-card--green {
+  background: linear-gradient(180deg, rgba(229, 244, 220, 0.96), rgba(207, 230, 197, 0.9));
+}
+
+.inventory-card--blue {
+  background: linear-gradient(180deg, rgba(220, 236, 255, 0.96), rgba(194, 219, 248, 0.9));
+}
+
+.inventory-card--purple {
+  background: linear-gradient(180deg, rgba(238, 224, 255, 0.98), rgba(216, 196, 244, 0.9));
+}
+
+.quality-pill {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 12rpx;
+  padding: 6rpx 16rpx;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  font-weight: 700;
+}
+
+.quality-pill--white {
+  color: #2c2924;
+  background: #fbfaf6;
+  border: 2rpx solid #d8d2c6;
+}
+
+.quality-pill--green {
+  color: #274f2f;
+  background: #e5f4dc;
+  border: 2rpx solid #76a461;
+}
+
+.quality-pill--blue {
+  color: #1f4f82;
+  background: #dcecff;
+  border: 2rpx solid #6397d4;
+}
+
+.quality-pill--purple {
+  color: #57308b;
+  background: #eadcff;
+  border: 2rpx solid #9b6ed6;
+}
+
 .recipe-title {
   margin-bottom: 8rpx;
   color: #1f1a17;

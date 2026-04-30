@@ -37,10 +37,13 @@ const snapshot = {
           item_id: "yang_qi_dan",
           display_name: "养气丹",
           quality: "mid",
+          quality_label: "中品",
+          quality_color: "green",
           amount: 1,
           effect_summary: "直接增加修为",
           effect_type: "cultivation_exp",
           effect_value: 12,
+          effect_multiplier: 1.25,
         },
       ],
     },
@@ -65,6 +68,8 @@ assert.equal(resourcesViewModel.items[3].label, "灵矿");
 assert.equal(resourcesViewModel.items[4].label, "兽材");
 assert.equal(resourcesViewModel.items[5].label, "养气丹");
 assert.equal(resourcesViewModel.items[5].key, "alchemy_item:yang_qi_dan:mid");
+assert.equal(resourcesViewModel.items[5].tagLabel, "中品 · 养气丹");
+assert.equal(resourcesViewModel.items[5].qualityTone, "green");
 assert.equal(resourcesViewModel.items[5].detailText, "中品，服用后提升 15 点修为");
 assert.equal(resourcesViewModel.items[5].actions[0].action, "consume-alchemy-item");
 assert.equal(resourcesViewModel.items[5].actions[0].label, "服用一枚");

@@ -271,9 +271,8 @@ function createMainStageScreen(options) {
         },
         onRecipeAction: (action) =>
           perform(async () => {
-            const useSpiritSpring = action.action === "start-alchemy-with-spring";
-            await adapter.startAlchemy(action.recipeId, useSpiritSpring);
-            showToast(useSpiritSpring ? "已借灵泉开炉" : "已起丹火");
+            await adapter.startAlchemy(action.recipeId);
+            showToast("已起丹火");
           }),
       });
     }

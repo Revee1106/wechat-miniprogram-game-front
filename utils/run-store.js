@@ -124,10 +124,10 @@ async function convertSpiritStoneToCultivation(amount) {
   return getState();
 }
 
-async function startAlchemy(recipeId, useSpiritSpring = false) {
+async function startAlchemy(recipeId) {
   ensureRun();
   state.error = "";
-  state.run = await api.startAlchemy(state.run.run_id, recipeId, useSpiritSpring);
+  state.run = await api.startAlchemy(state.run.run_id, recipeId);
   return getState();
 }
 

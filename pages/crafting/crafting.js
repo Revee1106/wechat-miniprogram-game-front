@@ -108,11 +108,7 @@ Page({
   },
 
   async startAlchemy(event) {
-    await this.handleStartAlchemy(event.currentTarget.dataset.recipeId, false);
-  },
-
-  async startAlchemyWithSpring(event) {
-    await this.handleStartAlchemy(event.currentTarget.dataset.recipeId, true);
+    await this.handleStartAlchemy(event.currentTarget.dataset.recipeId);
   },
 
   returnToJourney() {
@@ -123,7 +119,7 @@ Page({
     });
   },
 
-  async handleStartAlchemy(recipeId, useSpiritSpring) {
+  async handleStartAlchemy(recipeId) {
     if (!this.data.run) {
       wx.reLaunch({ url: "/pages/home/home" });
       return;
@@ -131,11 +127,11 @@ Page({
 
     this.setData({ loadingRecipeId: recipeId, error: "" });
     try {
-      await store.startAlchemy(recipeId, useSpiritSpring);
+      await store.startAlchemy(recipeId);
       this.closeRecipeSheet();
       this.syncState();
       wx.showToast({
-        title: useSpiritSpring ? "已借灵泉开炉" : "已起炉火",
+        title: "已起炉火",
         icon: "none",
       });
     } catch (error) {
@@ -179,6 +175,9 @@ function normalizeAlchemyState(alchemyState) {
     inventory: (alchemyState.inventory || []).map((item) => ({
       ...item,
       inventoryKey: `${item.item_id}-${item.quality}`,
+      qualityLabel: formatQuality(item),
+      qualityTone: getQualityTone(item),
+      effectText: buildAlchemyItemEffectText(item),
     })),
   };
 }
@@ -213,4 +212,57 @@ function buildPanelTabs(activePanel) {
 function getResourceStackAmount(run, resourceKey) {
   const stack = (run.resource_stacks || []).find((item) => item.resource_key === resourceKey);
   return stack ? stack.amount : 0;
+}
+
+function formatQuality(item) {
+  if (item.quality_label) {
+    return item.quality_label;
+  }
+  return {
+    low: "下品",
+    mid: "中品",
+    high: "上品",
+    supreme: "极品",
+  }[item.quality] || item.quality || "未知品质";
+}
+
+function getQualityTone(item) {
+  if (item.quality_color) {
+    return item.quality_color;
+  }
+  return {
+    low: "white",
+    mid: "green",
+    high: "blue",
+    supreme: "purple",
+  }[item.quality] || "white";
+}
+
+function buildAlchemyItemEffectText(item) {
+  const value = Math.trunc(Number(item.effect_value || 0) * getQualityMultiplier(item));
+  if (item.effect_type === "cultivation_exp") {
+    return `服用后提升 ${value} 点修为`;
+  }
+  if (item.effect_type === "hp_restore") {
+    return `服用后恢复 ${value} 点气血`;
+  }
+  if (item.effect_type === "lifespan_restore") {
+    return `服用后恢复 ${value} 个月寿元`;
+  }
+  if (item.effect_type === "breakthrough_bonus") {
+    return `服用后提高 ${value} 点突破辅助值`;
+  }
+  return item.effect_summary || "可服用丹药";
+}
+
+function getQualityMultiplier(item) {
+  if (Number(item.effect_multiplier) > 0) {
+    return Number(item.effect_multiplier);
+  }
+  return {
+    low: 1,
+    mid: 1.25,
+    high: 1.5,
+    supreme: 2,
+  }[item.quality] || 1;
 }

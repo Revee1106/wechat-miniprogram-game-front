@@ -78,11 +78,10 @@ function convertSpiritStoneToCultivation(runId, amount) {
   });
 }
 
-function startAlchemy(runId, recipeId, useSpiritSpring = false) {
+function startAlchemy(runId, recipeId) {
   return post("/api/run/alchemy/start", {
     run_id: runId,
     recipe_id: recipeId,
-    use_spirit_spring: useSpiritSpring,
   });
 }
 

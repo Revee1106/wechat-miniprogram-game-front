@@ -114,7 +114,7 @@ assert.match(dwellingVmSource, /upgrade-facility/);
 assert.match(dwellingVmSource, /build-facility/);
 assert.match(alchemyVmSource, /title: "炼丹"/);
 assert.match(alchemyVmSource, /start-alchemy/);
-assert.match(alchemyVmSource, /start-alchemy-with-spring/);
+assert.doesNotMatch(alchemyVmSource, /start-alchemy-with-spring/);
 assert.doesNotMatch(alchemyVmSource, /consume-item/);
 assert.match(summaryVmSource, /title: "此世终卷"/);
 assert.match(summaryVmSource, /rebirth/);

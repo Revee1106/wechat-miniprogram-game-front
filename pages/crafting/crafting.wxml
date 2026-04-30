@@ -95,10 +95,11 @@
           show-scrollbar="{{false}}"
         >
           <view class="rail-track">
-            <view wx:for="{{inventoryCards}}" wx:key="inventoryKey" class="inventory-card">
-              <view class="recipe-title">{{item.display_name}} · {{item.quality}}</view>
+            <view wx:for="{{inventoryCards}}" wx:key="inventoryKey" class="inventory-card inventory-card--{{item.qualityTone}}">
+              <view class="quality-pill quality-pill--{{item.qualityTone}}">{{item.qualityLabel}}</view>
+              <view class="recipe-title">{{item.display_name}}</view>
               <view class="recipe-copy">数量 {{item.amount}}</view>
-              <view class="recipe-copy">{{item.effect_summary}}</view>
+              <view class="recipe-copy">{{item.effectText}}</view>
               <button
                 class="primary-button compact-action"
                 data-item-id="{{item.item_id}}"
@@ -161,15 +162,6 @@
         disabled="{{!selectedRecipeCard.can_start}}"
       >
         开炉
-      </button>
-      <button
-        class="secondary-button recipe-sheet-button"
-        data-recipe-id="{{selectedRecipeCard.recipe_id}}"
-        bindtap="startAlchemyWithSpring"
-        loading="{{loadingRecipeId === selectedRecipeCard.recipe_id}}"
-        disabled="{{!selectedRecipeCard.can_start}}"
-      >
-        借灵泉
       </button>
     </view>
   </view>
