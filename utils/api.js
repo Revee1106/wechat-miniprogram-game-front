@@ -48,7 +48,16 @@ function resolveEvent(runId, optionId) {
 }
 
 function performBattleAction(runId, action) {
-  return post("/api/run/battle/action", { run_id: runId, action });
+  const payload =
+    action && typeof action === "object"
+      ? {
+          run_id: runId,
+          action: action.action,
+          item_id: action.itemId,
+          quality: action.quality,
+        }
+      : { run_id: runId, action };
+  return post("/api/run/battle/action", payload);
 }
 
 function breakthrough(runId) {
@@ -61,6 +70,14 @@ function buildDwellingFacility(runId, facilityId) {
 
 function upgradeDwellingFacility(runId, facilityId) {
   return post("/api/run/dwelling/upgrade", { run_id: runId, facility_id: facilityId });
+}
+
+function equipItem(runId, itemId) {
+  return post("/api/run/equipment/equip", { run_id: runId, item_id: itemId });
+}
+
+function unequipItem(runId, itemId) {
+  return post("/api/run/equipment/unequip", { run_id: runId, item_id: itemId });
 }
 
 function sellResource(runId, resourceKey, amount) {
@@ -107,6 +124,8 @@ module.exports = {
   breakthrough,
   buildDwellingFacility,
   upgradeDwellingFacility,
+  equipItem,
+  unequipItem,
   sellResource,
   convertSpiritStoneToCultivation,
   startAlchemy,

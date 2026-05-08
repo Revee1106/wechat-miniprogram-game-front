@@ -4,6 +4,7 @@ function buildAlchemyDrawerViewModel(snapshot) {
   const run = snapshot && snapshot.run ? snapshot.run : null;
   const alchemyState = run ? run.alchemy_state || {} : {};
   const spiritSpringWaterAmount = getResourceStackAmount(run, "spirit_spring_water");
+  const autoAlchemyRecipeId = snapshot ? snapshot.autoAlchemyRecipeId || "" : "";
 
   const recipeCards = (alchemyState.available_recipes || []).map((recipe) => ({
     id: recipe.recipe_id,
@@ -11,15 +12,23 @@ function buildAlchemyDrawerViewModel(snapshot) {
     description: recipe.description || "",
     effectSummary: buildRecipeEffectText(recipe),
     canStart: recipe.can_start === true,
-    ingredientsText: buildIngredientsText(recipe.ingredients || {}),
+    ingredientsText: buildIngredientsText(recipe.ingredients || {}, run),
     durationText: `${Number(recipe.duration_months || 0)} 月`,
     successRateText: formatSuccessRate(recipe.current_success_rate ?? recipe.base_success_rate),
     qualityChanceText: buildQualityChanceText(recipe.quality_chances || []),
     requiredText: `丹道 ${Number(recipe.required_alchemy_level || 0)} 级`,
     disabledReason: recipe.disabled_reason || "",
+    isMaterialShortage: isMaterialShortageReason(recipe.disabled_reason || ""),
+    canToggleAuto: recipe.can_start === true || isActiveJobReason(recipe.disabled_reason || ""),
+    isAutoActive: autoAlchemyRecipeId === recipe.recipe_id,
     action: {
       action: "start-alchemy",
       label: "开炉",
+      recipeId: recipe.recipe_id,
+    },
+    autoAction: {
+      action: autoAlchemyRecipeId === recipe.recipe_id ? "stop-auto-alchemy" : "auto-start-alchemy",
+      label: autoAlchemyRecipeId === recipe.recipe_id ? "停止自动" : "自动开炉",
       recipeId: recipe.recipe_id,
     },
   }));
@@ -35,6 +44,7 @@ function buildAlchemyDrawerViewModel(snapshot) {
       ? `${alchemyState.active_job.recipe_name} 尚需 ${Number(alchemyState.active_job.remaining_months || 0)} 月`
       : "当前没有在炼丹方",
     lastResultSummary: alchemyState.last_result ? alchemyState.last_result.summary || "" : "",
+    autoAlchemyRecipeId,
   };
 }
 
@@ -43,10 +53,18 @@ function getResourceStackAmount(run, resourceKey) {
   return stack ? Number(stack.amount) || 0 : 0;
 }
 
-function buildIngredientsText(ingredients) {
+function buildIngredientsText(ingredients, run) {
   return Object.entries(ingredients)
-    .map(([key, amount]) => `${formatResourceName(key)} x${amount}`)
+    .map(([key, amount]) => `${formatResourceName(key, "", run)} x${amount}`)
     .join(" / ");
+}
+
+function isMaterialShortageReason(reason) {
+  return /材料不足/.test(String(reason || ""));
+}
+
+function isActiveJobReason(reason) {
+  return /已有炼制|已有炼丹|已有.*炉次/.test(String(reason || ""));
 }
 
 function buildRecipeEffectText(recipe) {

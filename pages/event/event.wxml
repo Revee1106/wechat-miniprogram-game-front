@@ -109,7 +109,7 @@
           <view class="section-card">
             <view class="section-head">
               <view class="section-title">行囊</view>
-              <view class="section-copy">查看当前修行资源，并将灵石转修为或把药草、灵植、灵矿变现。</view>
+              <view class="section-copy">查看当前修行资源，并将灵石转修为或把药草、基础药草、基础矿材变现。</view>
             </view>
             <view class="section-grid inventory-grid">
               <view

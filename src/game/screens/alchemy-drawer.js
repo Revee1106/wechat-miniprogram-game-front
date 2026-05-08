@@ -116,18 +116,37 @@ function drawRecipeDetail(context, rect, selectedRecipe, registerHitRegion, acti
     `炼制: ${selectedRecipe.durationText}, 基础评分 ${selectedRecipe.successRateText}`,
     selectedRecipe.qualityChanceText ? `品级: ${selectedRecipe.qualityChanceText}` : "",
     `要求: ${selectedRecipe.requiredText}`,
-    selectedRecipe.disabledReason ? `状态: ${selectedRecipe.disabledReason}` : "",
+    selectedRecipe.disabledReason && !selectedRecipe.isMaterialShortage ? `状态: ${selectedRecipe.disabledReason}` : "",
   ].filter(Boolean), rect.width - 36, 8);
   detailLines.forEach((line, index) => {
     context.fillText(line, rect.x + 18, rect.y + 60 + index * 24);
   });
+  const nextY = rect.y + 60 + detailLines.length * 24;
+  if (selectedRecipe.disabledReason && selectedRecipe.isMaterialShortage) {
+    context.fillStyle = themeTokens.color.ink;
+    context.font = "16px sans-serif";
+    context.fillText("状态: ", rect.x + 18, nextY);
+    context.fillStyle = themeTokens.color.timeCostText;
+    context.font = "bold 16px sans-serif";
+    context.fillText("材料不足", rect.x + 18 + context.measureText("状态: ").width, nextY);
+  }
 
   const buttonTop = rect.y + rect.height - 48;
-  const startRect = { x: rect.x + 18, y: buttonTop, width: rect.width - 36, height: 40 };
+  const gap = 10;
+  const buttonWidth = (rect.width - 36 - gap) / 2;
+  const startRect = { x: rect.x + 18, y: buttonTop, width: buttonWidth, height: 40 };
+  const autoRect = { x: startRect.x + buttonWidth + gap, y: buttonTop, width: buttonWidth, height: 40 };
   drawActionButton(context, startRect, selectedRecipe.action.label, { disabled: !selectedRecipe.canStart });
+  drawActionButton(context, autoRect, selectedRecipe.autoAction.label, {
+    active: selectedRecipe.isAutoActive,
+    disabled: !selectedRecipe.canToggleAuto && !selectedRecipe.isAutoActive,
+  });
 
   if (selectedRecipe.canStart) {
     registerHitRegion({ ...startRect, onTap: () => actions.onRecipeAction(selectedRecipe.action) });
+  }
+  if (selectedRecipe.canToggleAuto || selectedRecipe.isAutoActive) {
+    registerHitRegion({ ...autoRect, onTap: () => actions.onRecipeAction(selectedRecipe.autoAction) });
   }
 }
 
@@ -170,6 +189,7 @@ function wrapLine(context, text, maxWidth) {
 
 function drawActionButton(context, rect, label, options = {}) {
   const disabled = options.disabled === true;
+  const active = options.active === true;
   fillRoundedRect(
     context,
     rect.x,
@@ -177,9 +197,9 @@ function drawActionButton(context, rect, label, options = {}) {
     rect.width,
     rect.height,
     12,
-    disabled ? themeTokens.color.buttonDisabledSurface : themeTokens.color.buttonSurface
+    disabled ? themeTokens.color.buttonDisabledSurface : active ? themeTokens.color.paperDeep : themeTokens.color.buttonSurface
   );
-  context.strokeStyle = disabled ? themeTokens.color.buttonDisabledBorder : themeTokens.color.buttonBorder;
+  context.strokeStyle = disabled ? themeTokens.color.buttonDisabledBorder : active ? themeTokens.color.timeCostText : themeTokens.color.buttonBorder;
   context.lineWidth = 2;
   strokeRoundedRect(context, rect.x + 1, rect.y + 1, rect.width - 2, rect.height - 2, 17);
   context.fillStyle = disabled ? themeTokens.color.buttonDisabledText : themeTokens.color.buttonText;

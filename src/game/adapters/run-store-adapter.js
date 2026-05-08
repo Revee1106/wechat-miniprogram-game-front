@@ -44,6 +44,14 @@ async function upgradeDwellingFacility(facilityId) {
   return store.upgradeDwellingFacility(facilityId);
 }
 
+async function equipItem(itemId) {
+  return store.equipItem(itemId);
+}
+
+async function unequipItem(itemId) {
+  return store.unequipItem(itemId);
+}
+
 async function startAlchemy(recipeId) {
   return store.startAlchemy(recipeId);
 }
@@ -68,6 +76,8 @@ module.exports = {
   convertSpiritStoneToCultivation,
   buildDwellingFacility,
   upgradeDwellingFacility,
+  equipItem,
+  unequipItem,
   startAlchemy,
   consumeAlchemyItem,
   rebirth,

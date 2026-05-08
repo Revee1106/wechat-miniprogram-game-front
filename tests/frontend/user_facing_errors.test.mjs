@@ -53,6 +53,12 @@ assert.equal(formatFacilityName("spirit_field", ""), "灵田");
 assert.equal(formatResourceName("spirit_spring_water", ""), "灵泉水");
 assert.equal(formatResourceName("unknown_resource", ""), "资源");
 assert.equal(
+  formatResourceName("basic_herb", "", {
+    resource_definitions: [{ key: "basic_herb", display_name: "月华灵草" }],
+  }),
+  "月华灵草"
+);
+assert.equal(
   isMissingRunError({ code: "core.run.not_found", message: "当前没有进行中的修仙历程，请先启程。" }),
   true
 );

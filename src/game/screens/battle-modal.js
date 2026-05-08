@@ -1,6 +1,6 @@
 const { themeTokens } = require("../theme/tokens");
 
-function drawBattleModal(context, layout, viewModel, registerHitRegion, onChoose) {
+function drawBattleModal(context, layout, viewModel, registerHitRegion, actions) {
   if (!context || !viewModel) {
     return;
   }
@@ -49,14 +49,40 @@ function drawBattleModal(context, layout, viewModel, registerHitRegion, onChoose
     context.fillText(String(line), logRect.x + 14, logRect.y + 26 + index * 24);
   });
 
-  const actions = Array.isArray(viewModel.actions) ? viewModel.actions : [];
+  const actionItems = Array.isArray(viewModel.actions) ? viewModel.actions : [];
+  const controller =
+    typeof actions === "function"
+      ? { onChoose: actions }
+      : {
+          onChoose: actions && actions.onChoose ? actions.onChoose : () => {},
+          onChoosePill: actions && actions.onChoosePill ? actions.onChoosePill : () => {},
+          onClosePillPicker:
+            actions && actions.onClosePillPicker ? actions.onClosePillPicker : () => {},
+          showBattlePillPicker: actions && actions.showBattlePillPicker === true,
+        };
   const columns = 2;
   const gap = 12;
   const buttonWidth = (panelWidth - 40 - gap) / columns;
   const buttonHeight = 54;
   const actionTop = logRect.y + logRect.height + 18;
 
-  actions.forEach((actionItem, index) => {
+  if (controller.showBattlePillPicker) {
+    drawPillPicker(
+      context,
+      {
+        x: panelX + 20,
+        y: actionTop,
+        width: panelWidth - 40,
+        height: panelY + panelHeight - actionTop - 20,
+      },
+      viewModel.battlePillOptions || [],
+      registerHitRegion,
+      controller
+    );
+    return;
+  }
+
+  actionItems.forEach((actionItem, index) => {
     const row = Math.floor(index / columns);
     const column = index % columns;
     const rect = {
@@ -70,7 +96,7 @@ function drawBattleModal(context, layout, viewModel, registerHitRegion, onChoose
     if (!actionItem.disabled) {
       registerHitRegion({
         ...rect,
-        onTap: () => onChoose(actionItem.action),
+        onTap: () => controller.onChoose(actionItem.action),
       });
     }
   });
@@ -93,15 +119,74 @@ function drawActorCard(context, x, y, width, height, actor, isPlayer) {
 
 function drawActionButton(context, rect, actionItem) {
   const disabled = actionItem.disabled === true;
+  const fontSize = Math.max(12, Number(actionItem.fontSize) || 16);
+  const radius = Math.max(8, Math.min(18, rect.height / 2, Number(actionItem.radius) || 18));
   context.fillStyle = disabled ? themeTokens.color.buttonDisabledSurface : themeTokens.color.buttonSurface;
-  fillRoundedRect(context, rect.x, rect.y, rect.width, rect.height, 18);
+  fillRoundedRect(context, rect.x, rect.y, rect.width, rect.height, radius);
   context.strokeStyle = disabled ? themeTokens.color.buttonDisabledBorder : themeTokens.color.buttonBorder;
   context.lineWidth = 2;
-  strokeRoundedRect(context, rect.x, rect.y, rect.width, rect.height, 18);
+  strokeRoundedRect(context, rect.x, rect.y, rect.width, rect.height, radius);
   context.fillStyle = disabled ? themeTokens.color.buttonDisabledText : themeTokens.color.buttonText;
-  context.font = "bold 16px sans-serif";
+  context.font = `bold ${fontSize}px sans-serif`;
   const metrics = context.measureText(actionItem.label);
-  context.fillText(actionItem.label, rect.x + (rect.width - metrics.width) / 2, rect.y + 32);
+  const textY = rect.y + rect.height / 2 + fontSize * 0.35;
+  context.fillText(actionItem.label, rect.x + (rect.width - metrics.width) / 2, textY);
+}
+
+function drawPillPicker(context, rect, pillOptions, registerHitRegion, controller) {
+  context.fillStyle = "#f3e6cf";
+  fillRoundedRect(context, rect.x, rect.y, rect.width, rect.height, 16);
+  context.strokeStyle = themeTokens.color.scrollEdge;
+  context.lineWidth = 1.5;
+  strokeRoundedRect(context, rect.x, rect.y, rect.width, rect.height, 16);
+
+  context.fillStyle = themeTokens.color.accent;
+  context.font = "bold 16px sans-serif";
+  context.fillText("选择战斗丹药", rect.x + 14, rect.y + 24);
+
+  const closeRect = {
+    x: rect.x + rect.width - 70,
+    y: rect.y + 8,
+    width: 56,
+    height: 28,
+  };
+  drawActionButton(context, closeRect, { label: "返回", fontSize: 14, radius: 11 });
+  registerHitRegion({
+    ...closeRect,
+    onTap: controller.onClosePillPicker,
+  });
+
+  if (!pillOptions.length) {
+    context.fillStyle = themeTokens.color.inkSoft;
+    context.font = "14px sans-serif";
+    context.fillText("没有可在战斗中服用的丹药。", rect.x + 14, rect.y + 58);
+    return;
+  }
+
+  const rowHeight = 46;
+  pillOptions.slice(0, 3).forEach((pill, index) => {
+    const rowRect = {
+      x: rect.x + 12,
+      y: rect.y + 50 + index * (rowHeight + 8),
+      width: rect.width - 24,
+      height: rowHeight,
+    };
+    context.fillStyle = themeTokens.color.paperSoft;
+    fillRoundedRect(context, rowRect.x, rowRect.y, rowRect.width, rowRect.height, 12);
+    context.strokeStyle = themeTokens.color.buttonBorder;
+    context.lineWidth = 1.5;
+    strokeRoundedRect(context, rowRect.x, rowRect.y, rowRect.width, rowRect.height, 12);
+    context.fillStyle = themeTokens.color.ink;
+    context.font = "bold 15px sans-serif";
+    context.fillText(pill.label, rowRect.x + 12, rowRect.y + 19);
+    context.fillStyle = themeTokens.color.inkSoft;
+    context.font = "13px sans-serif";
+    context.fillText(pill.detail, rowRect.x + 12, rowRect.y + 37);
+    registerHitRegion({
+      ...rowRect,
+      onTap: () => controller.onChoosePill(pill.action),
+    });
+  });
 }
 
 function fillRoundedRect(context, x, y, width, height, radius) {

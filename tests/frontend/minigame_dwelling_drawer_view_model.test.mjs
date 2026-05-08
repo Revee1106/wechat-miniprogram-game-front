@@ -71,7 +71,7 @@ assert.deepEqual(viewModel.summaryStats, {
   totalMaintenanceSpiritStone: { label: "每月维护", value: 2, unit: "灵石" },
 });
 assert.deepEqual(viewModel.productionSummaryItems, [
-  { key: "basic_herb", label: "灵植", value: 3 },
+  { key: "basic_herb", label: "基础灵草", value: 3 },
   { key: "cultivation", label: "修为", value: 0 },
 ]);
 assert.equal(viewModel.facilityCards.length, 2);
@@ -223,8 +223,8 @@ const aggregateViewModel = buildDwellingDrawerViewModel(aggregateSnapshot);
 assert.equal(aggregateViewModel.summaryStats.currentSpiritStone.value, 24);
 assert.equal(aggregateViewModel.summaryStats.totalMaintenanceSpiritStone.value, 7);
 assert.deepEqual(aggregateViewModel.productionSummaryItems, [
-  { key: "basic_herb", label: "灵植", value: 2 },
-  { key: "basic_ore", label: "灵矿", value: 3 },
+  { key: "basic_herb", label: "基础灵草", value: 2 },
+  { key: "basic_ore", label: "基础矿材", value: 3 },
   { key: "spirit_stone", label: "灵石", value: 10 },
   { key: "cultivation", label: "修为", value: 0 },
 ]);
@@ -240,7 +240,7 @@ const recoveredSnapshot = {
     dwelling_facilities: [
       {
         facility_id: "mine_cave",
-        display_name: "鐭挎礊",
+        display_name: "矿洞",
         level: 1,
         max_level: 3,
         status: "active",
@@ -265,7 +265,7 @@ const recoveredSnapshot = {
       entries: [
         {
           facility_id: "mine_cave",
-          display_name: "鐭挎礊",
+          display_name: "矿洞",
           status: "stalled",
         },
       ],

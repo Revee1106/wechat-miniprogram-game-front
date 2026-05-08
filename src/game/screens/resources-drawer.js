@@ -68,7 +68,7 @@ function drawResourceTags(context, width, startY, items, selectedResourceKey, re
       18,
       tone.surface
     );
-    if (active) {
+    if (active || item.isEquipped) {
       context.strokeStyle = tone.border;
       context.lineWidth = 2;
       strokeRoundedRect(context, rect.x + 1, rect.y + 1, rect.width - 2, rect.height - 2, 17);
@@ -94,6 +94,8 @@ function getItemTone(item, active) {
   }
 
   const tones = {
+    equipped: { surface: "#fff1ea", border: "#b64a35", text: "#6a2117" },
+    equipment: { surface: "#efe6d6", border: "#a87543", text: "#3e2c1d" },
     white: { surface: "#fbfaf6", border: "#d8d2c6", text: "#2c2924" },
     green: { surface: "#e5f4dc", border: "#76a461", text: "#274f2f" },
     blue: { surface: "#dcecff", border: "#6397d4", text: "#1f4f82" },

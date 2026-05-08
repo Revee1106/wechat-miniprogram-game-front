@@ -75,14 +75,38 @@ assert.equal(viewModel.spiritSpringWaterAmount, 4);
 assert.equal(viewModel.hasActiveJob, true);
 assert.equal(Object.hasOwn(viewModel, "spiritSpringHint"), false);
 assert.equal(viewModel.recipeCards.length, 2);
-assert.equal(viewModel.recipeCards[0].ingredientsText, "灵植 x2 / 灵石 x1");
+assert.equal(viewModel.recipeCards[0].ingredientsText, "基础灵草 x2 / 灵石 x1");
 assert.equal(viewModel.recipeCards[0].effectSummary, "服用后提升 12 点修为");
 assert.equal(viewModel.recipeCards[0].durationText, "2 月");
 assert.equal(viewModel.recipeCards[0].successRateText, "88%");
 assert.equal(viewModel.recipeCards[0].qualityChanceText, "下品: 70% / 中品: 25% / 上品: 5% / 极品: 0%");
 assert.equal(viewModel.recipeCards[1].effectSummary, "服用后恢复 25 点气血");
 assert.equal(viewModel.recipeCards[0].action.action, "start-alchemy");
+assert.equal(viewModel.recipeCards[0].autoAction.action, "auto-start-alchemy");
+assert.equal(viewModel.recipeCards[0].autoAction.label, "自动开炉");
 assert.equal(Object.hasOwn(viewModel.recipeCards[0], "springAction"), false);
 assert.equal(Object.hasOwn(viewModel, "inventoryCards"), false);
 assert.match(viewModel.activeJobSummary, /养气丹/);
 assert.match(viewModel.lastResultSummary, /成丹/);
+
+const shortageViewModel = buildAlchemyDrawerViewModel({
+  autoAlchemyRecipeId: "short-pill",
+  run: {
+    alchemy_state: {
+      available_recipes: [
+        {
+          recipe_id: "short-pill",
+          display_name: "缺材丹",
+          can_start: false,
+          ingredients: { basic_herb: 9 },
+          disabled_reason: "材料不足。",
+        },
+      ],
+    },
+  },
+});
+
+assert.equal(shortageViewModel.recipeCards[0].isMaterialShortage, true);
+assert.equal(shortageViewModel.recipeCards[0].isAutoActive, true);
+assert.equal(shortageViewModel.recipeCards[0].autoAction.action, "stop-auto-alchemy");
+assert.equal(shortageViewModel.recipeCards[0].autoAction.label, "停止自动");

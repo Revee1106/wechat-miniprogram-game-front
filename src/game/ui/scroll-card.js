@@ -15,26 +15,38 @@ function drawScrollCard(context, rect, content = {}) {
 
   const headerInset = 22;
   const infoTop = rect.y + 22;
-  const infoBottom = rect.y + Math.floor(rect.height * 0.66);
-  const logTop = infoBottom + 18;
+  const summaryBottom = infoTop + 132;
+  const equipmentTop = summaryBottom + 14;
+  const equipmentBottom = equipmentTop + 102;
+  const logTop = equipmentBottom + 18;
 
   context.fillStyle = "rgba(163, 109, 45, 0.12)";
   context.fillRect(rect.x + 18, logTop - 12, rect.width - 36, 1);
 
   if (Array.isArray(content.summaryRows)) {
-    const rowCount = Math.max(1, content.summaryRows.length);
-    const rowGap = Math.min(42, Math.max(26, Math.floor((infoBottom - infoTop - 8) / rowCount)));
-    const valueX = rect.x + rect.width * 0.52;
+    const columnGap = 20;
+    const columnWidth = (rect.width - headerInset * 2 - columnGap) / 2;
+    const rowGap = 30;
     content.summaryRows.forEach((row, index) => {
-      const top = infoTop + index * rowGap;
+      const column = index % 2;
+      const rowIndex = Math.floor(index / 2);
+      const left = rect.x + headerInset + column * (columnWidth + columnGap);
+      const top = infoTop + rowIndex * rowGap;
       context.fillStyle = themeTokens.color.inkSoft;
-      context.font = rowGap < 32 ? "13px sans-serif" : "15px sans-serif";
-      context.fillText(String(row.label), rect.x + headerInset, top + rowGap - 10);
+      context.font = "13px sans-serif";
+      context.fillText(String(row.label), left, top + 18);
       context.fillStyle = themeTokens.color.ink;
-      context.font = rowGap < 32 ? "bold 14px sans-serif" : "bold 16px sans-serif";
-      context.fillText(String(row.value), valueX, top + rowGap - 10);
+      context.font = "bold 14px sans-serif";
+      context.fillText(String(row.value), left + 46, top + 18);
     });
   }
+
+  drawEquipmentSlots(context, rect, {
+    top: equipmentTop,
+    slots: content.equipmentSlots || [],
+    registerHitRegion: content.registerHitRegion,
+    onEquipmentTap: content.onEquipmentTap,
+  });
 
   context.fillStyle = themeTokens.color.accent;
   context.font = "bold 18px sans-serif";
@@ -59,6 +71,77 @@ function drawScrollCard(context, rect, content = {}) {
     context.font = "14px sans-serif";
     context.fillText(String(content.emptyLogText), rect.x + headerInset, logTop + 34);
   }
+}
+
+function drawEquipmentSlots(context, rect, options) {
+  const slots = Array.isArray(options.slots) ? options.slots : [];
+  if (!slots.length) {
+    return;
+  }
+
+  const headerInset = 22;
+  context.fillStyle = "rgba(163, 109, 45, 0.12)";
+  context.fillRect(rect.x + 18, options.top - 6, rect.width - 36, 1);
+  context.fillStyle = themeTokens.color.accent;
+  context.font = "bold 16px sans-serif";
+  context.fillText("当前装备", rect.x + headerInset, options.top + 16);
+
+  const columns = 2;
+  const gap = 10;
+  const slotWidth = (rect.width - headerInset * 2 - gap) / columns;
+  const slotHeight = 34;
+  const startY = options.top + 28;
+
+  slots.forEach((slot, index) => {
+    const column = index % columns;
+    const row = Math.floor(index / columns);
+    const slotRect = {
+      x: rect.x + headerInset + column * (slotWidth + gap),
+      y: startY + row * (slotHeight + 8),
+      width: slotWidth,
+      height: slotHeight,
+    };
+    context.fillStyle = slot.item ? "#efe2d0" : "#f6eddc";
+    fillRoundedRect(context, slotRect.x, slotRect.y, slotRect.width, slotRect.height, 10);
+    context.strokeStyle = slot.item ? themeTokens.color.bronze : "rgba(119, 96, 68, 0.32)";
+    context.lineWidth = 1.5;
+    strokeRoundedRect(context, slotRect.x, slotRect.y, slotRect.width, slotRect.height, 10);
+
+    if (!slot.item) {
+      context.fillStyle = themeTokens.color.ink;
+      context.font = "bold 14px sans-serif";
+      context.fillText(`${slot.label}: 空`, slotRect.x + 10, slotRect.y + 22);
+    } else {
+      context.fillStyle = themeTokens.color.inkSoft;
+      context.font = "12px sans-serif";
+      context.fillText(slot.label, slotRect.x + 8, slotRect.y + 14);
+      context.fillStyle = themeTokens.color.ink;
+      context.font = "bold 13px sans-serif";
+      context.fillText(trimText(context, slot.title, slotWidth - 52), slotRect.x + 44, slotRect.y + 14);
+      context.fillStyle = themeTokens.color.inkSoft;
+      context.font = "12px sans-serif";
+      context.fillText(trimText(context, slot.detail, slotWidth - 16), slotRect.x + 8, slotRect.y + 28);
+    }
+
+    if (slot.item && typeof options.registerHitRegion === "function") {
+      options.registerHitRegion({
+        ...slotRect,
+        onTap: () => options.onEquipmentTap(slot.item),
+      });
+    }
+  });
+}
+
+function trimText(context, text, maxWidth) {
+  const value = String(text || "");
+  if (context.measureText(value).width <= maxWidth) {
+    return value;
+  }
+  let next = value;
+  while (next.length > 1 && context.measureText(`${next}…`).width > maxWidth) {
+    next = next.slice(0, -1);
+  }
+  return `${next}…`;
 }
 
 function fillRoundedRect(context, x, y, width, height, radius, fillStyle) {

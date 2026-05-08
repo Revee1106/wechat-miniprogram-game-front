@@ -110,6 +110,20 @@ async function upgradeDwellingFacility(facilityId) {
   return getState();
 }
 
+async function equipItem(itemId) {
+  ensureRun();
+  state.error = "";
+  state.run = await api.equipItem(state.run.run_id, itemId);
+  return getState();
+}
+
+async function unequipItem(itemId) {
+  ensureRun();
+  state.error = "";
+  state.run = await api.unequipItem(state.run.run_id, itemId);
+  return getState();
+}
+
 async function sellResource(resourceKey, amount) {
   ensureRun();
   state.error = "";
@@ -303,6 +317,8 @@ module.exports = {
   breakthrough,
   buildDwellingFacility,
   upgradeDwellingFacility,
+  equipItem,
+  unequipItem,
   sellResource,
   convertSpiritStoneToCultivation,
   startAlchemy,

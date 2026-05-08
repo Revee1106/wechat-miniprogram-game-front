@@ -1,8 +1,8 @@
 const PRODUCTION_LABELS = {
-  basic_herb: "灵植",
-  herb: "灵植",
-  basic_ore: "灵矿",
-  ore: "灵矿",
+  basic_herb: "基础灵草",
+  herb: "药草",
+  basic_ore: "基础矿材",
+  ore: "玄铁精华",
   spirit_stone: "灵石",
   spirit_spring_water: "灵泉水",
 };
@@ -12,9 +12,10 @@ function buildDwellingDrawerViewModel(snapshot) {
   const facilities = run ? run.dwelling_facilities || [] : [];
   const settlement = run ? run.dwelling_last_settlement : null;
   const currentSpiritStone = run ? Number((run.resources || {}).spirit_stone || 0) : 0;
+  const resourceLabels = buildResourceLabels(run);
 
   const totalMaintenanceSpiritStone = facilities.reduce(
-    (sum, facility) => sum + Number(((facility.maintenance_cost || {}).spirit_stone || 0)),
+    (sum, facility) => sum + Number((facility.maintenance_cost || {}).spirit_stone || 0),
     0
   );
 
@@ -26,7 +27,8 @@ function buildDwellingDrawerViewModel(snapshot) {
     const nextUpgradeCostSpiritStone = Number(nextUpgradeCost.spirit_stone || 0);
     const isBuilt = Number(facility.level) > 0;
     const maxLevel = Number(facility.max_level) || 0;
-    const isMaxLevel = (maxLevel > 0 && Number(facility.level) >= maxLevel) || facility.status === "max_level";
+    const isMaxLevel =
+      (maxLevel > 0 && Number(facility.level) >= maxLevel) || facility.status === "max_level";
     const isStalled = facility.status === "stalled";
     const action = isBuilt
       ? isMaxLevel
@@ -43,7 +45,7 @@ function buildDwellingDrawerViewModel(snapshot) {
       isStalled,
       status: facility.status || "unbuilt",
       maintenanceText: `${Number((facility.maintenance_cost || {}).spirit_stone || 0)} 灵石`,
-      yieldText: buildFacilityYieldText(resourceYields, facility.monthly_cultivation_exp_gain),
+      yieldText: buildFacilityYieldText(resourceYields, facility.monthly_cultivation_exp_gain, resourceLabels),
       nextUpgradeText: isMaxLevel ? "已满级" : `${nextUpgradeCostSpiritStone} 灵石`,
       nextUpgradeCostSpiritStone,
       canAfford: !isMaxLevel && currentSpiritStone >= nextUpgradeCostSpiritStone,
@@ -59,7 +61,7 @@ function buildDwellingDrawerViewModel(snapshot) {
       currentSpiritStone: { label: "当前灵石", value: currentSpiritStone, unit: "" },
       totalMaintenanceSpiritStone: { label: "每月维护", value: totalMaintenanceSpiritStone, unit: "灵石" },
     },
-    productionSummaryItems: buildProductionSummaryItems(productionTotals),
+    productionSummaryItems: buildProductionSummaryItems(productionTotals, resourceLabels),
     facilityCards,
     settlementSummary: settlement
       ? `支出 ${Number((settlement.total_maintenance_paid || {}).spirit_stone || 0)} 灵石，收入 ${Number(
@@ -85,32 +87,32 @@ function aggregateProductionTotals(facilities) {
       totals[normalizedKey] = (Number(totals[normalizedKey]) || 0) + amount;
     });
 
-    totals.cultivation = (Number(totals.cultivation) || 0) + Number(facility.monthly_cultivation_exp_gain || 0);
+    totals.cultivation =
+      (Number(totals.cultivation) || 0) + Number(facility.monthly_cultivation_exp_gain || 0);
   });
 
   return totals;
 }
 
-function buildProductionSummaryItems(totals) {
+function buildProductionSummaryItems(totals, resourceLabels = PRODUCTION_LABELS) {
   const orderedKeys = ["basic_herb", "basic_ore", "spirit_stone", "spirit_spring_water", "cultivation"];
   const items = orderedKeys
     .filter((key) => key === "cultivation" || Number(totals[key] || 0) > 0)
     .map((key) => ({
       key,
-      label: key === "cultivation" ? "修为" : PRODUCTION_LABELS[key] || key,
+      label: key === "cultivation" ? "修为" : resourceLabels[key] || key,
       value: Number(totals[key] || 0),
     }));
 
   return items.length ? items : [{ key: "cultivation", label: "修为", value: 0 }];
 }
 
-function buildFacilityYieldText(resourceYields, cultivationExpGain) {
-  return [
-    `灵植 ${Number(resourceYields.basic_herb || resourceYields.herb || 0)}`,
-    `灵矿 ${Number(resourceYields.basic_ore || resourceYields.ore || 0)}`,
-    `灵石 ${Number(resourceYields.spirit_stone || 0)}`,
-    `修为 ${Number(cultivationExpGain || 0)}`,
-  ].join(" / ");
+function buildFacilityYieldText(resourceYields, cultivationExpGain, resourceLabels = PRODUCTION_LABELS) {
+  const resourceParts = Object.entries(resourceYields || {})
+    .map(([key, value]) => [normalizeProductionKey(key), Number(value) || 0])
+    .filter(([, value]) => value !== 0)
+    .map(([key, value]) => `${resourceLabels[key] || key} ${value}`);
+  return [...resourceParts, `修为 ${Number(cultivationExpGain || 0)}`].join(" / ");
 }
 
 function normalizeProductionKey(key) {
@@ -128,3 +130,16 @@ function normalizeProductionKey(key) {
 module.exports = {
   buildDwellingDrawerViewModel,
 };
+
+function buildResourceLabels(run) {
+  const labels = { ...PRODUCTION_LABELS };
+  const definitions = run && Array.isArray(run.resource_definitions) ? run.resource_definitions : [];
+  definitions.forEach((definition) => {
+    const key = String((definition && definition.key) || "").trim();
+    const displayName = String((definition && definition.display_name) || "").trim();
+    if (key && displayName) {
+      labels[key] = displayName;
+    }
+  });
+  return labels;
+}

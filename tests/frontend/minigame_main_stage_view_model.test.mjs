@@ -28,7 +28,24 @@ const activeSnapshot = {
       defense: 7,
       speed: 5,
       is_dead: false,
+      equipped_items: {
+        weapon: "iron_sword",
+      },
     },
+    equipment_inventory: [
+      {
+        item_id: "iron_sword",
+        display_name: "Iron Sword",
+        slot: "weapon",
+        slot_label: "武器",
+        attack: 4,
+        defense: 0,
+        speed: 1,
+        hp_max: 0,
+        description: "武器，攻击 +4，速度 +1",
+        is_equipped: true,
+      },
+    ],
     current_event: null,
     active_battle: null,
   },
@@ -118,6 +135,12 @@ assert.equal(activeViewModel.topSummary.hpMax, 100);
 assert.equal(activeViewModel.topSummary.attack, 12);
 assert.equal(activeViewModel.topSummary.defense, 7);
 assert.equal(activeViewModel.topSummary.speed, 5);
+assert.equal(activeViewModel.equipmentSlots.length, 4);
+assert.equal(activeViewModel.equipmentSlots[0].label, "武器");
+assert.equal(activeViewModel.equipmentSlots[0].title, "Iron Sword");
+assert.equal(activeViewModel.equipmentSlots[0].detail, "攻+4 速+1");
+assert.equal(activeViewModel.equipmentSlots[1].title, "空");
+assert.equal(activeViewModel.equipmentSlots[1].detail, "");
 assert.equal(activeViewModel.logEntries.length, 1);
 assert.equal(activeViewModel.logEntries[0].title, "林中异动");
 assert.match(activeViewModel.logEntries[0].detailLines[0], /灵石 \+12/);

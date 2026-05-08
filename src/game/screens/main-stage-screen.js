@@ -31,6 +31,9 @@ function createMainStageScreen(options) {
     confirmDialog: null,
     selectedResourceKey: "",
     selectedAlchemyRecipeId: "",
+    autoAlchemyRecipeId: "",
+    showBattlePillPicker: false,
+    equipmentDialog: null,
   };
 
   let hitRegions = [];
@@ -111,7 +114,7 @@ function createMainStageScreen(options) {
 
     await perform(async () => {
       try {
-        await adapter.advanceTime(false);
+        await advanceTimeAndContinueAlchemy(false);
       } catch (error) {
         if (error && error.code === "core.time.not_enough_spirit_stones") {
           uiState.confirmDialog = buildAdvancePenaltyConfirmDialog(snapshot);
@@ -121,6 +124,40 @@ function createMainStageScreen(options) {
         throw error;
       }
     });
+  }
+
+  async function advanceTimeAndContinueAlchemy(allowCultivationPenalty) {
+    await adapter.advanceTime(allowCultivationPenalty);
+    if (!uiState.autoAlchemyRecipeId) {
+      return;
+    }
+
+    const result = await startAlchemyIfPossible(uiState.autoAlchemyRecipeId);
+    if (result.status === "material-shortage") {
+      uiState.confirmDialog = buildAlchemyMaterialShortageDialog(result.recipe);
+      uiState.autoAlchemyRecipeId = "";
+      requestRender();
+    }
+  }
+
+  async function startAlchemyIfPossible(recipeId) {
+    const snapshot = getSnapshot();
+    const run = snapshot && snapshot.run ? snapshot.run : null;
+    const alchemyState = run && run.alchemy_state ? run.alchemy_state : {};
+    if (alchemyState.active_job) {
+      return { status: "active-job" };
+    }
+
+    const recipe = (alchemyState.available_recipes || []).find((item) => item.recipe_id === recipeId);
+    if (!recipe || recipe.can_start !== true) {
+      return {
+        status: recipe && isMaterialShortageRecipe(recipe) ? "material-shortage" : "blocked",
+        recipe,
+      };
+    }
+
+    await adapter.startAlchemy(recipeId);
+    return { status: "started", recipe };
   }
 
   function render(frame) {
@@ -144,7 +181,9 @@ function createMainStageScreen(options) {
     const resourcesDrawer = uiState.activeDrawer === "resources" ? buildResourcesDrawerViewModel(snapshot) : null;
     const cultivationDrawer = uiState.activeDrawer === "cultivation" ? buildCultivationDrawerViewModel(snapshot) : null;
     const dwellingDrawer = uiState.activeDrawer === "dwelling" ? buildDwellingDrawerViewModel(snapshot) : null;
-    const alchemyDrawer = uiState.activeDrawer === "alchemy" && alchemyUnlocked ? buildAlchemyDrawerViewModel(snapshot) : null;
+    const alchemyDrawer = uiState.activeDrawer === "alchemy" && alchemyUnlocked
+      ? buildAlchemyDrawerViewModel({ ...snapshot, autoAlchemyRecipeId: uiState.autoAlchemyRecipeId })
+      : null;
     const summaryModal = buildSummaryModalViewModel(snapshot);
 
     drawStageBackground(context, width, height);
@@ -157,6 +196,12 @@ function createMainStageScreen(options) {
     };
     drawScrollCard(context, scrollRect, {
       summaryRows: buildSummaryRows(stage),
+      equipmentSlots: stage.equipmentSlots,
+      registerHitRegion,
+      onEquipmentTap: (item) => {
+        uiState.equipmentDialog = buildEquipmentDialog(item);
+        requestRender();
+      },
       logTitle: "日志",
       logEntries: stage.logEntries,
       emptyLogText: "尚无新的变化",
@@ -216,6 +261,18 @@ function createMainStageScreen(options) {
               return;
             }
 
+            if (action && action.action === "equip-item") {
+              await adapter.equipItem(action.itemId);
+              showToast("装备已穿戴");
+              return;
+            }
+
+            if (action && action.action === "unequip-item") {
+              await adapter.unequipItem(action.itemId);
+              showToast("装备已卸下");
+              return;
+            }
+
             await adapter.sellResource(item.key, amount);
             showToast(amount === item.amount ? `已全部出售 ${item.label}` : `已出售 ${item.label} x${amount}`);
           }),
@@ -265,12 +322,24 @@ function createMainStageScreen(options) {
       registerBlockingRegion(registerHitRegion, 0, height * 0.2, width, height - height * 0.2);
       drawAlchemyDrawer(context, { width, height, viewport }, alchemyDrawer, registerHitRegion, {
         selectedRecipeId: uiState.selectedAlchemyRecipeId,
+        autoAlchemyRecipeId: uiState.autoAlchemyRecipeId,
         onSelectRecipe: (recipeId) => {
           uiState.selectedAlchemyRecipeId = recipeId;
           requestRender();
         },
         onRecipeAction: (action) =>
           perform(async () => {
+            if (action.action === "auto-start-alchemy") {
+              uiState.autoAlchemyRecipeId = action.recipeId;
+              await startAlchemyIfPossible(action.recipeId);
+              showToast("已开启自动炼丹");
+              return;
+            }
+            if (action.action === "stop-auto-alchemy") {
+              uiState.autoAlchemyRecipeId = "";
+              showToast("已停止自动炼丹");
+              return;
+            }
             await adapter.startAlchemy(action.recipeId);
             showToast("已起丹火");
           }),
@@ -279,11 +348,30 @@ function createMainStageScreen(options) {
 
     if (battleModal) {
       registerBlockingRegion(registerHitRegion, 0, 0, width, height);
-      drawBattleModal(context, { width, height, viewport }, battleModal, registerHitRegion, (action) =>
-        perform(async () => {
-          await adapter.performBattleAction(action);
-        })
-      );
+      drawBattleModal(context, { width, height, viewport }, battleModal, registerHitRegion, {
+        showBattlePillPicker: uiState.showBattlePillPicker,
+        onChoose: (action) => {
+          if (action === "use_pill") {
+            uiState.showBattlePillPicker = true;
+            requestRender();
+            return;
+          }
+          uiState.showBattlePillPicker = false;
+          perform(async () => {
+            await adapter.performBattleAction(action);
+          });
+        },
+        onChoosePill: (action) => {
+          uiState.showBattlePillPicker = false;
+          perform(async () => {
+            await adapter.performBattleAction(action);
+          });
+        },
+        onClosePillPicker: () => {
+          uiState.showBattlePillPicker = false;
+          requestRender();
+        },
+      });
     } else if (eventModal) {
       registerBlockingRegion(registerHitRegion, 0, 0, width, height);
       drawEventModal(context, { width, height, viewport }, eventModal, registerHitRegion, (optionId) =>
@@ -327,14 +415,31 @@ function createMainStageScreen(options) {
             }
 
             if (dialog.actionType === "advance-with-cultivation-penalty") {
-              await adapter.advanceTime(true);
+              await advanceTimeAndContinueAlchemy(true);
               showToast("灵石不足，修为受损后继续推进");
+              return;
+            }
+
+            if (dialog.actionType === "alchemy-material-shortage") {
               return;
             }
 
             await adapter.upgradeDwellingFacility(dialog.facilityId);
             showToast("设施已升级");
           });
+        },
+      });
+    }
+
+    if (uiState.equipmentDialog) {
+      drawConfirmModal(context, { width, height, viewport }, uiState.equipmentDialog, registerHitRegion, {
+        onCancel: () => {
+          uiState.equipmentDialog = null;
+          requestRender();
+        },
+        onConfirm: () => {
+          uiState.equipmentDialog = null;
+          requestRender();
         },
       });
     }
@@ -634,8 +739,10 @@ function registerBlockingRegion(registerHitRegion, x, y, width, height) {
 function closeDrawer(uiState, requestRender) {
   uiState.activeDrawer = null;
   uiState.confirmDialog = null;
+  uiState.equipmentDialog = null;
   uiState.selectedResourceKey = "";
   uiState.selectedAlchemyRecipeId = "";
+  uiState.showBattlePillPicker = false;
   requestRender();
 }
 
@@ -652,6 +759,54 @@ function buildDwellingConfirmDialog(card, currentSpiritStone) {
     facilityId: card.id,
     actionType: card.action.action,
   };
+}
+
+function buildAlchemyMaterialShortageDialog(recipe) {
+  const recipeName = recipe && recipe.display_name ? recipe.display_name : "当前丹方";
+  return {
+    title: "材料不足",
+    bodyLines: [
+      `${recipeName} 的材料即将不足，自动炼丹已暂停。`,
+      "补足材料后，可重新开启自动开炉。",
+    ],
+    confirmText: "知道了",
+    showCancel: false,
+    actionType: "alchemy-material-shortage",
+  };
+}
+
+function isMaterialShortageRecipe(recipe) {
+  return /材料不足/.test(String((recipe || {}).disabled_reason || ""));
+}
+
+function buildEquipmentDialog(item) {
+  return {
+    title: item.display_name || item.item_id || "装备",
+    bodyLines: [
+      `${item.slot_label || "装备"} · ${item.item_id || ""}`,
+      ...buildEquipmentStatLines(item),
+      item.description || "",
+    ].filter(Boolean),
+    confirmText: "知道了",
+    showCancel: false,
+  };
+}
+
+function buildEquipmentStatLines(item) {
+  const lines = [];
+  if (Number(item.attack || 0)) {
+    lines.push(`攻击 +${Number(item.attack)}`);
+  }
+  if (Number(item.defense || 0)) {
+    lines.push(`防御 +${Number(item.defense)}`);
+  }
+  if (Number(item.speed || 0)) {
+    lines.push(`速度 +${Number(item.speed)}`);
+  }
+  if (Number(item.hp_max || 0)) {
+    lines.push(`气血上限 +${Number(item.hp_max)}`);
+  }
+  return lines.length ? lines : ["无属性加成"];
 }
 
 function buildAdvancePenaltyConfirmDialog(snapshot) {

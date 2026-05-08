@@ -17,6 +17,8 @@ const ERROR_CODE_MESSAGES = {
   "core.resource_sale.not_enough_resources": "资源不足，无法出售。",
   "core.resource_conversion.invalid_amount": "转换数量必须为正整数。",
   "core.resource_conversion.not_enough_spirit_stone": "灵石不足，无法转化。",
+  "core.equipment.not_available": "未找到这件装备。",
+  "core.equipment.not_equipped": "这件装备当前未穿戴。",
   "core.realm.unknown": "未找到当前境界配置。",
 };
 
@@ -55,15 +57,13 @@ const RESOURCE_LABELS = {
   spirit_stone: "灵石",
   herb: "药草",
   herbs: "药草",
-  ore: "灵矿",
-  basic_herb: "灵植",
-  basic_ore: "灵矿石",
+  ore: "玄铁精华",
+  basic_herb: "基础灵草",
+  basic_ore: "基础矿材",
   spirit_spring_water: "灵泉水",
-  basic_breakthrough_material: "普通晋级材料",
-  rare_material: "稀有材料",
-  craft_material: "杂材",
+  craft_material: "炼器材料",
   iron_essence: "玄铁精华",
-  beast_material: "兽材",
+  beast_material: "妖兽材料",
   pill: "丹药",
 };
 
@@ -133,7 +133,11 @@ function createLocalizedApiError(payload, statusCode) {
   if (detail && typeof detail === "object" && !Array.isArray(detail)) {
     const code = typeof detail.code === "string" ? detail.code : "";
     const params = detail.params && typeof detail.params === "object" ? detail.params : {};
-    const message = localizeErrorCode(code, params, typeof detail.message === "string" ? detail.message : "");
+    const message = localizeErrorCode(
+      code,
+      params,
+      typeof detail.message === "string" ? detail.message : ""
+    );
     const error = new Error(message);
     error.code = code;
     error.params = params;
@@ -173,12 +177,22 @@ function formatFacilityName(facilityId, displayName) {
   return FACILITY_LABELS[facilityId] || String(facilityId || "");
 }
 
-function formatResourceName(resourceKey, displayName) {
+function formatResourceName(resourceKey, displayName, run) {
   const display = String(displayName || "").trim();
   if (display) {
     return display;
   }
+  const configuredName = findConfiguredResourceName(resourceKey, run);
+  if (configuredName) {
+    return configuredName;
+  }
   return RESOURCE_LABELS[resourceKey] || "资源";
+}
+
+function findConfiguredResourceName(resourceKey, run) {
+  const definitions = run && Array.isArray(run.resource_definitions) ? run.resource_definitions : [];
+  const matching = definitions.find((item) => item && item.key === resourceKey);
+  return matching ? String(matching.display_name || "").trim() : "";
 }
 
 function localizePlayerFacingText(message) {

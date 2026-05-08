@@ -72,10 +72,12 @@ function buildMainStageViewModel(snapshot) {
     speed: (run.character && Number(run.character.speed)) || 0,
     rebirthCount: (playerProfile && Number(playerProfile.total_rebirth_count)) || 0,
   };
+  const equipmentSlots = buildEquipmentSlots(run);
 
   const baseViewModel = {
     heroTitle: "问道长生",
     topSummary,
+    equipmentSlots,
     logEntries: buildLogEntries(snapshot, run),
     primaryAction: getPrimaryAction(snapshot),
   };
@@ -157,6 +159,44 @@ function buildLogEntries(snapshot, run) {
       detailLines: ["继续推进时间，等待新的遭遇。"],
     },
   ];
+}
+
+function buildEquipmentSlots(run) {
+  const equippedItems = ((run && run.character && run.character.equipped_items) || {});
+  const inventory = Array.isArray(run && run.equipment_inventory) ? run.equipment_inventory : [];
+  const byId = Object.fromEntries(inventory.map((item) => [item.item_id, item]));
+
+  return [
+    { slot: "weapon", label: "武器" },
+    { slot: "armor", label: "防具" },
+    { slot: "accessory", label: "饰品" },
+    { slot: "artifact", label: "法宝" },
+  ].map((slotDef) => {
+    const item = byId[equippedItems[slotDef.slot]] || null;
+    return {
+      ...slotDef,
+      item,
+      title: item ? item.display_name || item.item_id : "空",
+      detail: item ? formatEquipmentStats(item) : "",
+    };
+  });
+}
+
+function formatEquipmentStats(item) {
+  const parts = [];
+  if (Number(item.attack || 0)) {
+    parts.push(`攻+${Number(item.attack)}`);
+  }
+  if (Number(item.defense || 0)) {
+    parts.push(`防+${Number(item.defense)}`);
+  }
+  if (Number(item.speed || 0)) {
+    parts.push(`速+${Number(item.speed)}`);
+  }
+  if (Number(item.hp_max || 0)) {
+    parts.push(`血+${Number(item.hp_max)}`);
+  }
+  return parts.join(" ") || "无属性";
 }
 
 module.exports = {

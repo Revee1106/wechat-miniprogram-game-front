@@ -1,3 +1,5 @@
+const { formatResourceName } = require("../utils/display-text");
+
 const RESOURCE_DEFS = [
   {
     key: "spirit_stone",
@@ -36,7 +38,7 @@ const RESOURCE_DEFS = [
   {
     key: "ore",
     sourceKeys: ["ore"],
-    label: "灵矿",
+    label: "玄品精华",
     getAmount(run) {
       return Number(((run && run.resources) || {}).ore) || 0;
     },
@@ -47,7 +49,7 @@ const RESOURCE_DEFS = [
   {
     key: "beast_material",
     sourceKeys: ["beast_material"],
-    label: "兽材",
+    label: "妖兽材料",
     getAmount(run) {
       return Number(((run && run.resources) || {}).beast_material) || 0;
     },
@@ -69,7 +71,7 @@ const RESOURCE_DEFS = [
   {
     key: "craft_material",
     sourceKeys: ["craft_material"],
-    label: "杂材",
+    label: "炼器材料",
     getAmount(run) {
       return Number(((run && run.resources) || {}).craft_material) || 0;
     },
@@ -80,7 +82,7 @@ const RESOURCE_DEFS = [
   {
     key: "basic_herb",
     sourceKeys: ["basic_herb"],
-    label: "灵植",
+    label: "基础药草",
     getAmount(run) {
       return getResourceStackAmount(run, "basic_herb");
     },
@@ -91,7 +93,7 @@ const RESOURCE_DEFS = [
   {
     key: "basic_ore",
     sourceKeys: ["basic_ore"],
-    label: "灵矿石",
+    label: "基础矿材",
     getAmount(run) {
       return getResourceStackAmount(run, "basic_ore");
     },
@@ -117,6 +119,7 @@ function buildResourcesDrawerViewModel(snapshot) {
   const resources = run ? run.resources || {} : {};
   const stackAmounts = getResourceStackAmounts(run);
   const alchemyInventoryItems = buildAlchemyInventoryItems(run);
+  const equipmentInventoryItems = buildEquipmentInventoryItems(run);
 
   const definedItems = RESOURCE_DEFS.flatMap((definition) => {
     if (definition.key === "pill" && alchemyInventoryItems.length > 0) {
@@ -126,7 +129,7 @@ function buildResourcesDrawerViewModel(snapshot) {
     return [
       {
         key: definition.key,
-        label: definition.label,
+        label: resolveResourceLabel(definition, run),
         amount: definition.getAmount(run),
         actions: definition.buildActions(),
         conversionRateText: definition.conversionRateText || "",
@@ -142,7 +145,7 @@ function buildResourcesDrawerViewModel(snapshot) {
     .filter((key) => !knownResourceKeys.has(key))
     .map((key) => ({
       key,
-      label: key,
+      label: formatResourceName(key, "", run),
       amount: Number(resources[key]) || 0,
       actions: buildActionSet("sell-resource", "出售"),
     }))
@@ -152,7 +155,7 @@ function buildResourcesDrawerViewModel(snapshot) {
     .filter((key) => !knownResourceKeys.has(key))
     .map((key) => ({
       key,
-      label: key,
+      label: formatResourceName(key, "", run),
       amount: stackAmounts[key],
       actions: buildActionSet("sell-resource", "出售"),
     }))
@@ -160,8 +163,13 @@ function buildResourcesDrawerViewModel(snapshot) {
 
   return {
     title: "行囊",
-    items: [...definedItems, ...extraResourceItems, ...extraStackItems],
+    items: [...definedItems, ...equipmentInventoryItems, ...extraResourceItems, ...extraStackItems],
   };
+}
+
+function resolveResourceLabel(definition, run) {
+  const configuredName = formatResourceName(definition.key, "", run);
+  return configuredName === "资源" ? definition.label : configuredName;
 }
 
 function buildActionSet(action, verb) {
@@ -211,6 +219,53 @@ function buildAlchemyInventoryItems(run) {
       ],
     }))
     .filter((item) => item.amount > 0);
+}
+
+function buildEquipmentInventoryItems(run) {
+  const inventory = run && Array.isArray(run.equipment_inventory) ? run.equipment_inventory : [];
+
+  return inventory.map((item) => {
+    const equipped = item.is_equipped === true;
+    return {
+      key: `equipment:${item.item_id}`,
+      label: item.display_name || item.item_id,
+      tagLabel: `${item.slot_label || "装备"} · ${item.display_name || item.item_id}`,
+      amount: 1,
+      isEquipment: true,
+      isEquipped: equipped,
+      qualityTone: equipped ? "equipped" : "equipment",
+      detailText: buildEquipmentDetailText(item),
+      actions: [
+        {
+          key: `${equipped ? "unequip" : "equip"}:${item.item_id}`,
+          action: equipped ? "unequip-item" : "equip-item",
+          amountMode: "one",
+          label: equipped ? "卸下" : "装备",
+          itemId: item.item_id,
+        },
+      ],
+    };
+  });
+}
+
+function buildEquipmentDetailText(item) {
+  const parts = [`${item.slot_label || "装备"}`];
+  if (Number(item.attack || 0)) {
+    parts.push(`攻击 +${Number(item.attack)}`);
+  }
+  if (Number(item.defense || 0)) {
+    parts.push(`防御 +${Number(item.defense)}`);
+  }
+  if (Number(item.speed || 0)) {
+    parts.push(`速度 +${Number(item.speed)}`);
+  }
+  if (Number(item.hp_max || 0)) {
+    parts.push(`气血上限 +${Number(item.hp_max)}`);
+  }
+  if (item.is_equipped) {
+    parts.push("已穿戴");
+  }
+  return parts.join("，");
 }
 
 function formatQuality(qualityOrItem) {

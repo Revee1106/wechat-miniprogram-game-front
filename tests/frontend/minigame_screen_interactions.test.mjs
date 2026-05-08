@@ -11,15 +11,21 @@ testDrawerOverlayBlocksClickThrough();
 await testAdvanceInsufficientSpiritStoneShowsPenaltyConfirm();
 await testResourcesDrawerSupportsSellAllAndPromptedQuantity();
 await testResourcesDrawerConsumesConcretePill();
+await testResourcesDrawerEquipsAndUnequipsEquipment();
 testMaxLevelDwellingButtonDoesNotOpenConfirm();
 testLockedAlchemyTagIsHidden();
 testDwellingUsesThirdSlotInFirstRow();
 testUnlockedAlchemyUsesFirstSlotInSecondRow();
 testAlchemyRecipeTapSelectsDetailDrawer();
 await testAlchemyRecipeDetailButtonStartsAlchemy();
+await testAlchemyAutoStartContinuesAfterAdvance();
+await testAlchemyAutoStartShowsDialogWhenMaterialShortage();
+testAlchemyMaterialShortageIsRed();
 testEventModalBlocksClickThrough();
 testBattleModalBlocksClickThrough();
 await testBattleActionTapCallsAdapter();
+await testBattlePillPickerChoosesConcretePill();
+testMainStageEquipmentTapShowsDetailDialog();
 testEventModalExpandsWrappedOptionHitRegion();
 testSummaryModalBlocksClickThrough();
 testConfirmModalBlocksClickThrough();
@@ -540,12 +546,299 @@ async function testAlchemyRecipeDetailButtonStartsAlchemy() {
   screen.render(frame);
   screen.handleTouchEnd(createTap(60, 372));
   screen.render(frame);
-  screen.handleTouchEnd(createTap(187, 756));
+  screen.handleTouchEnd(createTap(110, 756));
   await flushAsyncWork();
 
   assert.deepEqual(startAlchemyCalls, [
     { recipeId: "yangqi-pill" },
   ]);
+}
+
+async function testAlchemyAutoStartContinuesAfterAdvance() {
+  const snapshot = {
+    run: {
+      round_index: 2,
+      resources: {
+        spirit_stone: 20,
+      },
+      resource_stacks: [],
+      character: {
+        realm: "qi_refining_early",
+        realm_display_name: "炼气初期",
+        cultivation_exp: 18,
+        lifespan_current: 719,
+        is_dead: false,
+      },
+      current_event: null,
+      dwelling_facilities: [
+        {
+          facility_id: "alchemy_room",
+          display_name: "炼丹房",
+          level: 1,
+        },
+      ],
+      alchemy_state: {
+        mastery_title: "丹道已开",
+        mastery_exp: 0,
+        available_recipes: [
+          {
+            recipe_id: "yangqi-pill",
+            display_name: "养气丹",
+            can_start: true,
+            ingredients: {
+              basic_herb: 2,
+            },
+            effect_type: "cultivation_exp",
+            effect_value: 12,
+            duration_months: 1,
+            base_success_rate: 0.86,
+            required_alchemy_level: 0,
+          },
+        ],
+        inventory: [],
+        active_job: null,
+      },
+    },
+    playerProfile: null,
+    eventHistory: [],
+    dwellingSettlementHistory: [],
+  };
+
+  const startAlchemyCalls = [];
+  const screen = createMainStageScreen({
+    adapter: createAdapter(snapshot, {
+      async startAlchemy(recipeId) {
+        startAlchemyCalls.push({ recipeId });
+        snapshot.run.alchemy_state.active_job = {
+          recipe_id: recipeId,
+          recipe_name: "养气丹",
+          remaining_months: 1,
+        };
+        snapshot.run.alchemy_state.available_recipes[0].can_start = false;
+        snapshot.run.alchemy_state.available_recipes[0].disabled_reason = "当前已有炼制中的炉次。";
+      },
+      async advanceTime() {
+        snapshot.run.round_index += 1;
+        snapshot.run.alchemy_state.active_job = null;
+        snapshot.run.alchemy_state.available_recipes[0].can_start = true;
+        snapshot.run.alchemy_state.available_recipes[0].disabled_reason = "";
+      },
+    }),
+    requestRender() {},
+  });
+  const frame = createFrame();
+  const viewport = createViewportLayout(frame.width, frame.height, { safeArea: null, footerTagRows: 2 });
+  const alchemyTagCenter = getTagCenter(viewport, 1, 0);
+
+  screen.render(frame);
+  screen.handleTouchEnd(createTap(alchemyTagCenter.x, alchemyTagCenter.y));
+  screen.render(frame);
+  screen.handleTouchEnd(createTap(60, 372));
+  screen.render(frame);
+  screen.handleTouchEnd(createTap(285, 756));
+  await flushAsyncWork();
+
+  screen.handleTouchEnd(createTap(10, 100));
+  screen.render(frame);
+  screen.handleTouchEnd(createTap(10, 100));
+  screen.render(frame);
+  screen.handleTouchEnd(
+    createTap(viewport.contentLeft + viewport.contentWidth / 2, viewport.primaryButtonY + viewport.primaryButtonHeight / 2)
+  );
+  await flushAsyncWork();
+
+  assert.deepEqual(startAlchemyCalls, [
+    { recipeId: "yangqi-pill" },
+    { recipeId: "yangqi-pill" },
+  ]);
+}
+
+async function testAlchemyAutoStartShowsDialogWhenMaterialShortage() {
+  const snapshot = {
+    run: {
+      round_index: 2,
+      resources: {
+        spirit_stone: 20,
+      },
+      resource_stacks: [],
+      character: {
+        realm: "qi_refining_early",
+        realm_display_name: "炼气初期",
+        cultivation_exp: 18,
+        lifespan_current: 719,
+        is_dead: false,
+      },
+      current_event: null,
+      dwelling_facilities: [
+        {
+          facility_id: "alchemy_room",
+          display_name: "炼丹房",
+          level: 1,
+        },
+      ],
+      alchemy_state: {
+        mastery_title: "丹道已开",
+        mastery_exp: 0,
+        available_recipes: [
+          {
+            recipe_id: "yangqi-pill",
+            display_name: "养气丹",
+            can_start: true,
+            ingredients: {
+              basic_herb: 2,
+            },
+            effect_type: "cultivation_exp",
+            effect_value: 12,
+            duration_months: 1,
+            base_success_rate: 0.86,
+            required_alchemy_level: 0,
+          },
+        ],
+        inventory: [],
+        active_job: null,
+      },
+    },
+    playerProfile: null,
+    eventHistory: [],
+    dwellingSettlementHistory: [],
+  };
+
+  const startAlchemyCalls = [];
+  const screen = createMainStageScreen({
+    adapter: createAdapter(snapshot, {
+      async startAlchemy(recipeId) {
+        startAlchemyCalls.push({ recipeId });
+        snapshot.run.alchemy_state.active_job = {
+          recipe_id: recipeId,
+          recipe_name: "养气丹",
+          remaining_months: 1,
+        };
+        snapshot.run.alchemy_state.available_recipes[0].can_start = false;
+        snapshot.run.alchemy_state.available_recipes[0].disabled_reason = "当前已有炼制中的炉次。";
+      },
+      async advanceTime() {
+        snapshot.run.round_index += 1;
+        snapshot.run.alchemy_state.active_job = null;
+        snapshot.run.alchemy_state.available_recipes[0].can_start = false;
+        snapshot.run.alchemy_state.available_recipes[0].disabled_reason = "材料不足。";
+      },
+    }),
+    requestRender() {},
+  });
+  const frame = createFrame();
+  const viewport = createViewportLayout(frame.width, frame.height, { safeArea: null, footerTagRows: 2 });
+  const alchemyTagCenter = getTagCenter(viewport, 1, 0);
+
+  screen.render(frame);
+  screen.handleTouchEnd(createTap(alchemyTagCenter.x, alchemyTagCenter.y));
+  screen.render(frame);
+  screen.handleTouchEnd(createTap(60, 372));
+  screen.render(frame);
+  screen.handleTouchEnd(createTap(285, 756));
+  await flushAsyncWork();
+
+  screen.handleTouchEnd(createTap(10, 100));
+  screen.render(frame);
+  screen.handleTouchEnd(createTap(10, 100));
+  screen.render(frame);
+  screen.handleTouchEnd(
+    createTap(viewport.contentLeft + viewport.contentWidth / 2, viewport.primaryButtonY + viewport.primaryButtonHeight / 2)
+  );
+  await flushAsyncWork();
+
+  const renderedTexts = [];
+  screen.render(
+    createFrame({
+      fillText(text) {
+        renderedTexts.push(String(text));
+      },
+    })
+  );
+
+  assert.deepEqual(startAlchemyCalls, [{ recipeId: "yangqi-pill" }]);
+  assert.equal(renderedTexts.includes("材料不足"), true, "auto alchemy should show material shortage dialog");
+  assert.equal(
+    renderedTexts.includes("养气丹 的材料即将不足，自动炼丹已暂停。"),
+    true,
+    "dialog should explain that auto alchemy paused"
+  );
+  assert.equal(renderedTexts.includes("已自动续炉"), false, "auto continuation should not use a toast");
+}
+
+function testAlchemyMaterialShortageIsRed() {
+  const snapshot = {
+    run: {
+      round_index: 2,
+      resources: {
+        spirit_stone: 20,
+      },
+      resource_stacks: [],
+      character: {
+        realm: "qi_refining_early",
+        realm_display_name: "炼气初期",
+        cultivation_exp: 18,
+        lifespan_current: 719,
+        is_dead: false,
+      },
+      current_event: null,
+      dwelling_facilities: [
+        {
+          facility_id: "alchemy_room",
+          display_name: "炼丹房",
+          level: 1,
+        },
+      ],
+      alchemy_state: {
+        mastery_title: "丹道已开",
+        mastery_exp: 0,
+        available_recipes: [
+          {
+            recipe_id: "yangqi-pill",
+            display_name: "养气丹",
+            can_start: false,
+            disabled_reason: "材料不足。",
+            ingredients: {
+              basic_herb: 2,
+            },
+            effect_type: "cultivation_exp",
+            effect_value: 12,
+            duration_months: 1,
+            base_success_rate: 0.86,
+            required_alchemy_level: 0,
+          },
+        ],
+        inventory: [],
+      },
+    },
+    playerProfile: null,
+    eventHistory: [],
+    dwellingSettlementHistory: [],
+  };
+
+  const drawnText = [];
+  const screen = createMainStageScreen({
+    adapter: createAdapter(snapshot),
+    requestRender() {},
+  });
+  const frame = createFrame();
+  const viewport = createViewportLayout(frame.width, frame.height, { safeArea: null, footerTagRows: 2 });
+  const alchemyTagCenter = getTagCenter(viewport, 1, 0);
+
+  screen.render(frame);
+  screen.handleTouchEnd(createTap(alchemyTagCenter.x, alchemyTagCenter.y));
+  screen.render(frame);
+  screen.handleTouchEnd(createTap(60, 372));
+  screen.render(
+    createFrame({
+      fillText(text) {
+        drawnText.push({ text: String(text), fillStyle: this.fillStyle });
+      },
+    })
+  );
+
+  const shortageText = drawnText.find((item) => item.text === "材料不足");
+  assert.ok(shortageText, "material shortage text should be rendered without punctuation");
+  assert.equal(shortageText.fillStyle, "#b44a3b");
 }
 
 function testEventModalBlocksClickThrough() {
@@ -723,6 +1016,184 @@ async function testBattleActionTapCallsAdapter() {
   await flushAsyncWork();
 
   assert.deepEqual(actions, ["attack"]);
+}
+
+async function testBattlePillPickerChoosesConcretePill() {
+  const snapshot = {
+    run: {
+      round_index: 1,
+      resources: {
+        spirit_stone: 12,
+      },
+      character: {
+        realm: "qi_refining_early",
+        realm_display_name: "炼气初期",
+        cultivation_exp: 8,
+        lifespan_current: 719,
+        is_dead: false,
+      },
+      alchemy_state: {
+        inventory: [
+          {
+            item_id: "yang_yuan_dan",
+            display_name: "养元丹",
+            quality: "low",
+            quality_label: "下品",
+            amount: 1,
+            effect_type: "hp_restore",
+            effect_value: 25,
+            usable_in_battle: true,
+          },
+          {
+            item_id: "yang_qi_dan",
+            display_name: "养气丹",
+            quality: "low",
+            quality_label: "下品",
+            amount: 1,
+            effect_type: "cultivation_exp",
+            effect_value: 12,
+            usable_in_battle: false,
+          },
+        ],
+      },
+      current_event: {
+        event_name: "山门异闻",
+        body_text: "前方传来新的消息。",
+        options: [],
+      },
+      active_battle: {
+        round_index: 1,
+        allow_flee: true,
+        pill_count: 1,
+        player: {
+          realm_label: "炼气初期",
+          hp_current: 12,
+          hp_max: 20,
+          attack: 5,
+          defense: 2,
+          speed: 3,
+        },
+        enemy: {
+          name: "山匪",
+          realm_label: "炼气初期",
+          hp_current: 12,
+          hp_max: 12,
+          attack: 3,
+          defense: 1,
+          speed: 2,
+        },
+        log_lines: ["battle started"],
+      },
+    },
+    playerProfile: null,
+    eventHistory: [],
+    dwellingSettlementHistory: [],
+  };
+
+  const actions = [];
+  const screen = createMainStageScreen({
+    adapter: createAdapter(snapshot, {
+      async performBattleAction(action) {
+        actions.push(action);
+      },
+    }),
+    requestRender() {},
+  });
+  const frame = createFrame();
+
+  screen.render(frame);
+  screen.handleTouchEnd(createTap(110, 485));
+
+  const renderedTexts = [];
+  const renderedTextPositions = [];
+  screen.render(
+    createFrame({
+      fillText(text, x, y) {
+        renderedTexts.push(String(text));
+        renderedTextPositions.push({ text: String(text), x, y });
+      },
+    })
+  );
+  screen.handleTouchEnd(createTap(110, 460));
+  await flushAsyncWork();
+
+  assert.equal(renderedTexts.includes("选择战斗丹药"), true, "use pill should open the pill picker");
+  assert.equal(renderedTexts.includes("下品 · 养元丹 x1"), true, "picker should show battle-usable pill");
+  assert.equal(renderedTexts.includes("下品 · 养气丹 x1"), false, "picker should hide non-battle pills");
+  const backButtonText = renderedTextPositions.find((item) => item.text === "返回");
+  assert.ok(backButtonText && backButtonText.y <= 432, "small back button text should stay inside the button");
+  assert.deepEqual(actions, [
+    {
+      action: "use_pill",
+      itemId: "yang_yuan_dan",
+      quality: "low",
+    },
+  ]);
+}
+
+function testMainStageEquipmentTapShowsDetailDialog() {
+  const snapshot = {
+    run: {
+      round_index: 1,
+      resources: {
+        spirit_stone: 12,
+      },
+      character: {
+        realm: "qi_refining_early",
+        realm_display_name: "炼气初期",
+        cultivation_exp: 8,
+        lifespan_current: 719,
+        hp_current: 20,
+        hp_max: 20,
+        attack: 8,
+        defense: 3,
+        speed: 7,
+        is_dead: false,
+        equipped_items: {
+          weapon: "iron_sword",
+        },
+      },
+      equipment_inventory: [
+        {
+          item_id: "iron_sword",
+          display_name: "Iron Sword",
+          slot: "weapon",
+          slot_label: "武器",
+          attack: 4,
+          defense: 0,
+          speed: 1,
+          hp_max: 0,
+          description: "武器，攻击 +4，速度 +1",
+          is_equipped: true,
+        },
+      ],
+      current_event: null,
+      active_battle: null,
+    },
+    playerProfile: null,
+    eventHistory: [],
+    dwellingSettlementHistory: [],
+  };
+
+  const screen = createMainStageScreen({
+    adapter: createAdapter(snapshot),
+    requestRender() {},
+  });
+  const frame = createFrame();
+
+  screen.render(frame);
+  screen.handleTouchEnd(createTap(96, 230));
+
+  const renderedTexts = [];
+  screen.render(
+    createFrame({
+      fillText(text) {
+        renderedTexts.push(String(text));
+      },
+    })
+  );
+
+  assert.equal(renderedTexts.includes("攻击 +4"), true, "tapping equipped item should show equipment detail dialog");
 }
 
 function testEventModalExpandsWrappedOptionHitRegion() {
@@ -1140,6 +1611,96 @@ async function testResourcesDrawerConsumesConcretePill() {
   assert.deepEqual(consumeCalls, [{ itemId: "yang_qi_dan", quality: "low" }]);
 }
 
+async function testResourcesDrawerEquipsAndUnequipsEquipment() {
+  const snapshot = {
+    run: {
+      round_index: 3,
+      resources: {
+        spirit_stone: 0,
+        herbs: 0,
+        iron_essence: 0,
+        ore: 0,
+        beast_material: 0,
+        pill: 0,
+        craft_material: 0,
+      },
+      resource_stacks: [],
+      equipment_inventory: [
+        {
+          item_id: "iron_sword",
+          display_name: "Iron Sword",
+          slot: "weapon",
+          slot_label: "武器",
+          attack: 4,
+          defense: 0,
+          speed: 1,
+          hp_max: 0,
+          description: "武器，攻击 +4，速度 +1",
+          is_equipped: true,
+        },
+        {
+          item_id: "cloth_armor",
+          display_name: "Cloth Armor",
+          slot: "armor",
+          slot_label: "防具",
+          attack: 0,
+          defense: 3,
+          speed: 0,
+          hp_max: 8,
+          description: "防具，防御 +3，气血上限 +8",
+          is_equipped: false,
+        },
+      ],
+      character: {
+        realm: "qi_refining_early",
+        realm_display_name: "炼气初期",
+        cultivation_exp: 37,
+        lifespan_current: 717,
+        is_dead: false,
+      },
+      current_event: null,
+    },
+    playerProfile: null,
+    eventHistory: [],
+    dwellingSettlementHistory: [],
+  };
+
+  const calls = [];
+  const screen = createMainStageScreen({
+    adapter: createAdapter(snapshot, {
+      async unequipItem(itemId) {
+        calls.push({ action: "unequip", itemId });
+      },
+      async equipItem(itemId) {
+        calls.push({ action: "equip", itemId });
+      },
+    }),
+    requestRender() {},
+  });
+  const frame = createFrame();
+  const viewport = createViewportLayout(frame.width, frame.height, { safeArea: null });
+
+  screen.render(frame);
+  screen.handleTouchEnd(createTap(viewport.contentLeft + 24, viewport.footerTop + 32));
+  screen.render(frame);
+  screen.handleTouchEnd(createTap(100, 368));
+  screen.render(frame);
+  screen.handleTouchEnd(createTap(187, 745));
+  await flushAsyncWork();
+
+  screen.handleTouchEnd(createTap(10, 10));
+  screen.render(frame);
+  screen.handleTouchEnd(createTap(260, 368));
+  screen.render(frame);
+  screen.handleTouchEnd(createTap(187, 745));
+  await flushAsyncWork();
+
+  assert.deepEqual(calls, [
+    { action: "unequip", itemId: "iron_sword" },
+    { action: "equip", itemId: "cloth_armor" },
+  ]);
+}
+
 function createAdapter(snapshot, overrides = {}) {
   return {
     getSnapshot() {
@@ -1154,6 +1715,8 @@ function createAdapter(snapshot, overrides = {}) {
     async convertSpiritStoneToCultivation() {},
     async buildDwellingFacility() {},
     async upgradeDwellingFacility() {},
+    async equipItem() {},
+    async unequipItem() {},
     async startAlchemy() {},
     async consumeAlchemyItem() {},
     async rebirth() {},

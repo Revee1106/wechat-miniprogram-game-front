@@ -47,12 +47,38 @@ const snapshot = {
         },
       ],
     },
+    equipment_inventory: [
+      {
+        item_id: "iron_sword",
+        display_name: "Iron Sword",
+        slot: "weapon",
+        slot_label: "武器",
+        attack: 4,
+        defense: 0,
+        speed: 1,
+        hp_max: 0,
+        description: "武器，攻击 +4，速度 +1",
+        is_equipped: true,
+      },
+      {
+        item_id: "cloth_armor",
+        display_name: "Cloth Armor",
+        slot: "armor",
+        slot_label: "防具",
+        attack: 0,
+        defense: 3,
+        speed: 0,
+        hp_max: 8,
+        description: "防具，防御 +3，气血上限 +8",
+        is_equipped: false,
+      },
+    ],
   },
 };
 
 const resourcesViewModel = buildResourcesDrawerViewModel(snapshot);
 assert.equal(resourcesViewModel.title, "行囊");
-assert.equal(resourcesViewModel.items.length, 9);
+assert.equal(resourcesViewModel.items.length, 11);
 assert.equal(resourcesViewModel.items[0].key, "spirit_stone");
 assert.equal(resourcesViewModel.items[0].label, "灵石");
 assert.equal(resourcesViewModel.items[0].conversionRateText, "1 灵石 = 3 修为");
@@ -64,8 +90,8 @@ assert.equal(resourcesViewModel.items[1].label, "药草");
 assert.equal(resourcesViewModel.items[1].actions[0].label, "出售一份");
 assert.equal(resourcesViewModel.items[1].actions[1].label, "全部出售");
 assert.equal(resourcesViewModel.items[1].actions[2].label, "输入数量出售");
-assert.equal(resourcesViewModel.items[3].label, "灵矿");
-assert.equal(resourcesViewModel.items[4].label, "兽材");
+assert.equal(resourcesViewModel.items[3].label, "玄铁精华");
+assert.equal(resourcesViewModel.items[4].label, "妖兽材料");
 assert.equal(resourcesViewModel.items[5].label, "养气丹");
 assert.equal(resourcesViewModel.items[5].key, "alchemy_item:yang_qi_dan:mid");
 assert.equal(resourcesViewModel.items[5].tagLabel, "中品 · 养气丹");
@@ -73,11 +99,16 @@ assert.equal(resourcesViewModel.items[5].qualityTone, "green");
 assert.equal(resourcesViewModel.items[5].detailText, "中品，服用后提升 15 点修为");
 assert.equal(resourcesViewModel.items[5].actions[0].action, "consume-alchemy-item");
 assert.equal(resourcesViewModel.items[5].actions[0].label, "服用一枚");
-assert.equal(resourcesViewModel.items[6].label, "杂材");
+assert.equal(resourcesViewModel.items[6].label, "炼器材料");
 assert.equal(resourcesViewModel.items[7].key, "basic_herb");
 assert.equal(resourcesViewModel.items[7].amount, 4);
 assert.equal(resourcesViewModel.items[8].key, "spirit_spring_water");
 assert.equal(resourcesViewModel.items[8].amount, 2);
+assert.equal(resourcesViewModel.items[9].key, "equipment:iron_sword");
+assert.equal(resourcesViewModel.items[9].isEquipped, true);
+assert.equal(resourcesViewModel.items[9].qualityTone, "equipped");
+assert.equal(resourcesViewModel.items[9].actions[0].action, "unequip-item");
+assert.equal(resourcesViewModel.items[10].actions[0].action, "equip-item");
 
 const filteredResourcesViewModel = buildResourcesDrawerViewModel({
   run: {

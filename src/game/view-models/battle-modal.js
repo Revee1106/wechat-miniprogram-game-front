@@ -9,6 +9,8 @@ function buildBattleModalViewModel(snapshot) {
 
   const player = battle.player || {};
   const enemy = battle.enemy || {};
+  const battlePillOptions = buildBattlePillOptions(run);
+  const battlePillCount = battlePillOptions.reduce((sum, item) => sum + item.amount, 0);
 
   return {
     title: enemy.name ? `遭遇 ${enemy.name}` : "模拟战斗",
@@ -40,8 +42,8 @@ function buildBattleModalViewModel(snapshot) {
       { action: "defend", label: "防御" },
       {
         action: "use_pill",
-        label: `服丹 (${Math.max(0, Number(battle.pill_count) || 0)})`,
-        disabled: (Number(battle.pill_count) || 0) <= 0,
+        label: `服丹 (${battlePillCount})`,
+        disabled: battlePillCount <= 0,
       },
       {
         action: "flee",
@@ -49,7 +51,65 @@ function buildBattleModalViewModel(snapshot) {
         disabled: battle.allow_flee === false,
       },
     ],
+    battlePillOptions,
   };
+}
+
+function buildBattlePillOptions(run) {
+  const inventory =
+    run && run.alchemy_state && Array.isArray(run.alchemy_state.inventory)
+      ? run.alchemy_state.inventory
+      : [];
+
+  return inventory
+    .filter((item) => Number(item.amount || 0) > 0)
+    .filter((item) => item.usable_in_battle === true && item.effect_type === "hp_restore")
+    .map((item) => {
+      const amount = Math.max(0, Number(item.amount) || 0);
+      const healAmount = Math.max(
+        0,
+        Math.trunc(Number(item.effect_value || 0) * getQualityMultiplier(item))
+      );
+      const qualityLabel = formatQuality(item);
+      const displayName = item.display_name || item.item_id || "丹药";
+      return {
+        key: `${item.item_id}:${item.quality}`,
+        itemId: item.item_id,
+        quality: item.quality,
+        label: `${qualityLabel} · ${displayName} x${amount}`,
+        detail: healAmount > 0 ? `恢复 ${healAmount} 点气血` : item.effect_summary || "恢复气血",
+        amount,
+        action: {
+          action: "use_pill",
+          itemId: item.item_id,
+          quality: item.quality,
+        },
+      };
+    });
+}
+
+function formatQuality(item) {
+  if (item && item.quality_label) {
+    return item.quality_label;
+  }
+  return {
+    low: "下品",
+    mid: "中品",
+    high: "上品",
+    supreme: "极品",
+  }[item && item.quality] || "未知品质";
+}
+
+function getQualityMultiplier(item) {
+  if (Number(item && item.effect_multiplier) > 0) {
+    return Number(item.effect_multiplier);
+  }
+  return {
+    low: 1,
+    mid: 1.25,
+    high: 1.5,
+    supreme: 2,
+  }[item && item.quality] || 1;
 }
 
 module.exports = {
