@@ -56,8 +56,8 @@ async function startAlchemy(recipeId) {
   return store.startAlchemy(recipeId);
 }
 
-async function consumeAlchemyItem(itemId, quality) {
-  return store.consumeAlchemyItem(itemId, quality);
+async function consumeAlchemyItem(itemId, quality, amount = 1) {
+  return store.consumeAlchemyItem(itemId, quality, amount);
 }
 
 async function rebirth() {

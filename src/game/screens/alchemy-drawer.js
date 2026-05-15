@@ -113,7 +113,7 @@ function drawRecipeDetail(context, rect, selectedRecipe, registerHitRegion, acti
   const detailLines = wrapDetailLines(context, [
     `作用: ${selectedRecipe.effectSummary}`,
     `材料: ${selectedRecipe.ingredientsText}`,
-    `炼制: ${selectedRecipe.durationText}, 基础评分 ${selectedRecipe.successRateText}`,
+    `炼制: ${selectedRecipe.durationText}`,
     selectedRecipe.qualityChanceText ? `品级: ${selectedRecipe.qualityChanceText}` : "",
     `要求: ${selectedRecipe.requiredText}`,
     selectedRecipe.disabledReason && !selectedRecipe.isMaterialShortage ? `状态: ${selectedRecipe.disabledReason}` : "",

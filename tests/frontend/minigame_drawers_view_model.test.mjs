@@ -99,6 +99,8 @@ assert.equal(resourcesViewModel.items[5].qualityTone, "green");
 assert.equal(resourcesViewModel.items[5].detailText, "中品，服用后提升 15 点修为");
 assert.equal(resourcesViewModel.items[5].actions[0].action, "consume-alchemy-item");
 assert.equal(resourcesViewModel.items[5].actions[0].label, "服用一枚");
+assert.equal(resourcesViewModel.items[5].actions[1].label, "服用全部");
+assert.equal(resourcesViewModel.items[5].actions[2].label, "输入数量服用");
 assert.equal(resourcesViewModel.items[6].label, "炼器材料");
 assert.equal(resourcesViewModel.items[7].key, "basic_herb");
 assert.equal(resourcesViewModel.items[7].amount, 4);

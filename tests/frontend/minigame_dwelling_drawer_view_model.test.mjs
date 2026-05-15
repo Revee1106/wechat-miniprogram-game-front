@@ -111,6 +111,9 @@ const insufficientSnapshot = {
 const insufficientViewModel = buildDwellingDrawerViewModel(insufficientSnapshot);
 assert.equal(insufficientViewModel.facilityCards[0].nextUpgradeCostSpiritStone, 45);
 assert.equal(insufficientViewModel.facilityCards[0].canAfford, false);
+assert.equal(insufficientViewModel.facilityCards[0].action.disabled, true);
+assert.equal(insufficientViewModel.facilityCards[0].action.label, "资源不足");
+assert.equal(insufficientViewModel.facilityCards[0].disabledReason, "资源不足");
 
 const maxLevelSnapshot = {
   run: {

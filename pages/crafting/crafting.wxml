@@ -48,7 +48,7 @@
             data-recipe-id="{{item.recipe_id}}"
             bindtap="openRecipeSheet"
           >
-            <view class="recipe-tag-title">{{item.display_name}}</view>
+            <view class="recipe-tag-title">{{item.displayTitle}}</view>
             <view class="recipe-tag-meta">{{item.can_start ? "可开炉" : "已学丹方"}}</view>
           </view>
         </view>
@@ -127,7 +127,7 @@
     <view class="recipe-sheet-head">
       <view>
         <view class="scroll-kicker">丹方详情</view>
-        <view class="recipe-sheet-title">{{selectedRecipeCard.display_name}}</view>
+        <view class="recipe-sheet-title">{{selectedRecipeCard.displayTitle}}</view>
       </view>
       <button class="ghost-button recipe-sheet-close" bindtap="closeRecipeSheet">收起</button>
     </view>
@@ -140,7 +140,7 @@
       <view class="recipe-sheet-block">
         <view class="recipe-sheet-label">炼制信息</view>
         <view class="recipe-sheet-copy">
-          耗时 {{selectedRecipeCard.duration_months}} 月 / 基础成功率 {{selectedRecipeCard.base_success_rate}}
+          耗时 {{selectedRecipeCard.duration_months}} 月
         </view>
       </view>
       <view class="recipe-sheet-block">

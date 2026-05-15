@@ -170,6 +170,7 @@ function normalizeAlchemyState(alchemyState) {
     ...alchemyState,
     available_recipes: (alchemyState.available_recipes || []).map((item) => ({
       ...item,
+      displayTitle: `${item.display_name} · 熟练度 ${Number(item.recipe_mastery_exp || 0)}`,
       ingredientsText: buildIngredientsText(item.ingredients || {}),
     })),
     inventory: (alchemyState.inventory || []).map((item) => ({

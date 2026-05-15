@@ -29,6 +29,7 @@ const snapshot = {
           duration_months: 2,
           base_success_rate: 0.8,
           current_success_rate: 0.88,
+          recipe_mastery_exp: 12,
           quality_chances: [
             { quality: "low", display_name: "下品", chance: 0.7 },
             { quality: "mid", display_name: "中品", chance: 0.25 },
@@ -79,6 +80,8 @@ assert.equal(viewModel.recipeCards[0].ingredientsText, "基础灵草 x2 / 灵石
 assert.equal(viewModel.recipeCards[0].effectSummary, "服用后提升 12 点修为");
 assert.equal(viewModel.recipeCards[0].durationText, "2 月");
 assert.equal(viewModel.recipeCards[0].successRateText, "88%");
+assert.equal(viewModel.recipeCards[0].recipeMasteryExp, 12);
+assert.match(viewModel.recipeCards[0].title, /熟练度 12/);
 assert.equal(viewModel.recipeCards[0].qualityChanceText, "下品: 70% / 中品: 25% / 上品: 5% / 极品: 0%");
 assert.equal(viewModel.recipeCards[1].effectSummary, "服用后恢复 25 点气血");
 assert.equal(viewModel.recipeCards[0].action.action, "start-alchemy");

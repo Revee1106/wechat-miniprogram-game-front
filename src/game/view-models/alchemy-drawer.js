@@ -8,7 +8,9 @@ function buildAlchemyDrawerViewModel(snapshot) {
 
   const recipeCards = (alchemyState.available_recipes || []).map((recipe) => ({
     id: recipe.recipe_id,
-    title: recipe.display_name,
+    title: `${recipe.display_name} · 熟练度 ${Number(recipe.recipe_mastery_exp || 0)}`,
+    displayName: recipe.display_name,
+    recipeMasteryExp: Number(recipe.recipe_mastery_exp || 0),
     description: recipe.description || "",
     effectSummary: buildRecipeEffectText(recipe),
     canStart: recipe.can_start === true,

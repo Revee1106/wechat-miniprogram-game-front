@@ -101,6 +101,10 @@ const resourcesDrawerSource = readFileSync(
 assert.match(resourcesDrawerSource, /selectedResourceKey/);
 assert.match(resourcesDrawerSource, /onSelectResource/);
 assert.match(resourcesDrawerSource, /Math\.ceil/);
+assert.match(resourcesDrawerSource, /drawDetailSheet/);
+assert.match(resourcesDrawerSource, /sheetHeight = 236/);
+assert.match(resourcesDrawerSource, /onCloseResourceDetail/);
+assert.match(resourcesDrawerSource, /bronzeSoft/);
 assert.doesNotMatch(resourcesDrawerSource, /const detailTop = drawerY \+ 176/);
 
 const dwellingDrawerSource = readFileSync(

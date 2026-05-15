@@ -91,23 +91,31 @@
     <view class="facility-sheet-actions">
       <button
         wx:if="{{selectedFacilityCard.actionType === 'build'}}"
-        class="primary-button"
+        class="primary-button {{selectedFacilityCard.actionDisabled ? 'is-disabled' : ''}}"
         data-facility-id="{{selectedFacilityCard.facility_id}}"
         bindtap="buildFacility"
         loading="{{loadingFacilityId === selectedFacilityCard.facility_id}}"
+        disabled="{{selectedFacilityCard.actionDisabled}}"
       >
         建造
       </button>
       <button
         wx:elif="{{selectedFacilityCard.actionType === 'upgrade'}}"
-        class="primary-button"
+        class="primary-button {{selectedFacilityCard.actionDisabled ? 'is-disabled' : ''}}"
         data-facility-id="{{selectedFacilityCard.facility_id}}"
         bindtap="upgradeFacility"
         loading="{{loadingFacilityId === selectedFacilityCard.facility_id}}"
+        disabled="{{selectedFacilityCard.actionDisabled}}"
       >
         升级
       </button>
       <view wx:else class="status-note sheet-static-note">已达当前版本最高等级</view>
+      <view
+        wx:if="{{selectedFacilityCard.actionType !== 'none' && selectedFacilityCard.actionDisabled && selectedFacilityCard.disabledReason && selectedFacilityCard.disabledReason !== '已建造'}}"
+        class="status-note sheet-action-note"
+      >
+        {{selectedFacilityCard.disabledReason}}
+      </view>
     </view>
   </view>
 </view>

@@ -6,6 +6,7 @@ const { createMainStageScreen } = require("../../src/game/screens/main-stage-scr
 const { createViewportLayout } = require("../../src/game/core/layout.js");
 const { drawEventModal } = require("../../src/game/screens/event-modal.js");
 const { drawConfirmModal } = require("../../src/game/screens/confirm-modal.js");
+const { drawScrollCard } = require("../../src/game/ui/scroll-card.js");
 
 testDrawerOverlayBlocksClickThrough();
 await testAdvanceInsufficientSpiritStoneShowsPenaltyConfirm();
@@ -27,10 +28,12 @@ await testBattleActionTapCallsAdapter();
 await testBattlePillPickerChoosesConcretePill();
 testMainStageEquipmentTapShowsDetailDialog();
 testEventModalExpandsWrappedOptionHitRegion();
+testScrollCardWrapsLongLogLines();
 testSummaryModalBlocksClickThrough();
 testConfirmModalBlocksClickThrough();
 testConfirmModalWrapsLongBodyLines();
 await testEventResolutionDoesNotShowToast();
+await testEventUnlockShowsNoticeDialog();
 
 function testDrawerOverlayBlocksClickThrough() {
   const snapshot = {
@@ -1239,6 +1242,55 @@ function testEventModalExpandsWrappedOptionHitRegion() {
   );
 }
 
+function testScrollCardWrapsLongLogLines() {
+  const drawnTexts = [];
+  const context = createFakeContext({
+    fillText(text, x, y) {
+      drawnTexts.push({ text: String(text), x, y, font: this.font });
+    },
+    measureText(text) {
+      return { width: String(text || "").length * 8 };
+    },
+  });
+  const longLine = "你跟着残页推演许久，终于理清其中关窍。你学会了阴阳丹丹方，并记下火候变化。";
+
+  drawScrollCard(context, { x: 20, y: 20, width: 280, height: 500 }, {
+    summaryRows: [],
+    equipmentSlots: [],
+    logTitle: "日志",
+    logEntries: [
+      {
+        id: "event-1",
+        title: "残炉余香",
+        detailLines: [longLine],
+      },
+    ],
+  });
+
+  const detailTexts = drawnTexts
+    .filter((item) => item.y >= 360 && item.text !== "残炉余香")
+    .map((item) => item.text);
+  assert.ok(detailTexts.length > 1, "long log detail should wrap onto multiple rows");
+  assert.equal(detailTexts.includes(longLine), false, "full overflowing log detail should not be drawn as one line");
+
+  drawnTexts.length = 0;
+  drawScrollCard(context, { x: 20, y: 20, width: 320, height: 500 }, {
+    summaryRows: [],
+    equipmentSlots: [],
+    logTitle: "日志",
+    logEntries: [
+      {
+        id: "event-2",
+        title: "残炉余香",
+        detailLines: ["你学会了阴阳丹丹方。"],
+        highlightedLines: ["你学会了阴阳丹丹方。"],
+      },
+    ],
+  });
+  const highlightedText = drawnTexts.find((item) => item.text === "你学会了阴阳丹丹方。");
+  assert.match(highlightedText.font, /bold/, "unlock log line should be drawn in bold");
+}
+
 function testSummaryModalBlocksClickThrough() {
   const snapshot = {
     run: {
@@ -1457,6 +1509,74 @@ async function testEventResolutionDoesNotShowToast() {
   assert.equal(renderedTexts.includes("事件已结算"), false, "resolving an event should not show a settlement toast");
 }
 
+async function testEventUnlockShowsNoticeDialog() {
+  const snapshot = {
+    run: {
+      round_index: 1,
+      resources: {
+        spirit_stone: 12,
+      },
+      character: {
+        realm: "qi_refining_early",
+        realm_display_name: "炼气初期",
+        cultivation_exp: 8,
+        lifespan_current: 719,
+        is_dead: false,
+      },
+      current_event: {
+        event_name: "残炉余香",
+        body_text: "炉灰里仍有一线药香。",
+        options: [
+          {
+            option_id: "observe",
+            title_text: "辨认残香",
+            is_available: true,
+          },
+        ],
+      },
+      result_summary: "",
+    },
+    playerProfile: null,
+    eventHistory: [],
+    dwellingSettlementHistory: [],
+  };
+
+  const screen = createMainStageScreen({
+    adapter: createAdapter(snapshot, {
+      async resolveEvent() {
+        snapshot.run.current_event = null;
+        snapshot.run.result_summary = "你学会了阴阳丹丹方。";
+        snapshot.eventHistory = [
+          {
+            historyKey: "history-1",
+            eventName: "残炉余香",
+            impactLines: ["你学会了阴阳丹丹方。"],
+            highlightedLines: ["你学会了阴阳丹丹方。"],
+          },
+        ];
+        return snapshot;
+      },
+    }),
+    requestRender() {},
+  });
+  const frame = createFrame();
+
+  screen.render(frame);
+  screen.handleTouchEnd(createTap(187.5, 370));
+  await flushAsyncWork();
+
+  const renderedTexts = [];
+  const verifyFrame = createFrame({
+    fillText(text) {
+      renderedTexts.push(String(text));
+    },
+  });
+  screen.render(verifyFrame);
+
+  assert.equal(renderedTexts.includes("有所领悟"), true, "unlocking a recipe should show a notice dialog");
+  assert.equal(renderedTexts.includes("你学会了阴阳丹丹方。"), true, "notice dialog should show the unlocked recipe");
+}
+
 async function testResourcesDrawerSupportsSellAllAndPromptedQuantity() {
   const snapshot = {
     run: {
@@ -1517,14 +1637,14 @@ async function testResourcesDrawerSupportsSellAllAndPromptedQuantity() {
     screen.render(frame);
     screen.handleTouchEnd(createTap(viewport.contentLeft + 24, viewport.footerTop + 32));
     screen.render(frame);
-    screen.handleTouchEnd(createTap(78, 422));
+    screen.handleTouchEnd(createTap(100, 420));
     screen.render(frame);
-    screen.handleTouchEnd(createTap(280, 698));
+    screen.handleTouchEnd(createTap(280, 713));
     await flushAsyncWork();
     screen.render(frame);
     screen.handleTouchEnd(createTap(10, 10));
     screen.render(frame);
-    screen.handleTouchEnd(createTap(100, 740));
+    screen.handleTouchEnd(createTap(100, 755));
     await flushAsyncWork();
 
     assert.deepEqual(saleCalls, [
@@ -1582,8 +1702,8 @@ async function testResourcesDrawerConsumesConcretePill() {
   const consumeCalls = [];
   const screen = createMainStageScreen({
     adapter: createAdapter(snapshot, {
-      async consumeAlchemyItem(itemId, quality) {
-        consumeCalls.push({ itemId, quality });
+      async consumeAlchemyItem(itemId, quality, amount) {
+        consumeCalls.push({ itemId, quality, amount });
       },
     }),
     requestRender() {},
@@ -1604,11 +1724,11 @@ async function testResourcesDrawerConsumesConcretePill() {
       },
     })
   );
-  screen.handleTouchEnd(createTap(187, 745));
+  screen.handleTouchEnd(createTap(100, 713));
   await flushAsyncWork();
 
   assert.equal(renderedTexts.includes("下品 · 养气丹 1"), true, "inventory should show pill quality and name");
-  assert.deepEqual(consumeCalls, [{ itemId: "yang_qi_dan", quality: "low" }]);
+  assert.deepEqual(consumeCalls, [{ itemId: "yang_qi_dan", quality: "low", amount: 1 }]);
 }
 
 async function testResourcesDrawerEquipsAndUnequipsEquipment() {
@@ -1685,14 +1805,16 @@ async function testResourcesDrawerEquipsAndUnequipsEquipment() {
   screen.render(frame);
   screen.handleTouchEnd(createTap(100, 368));
   screen.render(frame);
-  screen.handleTouchEnd(createTap(187, 745));
+  screen.handleTouchEnd(createTap(187, 755));
   await flushAsyncWork();
 
   screen.handleTouchEnd(createTap(10, 10));
   screen.render(frame);
+  screen.handleTouchEnd(createTap(10, 300));
+  screen.render(frame);
   screen.handleTouchEnd(createTap(260, 368));
   screen.render(frame);
-  screen.handleTouchEnd(createTap(187, 745));
+  screen.handleTouchEnd(createTap(187, 755));
   await flushAsyncWork();
 
   assert.deepEqual(calls, [

@@ -12,11 +12,6 @@ function drawResourcesDrawer(context, layout, viewModel, registerHitRegion, acti
   const selectedResourceKey = actions.selectedResourceKey || "";
   const selectedItem = viewModel.items.find((item) => item.key === selectedResourceKey) || null;
   const chipStartY = drawerY + 72;
-  const chipRowHeight = 52;
-  const chipRows = Math.ceil(viewModel.items.length / 2);
-  const chipAreaBottom = chipStartY + chipRows * chipRowHeight;
-  const detailTop = chipAreaBottom + 18;
-  const detailHeight = Math.max(204, height - safeBottom - detailTop - 32);
 
   context.fillStyle = themeTokens.color.overlay;
   context.fillRect(0, 0, width, height);
@@ -29,18 +24,9 @@ function drawResourcesDrawer(context, layout, viewModel, registerHitRegion, acti
 
   drawResourceTags(context, width, chipStartY, viewModel.items, selectedResourceKey, registerHitRegion, actions);
 
-  drawDetailCard(
-    context,
-    {
-      x: 20,
-      y: detailTop,
-      width: width - 40,
-      height: detailHeight,
-    },
-    selectedItem,
-    registerHitRegion,
-    actions
-  );
+  if (selectedItem) {
+    drawDetailSheet(context, { width, height, safeBottom, drawerY }, selectedItem, registerHitRegion, actions);
+  }
 }
 
 function drawResourceTags(context, width, startY, items, selectedResourceKey, registerHitRegion, actions) {
@@ -112,18 +98,42 @@ function getItemTone(item, active) {
   };
 }
 
-function drawDetailCard(context, rect, selectedItem, registerHitRegion, actions) {
-  fillRoundedRect(context, rect.x, rect.y, rect.width, rect.height, 20, "#f3e6cf");
+function drawDetailSheet(context, layout, selectedItem, registerHitRegion, actions) {
+  const sheetHeight = 236;
+  const bottomInset = Math.max(14, Number(layout.safeBottom || 0) + 14);
+  const sheetY = Math.max(layout.drawerY + 86, layout.height - bottomInset - sheetHeight);
+  const rect = {
+    x: 16,
+    y: sheetY,
+    width: layout.width - 32,
+    height: layout.height - bottomInset - sheetY,
+  };
+
+  registerHitRegion({
+    x: 0,
+    y: layout.drawerY,
+    width: layout.width,
+    height: Math.max(0, sheetY - layout.drawerY),
+    onTap: () => actions.onCloseResourceDetail && actions.onCloseResourceDetail(),
+  });
+
+  context.fillStyle = "rgba(33, 25, 17, 0.2)";
+  context.fillRect(0, layout.drawerY, layout.width, Math.max(0, sheetY - layout.drawerY));
+
+  fillRoundedRect(context, rect.x, rect.y, rect.width, rect.height, 24, "#f3e6cf");
+  context.strokeStyle = themeTokens.color.bronzeSoft;
+  context.lineWidth = 2;
+  strokeRoundedRect(context, rect.x + 1, rect.y + 1, rect.width - 2, rect.height - 2, 23);
+
+  context.fillStyle = "rgba(89, 66, 43, 0.18)";
+  fillRoundedRect(context, rect.x + rect.width / 2 - 38, rect.y + 12, 76, 7, 999, "rgba(89, 66, 43, 0.18)");
+
   context.fillStyle = themeTokens.color.accent;
   context.font = "bold 18px sans-serif";
-  context.fillText(selectedItem ? selectedItem.label : "资源详情", rect.x + 18, rect.y + 28);
+  context.fillText(selectedItem.label, rect.x + 18, rect.y + 46);
 
   context.fillStyle = themeTokens.color.ink;
   context.font = "16px sans-serif";
-  if (!selectedItem) {
-    context.fillText("点选上方资源标签后，再进行对应操作。", rect.x + 18, rect.y + 60);
-    return;
-  }
 
   const visibleActions = selectedItem.actions.slice(0, 3);
   const buttonHeight = 34;
@@ -131,21 +141,21 @@ function drawDetailCard(context, rect, selectedItem, registerHitRegion, actions)
   const buttonColumns = visibleActions.length > 1 ? 2 : 1;
   const buttonRows = Math.ceil(visibleActions.length / buttonColumns);
   const buttonBlockHeight = buttonRows * buttonHeight + Math.max(0, buttonRows - 1) * buttonGap;
-  const buttonTop = rect.y + rect.height - buttonBlockHeight - 18;
+  const buttonTop = rect.y + rect.height - buttonBlockHeight - 26;
   const textMaxY = buttonTop - 14;
 
-  context.fillText(`当前持有：${selectedItem.amount}`, rect.x + 18, rect.y + 60);
+  context.fillText(`当前持有：${selectedItem.amount}`, rect.x + 18, rect.y + 78);
   const actionText =
     selectedItem.detailText ||
     (selectedItem.actions[0] && selectedItem.actions[0].action === "convert-spirit-stone"
       ? "可按单份、全部或自定义数量转化为修为。"
       : "可按单份、全部或自定义数量出售换取灵石。");
-  const detailLines = wrapDetailLines(context, [actionText], rect.width - 36, rect.y + 92, textMaxY);
+  const detailLines = wrapDetailLines(context, [actionText], rect.width - 36, rect.y + 110, textMaxY);
   detailLines.forEach((line, index) => {
-    context.fillText(line, rect.x + 18, rect.y + 92 + index * 24);
+    context.fillText(line, rect.x + 18, rect.y + 110 + index * 24);
   });
   if (selectedItem.conversionRateText) {
-    const rateY = rect.y + 92 + detailLines.length * 24;
+    const rateY = rect.y + 110 + detailLines.length * 24;
     if (rateY <= textMaxY) {
       context.fillText(`每份转化：${selectedItem.conversionRateText}`, rect.x + 18, rateY);
     }

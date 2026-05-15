@@ -216,6 +216,22 @@ function buildAlchemyInventoryItems(run) {
           itemId: item.item_id,
           quality: item.quality,
         },
+        {
+          key: `consume-alchemy-item:${item.item_id}:${item.quality}:all`,
+          action: "consume-alchemy-item",
+          amountMode: "all",
+          label: "服用全部",
+          itemId: item.item_id,
+          quality: item.quality,
+        },
+        {
+          key: `consume-alchemy-item:${item.item_id}:${item.quality}:custom`,
+          action: "consume-alchemy-item",
+          amountMode: "custom",
+          label: "输入数量服用",
+          itemId: item.item_id,
+          quality: item.quality,
+        },
       ],
     }))
     .filter((item) => item.amount > 0);

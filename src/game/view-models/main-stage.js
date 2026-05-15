@@ -124,8 +124,9 @@ function buildLogEntries(snapshot, run) {
       id: item.historyKey,
       title: item.eventName || "异闻",
       detailLines: Array.isArray(item.impactLines) && item.impactLines.length > 0
-        ? item.impactLines.slice(0, 2)
+        ? item.impactLines.slice(0, 3)
         : [item.summary || "已结算"],
+      highlightedLines: Array.isArray(item.highlightedLines) ? item.highlightedLines : [],
     }));
   }
 

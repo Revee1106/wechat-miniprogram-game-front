@@ -30,11 +30,34 @@ function buildDwellingDrawerViewModel(snapshot) {
     const isMaxLevel =
       (maxLevel > 0 && Number(facility.level) >= maxLevel) || facility.status === "max_level";
     const isStalled = facility.status === "stalled";
+    const canBuild =
+      typeof facility.can_build === "boolean"
+        ? facility.can_build
+        : currentSpiritStone >= nextUpgradeCostSpiritStone;
+    const canUpgrade =
+      typeof facility.can_upgrade === "boolean"
+        ? facility.can_upgrade
+        : !isMaxLevel && currentSpiritStone >= nextUpgradeCostSpiritStone;
+    const disabledReason = isBuilt
+      ? facility.upgrade_disabled_reason || (!canUpgrade && !isMaxLevel ? "资源不足" : "")
+      : facility.build_disabled_reason || (!canBuild ? "资源不足" : "");
     const action = isBuilt
       ? isMaxLevel
         ? { action: "upgrade-facility", label: "已满级", facilityId: facility.facility_id, disabled: true }
-        : { action: "upgrade-facility", label: "升级", facilityId: facility.facility_id, disabled: false }
-      : { action: "build-facility", label: "建造", facilityId: facility.facility_id, disabled: false };
+        : {
+            action: "upgrade-facility",
+            label: canUpgrade ? "升级" : "资源不足",
+            facilityId: facility.facility_id,
+            disabled: !canUpgrade,
+            disabledReason,
+          }
+      : {
+          action: "build-facility",
+          label: canBuild ? "建造" : "资源不足",
+          facilityId: facility.facility_id,
+          disabled: !canBuild,
+          disabledReason,
+        };
 
     return {
       id: facility.facility_id,
@@ -48,7 +71,8 @@ function buildDwellingDrawerViewModel(snapshot) {
       yieldText: buildFacilityYieldText(resourceYields, facility.monthly_cultivation_exp_gain, resourceLabels),
       nextUpgradeText: isMaxLevel ? "已满级" : `${nextUpgradeCostSpiritStone} 灵石`,
       nextUpgradeCostSpiritStone,
-      canAfford: !isMaxLevel && currentSpiritStone >= nextUpgradeCostSpiritStone,
+      canAfford: isBuilt ? canUpgrade : canBuild,
+      disabledReason,
       action,
     };
   });

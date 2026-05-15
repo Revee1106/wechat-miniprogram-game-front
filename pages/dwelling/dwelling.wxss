@@ -190,6 +190,15 @@
   margin-top: 18rpx;
 }
 
+.facility-sheet-actions .primary-button.is-disabled {
+  opacity: 0.52;
+}
+
+.sheet-action-note {
+  margin-top: 6rpx;
+  color: #8c4d36;
+}
+
 .sheet-static-note {
   margin-top: 0;
 }

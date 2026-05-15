@@ -102,11 +102,12 @@ function startAlchemy(runId, recipeId) {
   });
 }
 
-function consumeAlchemyItem(runId, itemId, quality) {
+function consumeAlchemyItem(runId, itemId, quality, amount = 1) {
   return post("/api/run/alchemy/consume", {
     run_id: runId,
     item_id: itemId,
     quality,
+    amount,
   });
 }
 

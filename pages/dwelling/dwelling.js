@@ -40,7 +40,8 @@ Page({
     const snapshot = store.getState();
     const run = snapshot.run;
     const facilities = run ? run.dwelling_facilities || [] : [];
-    const facilityCards = normalizeFacilities(facilities);
+    const currentSpiritStone = run ? Number((run.resources || {}).spirit_stone) || 0 : 0;
+    const facilityCards = normalizeFacilities(facilities, currentSpiritStone);
     const selectedFacilityCard = syncSelectedFacilityCard(
       facilityCards,
       this.data.selectedFacilityId
@@ -49,7 +50,7 @@ Page({
     this.setData({
       run,
       dwellingLevel: run ? run.dwelling_level : 1,
-      currentSpiritStone: run ? Number((run.resources || {}).spirit_stone) || 0 : 0,
+      currentSpiritStone,
       facilities,
       facilityCards,
       selectedFacilityCard,
@@ -102,6 +103,15 @@ Page({
       return;
     }
 
+    const selectedFacilityCard = syncSelectedFacilityCard(this.data.facilityCards, facilityId);
+    if (selectedFacilityCard && selectedFacilityCard.actionDisabled) {
+      wx.showToast({
+        title: selectedFacilityCard.disabledReason || "资源不足",
+        icon: "none",
+      });
+      return;
+    }
+
     this.setData({ loadingFacilityId: facilityId, error: "" });
 
     try {
@@ -134,10 +144,26 @@ Page({
   },
 });
 
-function normalizeFacilities(facilities) {
+function normalizeFacilities(facilities, currentSpiritStone) {
   return facilities.map((item) => {
     const resourceYields = item.monthly_resource_yields || {};
     const nextUpgradeCost = item.next_upgrade_cost || {};
+    const level = Number(item.level) || 0;
+    const maxLevel = Number(item.max_level) || 0;
+    const isBuilt = level > 0;
+    const isMaxLevel = maxLevel > 0 && level >= maxLevel;
+    const costSpiritStone = Number(nextUpgradeCost.spirit_stone || 0);
+    const canBuild = typeof item.can_build === "boolean"
+      ? item.can_build
+      : currentSpiritStone >= costSpiritStone;
+    const canUpgrade = typeof item.can_upgrade === "boolean"
+      ? item.can_upgrade
+      : !isMaxLevel && currentSpiritStone >= costSpiritStone;
+    const disabledReason = isBuilt
+      ? item.upgrade_disabled_reason || (!canUpgrade && !isMaxLevel ? "资源不足" : "")
+      : item.build_disabled_reason || (!canBuild ? "资源不足" : "");
+    const actionDisabled = isBuilt ? !canUpgrade : !canBuild;
+
     return {
       ...item,
       display_name: formatFacilityName(item.facility_id, item.display_name),
@@ -150,11 +176,13 @@ function normalizeFacilities(facilities) {
         `修为 ${item.monthly_cultivation_exp_gain || 0}`,
       ].join(" / "),
       maintenanceText: `${(item.maintenance_cost || {}).spirit_stone || 0} 灵石`,
-      nextUpgradeText: `${nextUpgradeCost.spirit_stone || 0} 灵石`,
+      nextUpgradeText: isMaxLevel ? "已满级" : `${costSpiritStone} 灵石`,
+      actionDisabled,
+      disabledReason,
       actionType:
-        item.level === 0
+        level === 0
           ? "build"
-          : nextUpgradeCost.spirit_stone
+          : !isMaxLevel && nextUpgradeCost.spirit_stone
             ? "upgrade"
             : "none",
     };

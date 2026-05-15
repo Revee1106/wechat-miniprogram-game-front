@@ -237,6 +237,10 @@ function createMainStageScreen(options) {
           uiState.selectedResourceKey = resourceKey;
           requestRender();
         },
+        onCloseResourceDetail: () => {
+          uiState.selectedResourceKey = "";
+          requestRender();
+        },
         onAction: (item, action) =>
           perform(async () => {
             if (!item || item.amount <= 0) {
@@ -256,8 +260,8 @@ function createMainStageScreen(options) {
             }
 
             if (action && action.action === "consume-alchemy-item") {
-              await adapter.consumeAlchemyItem(action.itemId, action.quality);
-              showToast("丹药已服用");
+              await adapter.consumeAlchemyItem(action.itemId, action.quality, amount);
+              showToast(amount === item.amount ? "丹药已全部服用" : `丹药已服用 x${amount}`);
               return;
             }
 
@@ -376,7 +380,11 @@ function createMainStageScreen(options) {
       registerBlockingRegion(registerHitRegion, 0, 0, width, height);
       drawEventModal(context, { width, height, viewport }, eventModal, registerHitRegion, (optionId) =>
         perform(async () => {
-          await adapter.resolveEvent(optionId);
+          const result = await adapter.resolveEvent(optionId);
+          const unlockLines = buildUnlockNoticeLines(result);
+          if (unlockLines.length > 0) {
+            uiState.confirmDialog = buildUnlockNoticeDialog(unlockLines);
+          }
         })
       );
     }
@@ -421,6 +429,10 @@ function createMainStageScreen(options) {
             }
 
             if (dialog.actionType === "alchemy-material-shortage") {
+              return;
+            }
+
+            if (dialog.actionType === "unlock-notice") {
               return;
             }
 
@@ -570,7 +582,12 @@ function promptResourceActionAmount(item, action) {
     }
 
     const maxAmount = Math.max(0, Number(item.amount) || 0);
-    const verb = action.action === "convert-spirit-stone" ? "转化" : "出售";
+    const verb =
+      action.action === "convert-spirit-stone"
+        ? "转化"
+        : action.action === "consume-alchemy-item"
+          ? "服用"
+          : "出售";
 
     wx.showModal({
       title: `${verb}${item.label}`,
@@ -777,6 +794,26 @@ function buildAlchemyMaterialShortageDialog(recipe) {
 
 function isMaterialShortageRecipe(recipe) {
   return /材料不足/.test(String((recipe || {}).disabled_reason || ""));
+}
+
+function buildUnlockNoticeDialog(lines) {
+  return {
+    actionType: "unlock-notice",
+    title: "有所领悟",
+    bodyLines: lines,
+    confirmText: "知道了",
+    showCancel: false,
+  };
+}
+
+function buildUnlockNoticeLines(snapshot) {
+  const history = snapshot && Array.isArray(snapshot.eventHistory) ? snapshot.eventHistory : [];
+  const latest = history[0] || {};
+  if (Array.isArray(latest.highlightedLines) && latest.highlightedLines.length > 0) {
+    return latest.highlightedLines;
+  }
+  return String((snapshot && snapshot.run && snapshot.run.result_summary) || "")
+    .match(/你(?:学会了[^。]+丹方|解锁了[^。]+材料)。/g) || [];
 }
 
 function buildEquipmentDialog(item) {

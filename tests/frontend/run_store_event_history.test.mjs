@@ -121,3 +121,46 @@ assert.deepEqual(state.eventHistory[0].impactLines, [
   "灵石 -4",
   "修为 +16（已达上限，实际+0）",
 ]);
+
+const beforeLearnRecipeRun = {
+  ...beforeRun,
+  round_index: 46,
+  resources: {
+    ...beforeRun.resources,
+  },
+  character: {
+    ...beforeRun.character,
+  },
+  current_event: {
+    event_id: "evt_residual_pill_fragrance",
+    event_name: "残炉余香",
+  },
+};
+const afterLearnRecipeRun = {
+  ...beforeLearnRecipeRun,
+  current_event: null,
+  result_summary: "未见明显变化。 你学会了凝气丹丹方。",
+  last_event_resolution: {
+    event_id: "evt_residual_pill_fragrance",
+    option_id: "opt_residual_pill_fragrance_observe",
+    intended_resources: {},
+    intended_character: {},
+    actual_character: {},
+    capped_character: {},
+    time_cost_months: 0,
+  },
+};
+api.getRunState = async () => beforeLearnRecipeRun;
+api.resolveEvent = async () => afterLearnRecipeRun;
+
+runStore.clearRun();
+await runStore.createRun("demo-player");
+const learnedState = await runStore.resolveEvent("opt_residual_pill_fragrance_observe");
+
+assert.deepEqual(learnedState.eventHistory[0].impactLines, [
+  "未见明显变化。 你学会了凝气丹丹方。",
+  "你学会了凝气丹丹方。",
+]);
+assert.deepEqual(learnedState.eventHistory[0].highlightedLines, [
+  "你学会了凝气丹丹方。",
+]);

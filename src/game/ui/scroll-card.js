@@ -27,9 +27,10 @@ function drawScrollCard(context, rect, content = {}) {
     const columnGap = 20;
     const columnWidth = (rect.width - headerInset * 2 - columnGap) / 2;
     const rowGap = 30;
+    const rowCount = Math.ceil(content.summaryRows.length / 2);
     content.summaryRows.forEach((row, index) => {
       const column = index % 2;
-      const rowIndex = Math.floor(index / 2);
+      const rowIndex = Math.min(Math.floor(index / 2), rowCount - 1);
       const left = rect.x + headerInset + column * (columnWidth + columnGap);
       const top = infoTop + rowIndex * rowGap;
       context.fillStyle = themeTokens.color.inkSoft;
@@ -53,23 +54,35 @@ function drawScrollCard(context, rect, content = {}) {
   context.fillText(String(content.logTitle || "日志"), rect.x + headerInset, logTop + 6);
 
   const logEntries = Array.isArray(content.logEntries) ? content.logEntries : [];
-  logEntries.slice(0, 2).forEach((entry, index) => {
-    const baseY = logTop + 34 + index * 56;
+  const logTextMaxWidth = rect.width - headerInset * 2;
+  const logBottom = rect.y + rect.height - 22;
+  let cursorY = logTop + 34;
+  logEntries.slice(0, 2).forEach((entry) => {
+    if (cursorY + 20 > logBottom) {
+      return;
+    }
     context.fillStyle = themeTokens.color.ink;
     context.font = "bold 15px sans-serif";
-    context.fillText(String(entry.title || ""), rect.x + headerInset, baseY);
+    context.fillText(trimText(context, entry.title || "", logTextMaxWidth), rect.x + headerInset, cursorY);
 
     context.fillStyle = themeTokens.color.inkSoft;
     context.font = "14px sans-serif";
-    (entry.detailLines || []).slice(0, 2).forEach((line, lineIndex) => {
-      context.fillText(String(line), rect.x + headerInset, baseY + 22 + lineIndex * 18);
+    const maxDetailRows = Math.max(0, Math.floor((logBottom - cursorY - 22) / 18));
+    const highlightedLines = Array.isArray(entry.highlightedLines) ? entry.highlightedLines : [];
+    const detailLines = wrapDetailLines(context, entry.detailLines || [], logTextMaxWidth, Math.min(3, maxDetailRows), highlightedLines);
+    detailLines.forEach((line, lineIndex) => {
+      context.font = line.highlighted ? "bold 14px sans-serif" : "14px sans-serif";
+      context.fillText(line.text, rect.x + headerInset, cursorY + 22 + lineIndex * 18);
     });
+    cursorY += 22 + Math.max(1, detailLines.length) * 18 + 16;
   });
 
   if (logEntries.length === 0 && content.emptyLogText) {
     context.fillStyle = themeTokens.color.inkSoft;
     context.font = "14px sans-serif";
-    context.fillText(String(content.emptyLogText), rect.x + headerInset, logTop + 34);
+    wrapLine(context, content.emptyLogText, logTextMaxWidth).slice(0, 2).forEach((line, index) => {
+      context.fillText(line, rect.x + headerInset, logTop + 34 + index * 18);
+    });
   }
 }
 
@@ -142,6 +155,49 @@ function trimText(context, text, maxWidth) {
     next = next.slice(0, -1);
   }
   return `${next}…`;
+}
+
+function wrapDetailLines(context, lines, maxWidth, maxLines, highlightedLines = []) {
+  const wrappedLines = [];
+  for (const rawLine of lines) {
+    const nextLines = wrapLine(context, String(rawLine || ""), maxWidth);
+    for (const line of nextLines) {
+      if (wrappedLines.length >= maxLines) {
+        return wrappedLines;
+      }
+      wrappedLines.push({
+        text: line,
+        highlighted: highlightedLines.includes(String(rawLine || "")),
+      });
+    }
+  }
+  return wrappedLines;
+}
+
+function wrapLine(context, text, maxWidth) {
+  const value = String(text || "");
+  if (!value) {
+    return [];
+  }
+  if (context.measureText(value).width <= maxWidth) {
+    return [value];
+  }
+
+  const lines = [];
+  let current = "";
+  for (const char of value) {
+    const next = `${current}${char}`;
+    if (current && context.measureText(next).width > maxWidth) {
+      lines.push(current);
+      current = char;
+    } else {
+      current = next;
+    }
+  }
+  if (current) {
+    lines.push(current);
+  }
+  return lines;
 }
 
 function fillRoundedRect(context, x, y, width, height, radius, fillStyle) {

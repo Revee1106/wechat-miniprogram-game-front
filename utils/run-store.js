@@ -145,10 +145,10 @@ async function startAlchemy(recipeId) {
   return getState();
 }
 
-async function consumeAlchemyItem(itemId, quality) {
+async function consumeAlchemyItem(itemId, quality, amount = 1) {
   ensureRun();
   state.error = "";
-  state.run = await api.consumeAlchemyItem(state.run.run_id, itemId, quality);
+  state.run = await api.consumeAlchemyItem(state.run.run_id, itemId, quality, amount);
   return getState();
 }
 
@@ -178,13 +178,15 @@ function pushEventHistory(beforeRun, afterRun) {
     return;
   }
 
-  const impactLines = buildImpactLines(beforeRun, afterRun);
+  const highlightedLines = buildUnlockHighlightLines(afterRun.result_summary);
+  const impactLines = buildImpactLines(beforeRun, afterRun, highlightedLines);
   state.eventHistory = [
     {
       historyKey: `history-${beforeRun.round_index || 0}-${eventHistorySequence++}`,
       eventName: beforeRun.current_event.event_name,
       summary: afterRun.result_summary || `${beforeRun.current_event.event_name} 已结算`,
       impactLines,
+      highlightedLines,
     },
     ...state.eventHistory,
   ].slice(0, 2);
@@ -210,7 +212,7 @@ function pushDwellingSettlementHistory(beforeRun, afterRun) {
   ].slice(0, 2);
 }
 
-function buildImpactLines(beforeRun, afterRun) {
+function buildImpactLines(beforeRun, afterRun, highlightedLines = []) {
   const lines = [];
   const eventResolution = afterRun ? afterRun.last_event_resolution || null : null;
 
@@ -233,10 +235,21 @@ function buildImpactLines(beforeRun, afterRun) {
   }
 
   if (lines.length === 0) {
-    lines.push("未见明显变化");
+    lines.push(afterRun.result_summary || "未见明显变化");
   }
 
+  highlightedLines.forEach((line) => {
+    if (line && !lines.includes(line)) {
+      lines.push(line);
+    }
+  });
+
   return lines;
+}
+
+function buildUnlockHighlightLines(summary) {
+  const value = String(summary || "");
+  return value.match(/你(?:学会了[^。]+丹方|解锁了[^。]+材料)。/g) || [];
 }
 
 function buildDwellingSettlementHistoryItem(settlement) {
